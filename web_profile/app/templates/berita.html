@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <h1 class="fw-bold mb-4">Berita & Agenda</h1>
+        <p class="lead text-muted mx-auto" style="max-width: 700px;">
+            Informasi kegiatan, prestasi, dan agenda terbaru Pondok Pesantren Albarokah.
+        </p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 mb-4">
+                <!-- Berita Items -->
+                {% for berita in beritas %}
+                <div class="card mb-4 border-0 shadow-sm">
+                    <img src="{{ berita.gambar }}" class="card-img-top" alt="{{ berita.judul }}" style="height: 400px; object-fit: cover;">
+                    <div class="card-body">
+                        <h3 class="fw-bold">{{ berita.judul }}</h3>
+                        <p class="text-muted small"><i class="far fa-calendar-alt me-2"></i> {{ berita.tanggal.strftime('%d %B %Y') }} | <i class="far fa-user me-2"></i> {{ berita.penulis }}</p>
+                        <p class="card-text">{{ berita.konten[:200] }}...</p>
+                        <a href="{{ url_for('main.berita_detail', slug=berita.slug) }}" class="btn btn-outline-success btn-sm rounded-pill px-3">Baca Selengkapnya</a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-info">Belum ada berita.</div>
+                {% endfor %}
+            </div>
+
+            <div class="col-md-4">
+                <!-- Sidebar -->
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-header bg-success text-white fw-bold">Agenda Mendatang</div>
+                    <ul class="list-group list-group-flush">
+                        {% for agenda in agendas %}
+                        <li class="list-group-item">
+                            <h6 class="fw-bold mb-1">{{ agenda.nama_kegiatan }}</h6>
+                            <small class="text-muted"><i class="far fa-clock me-1"></i> {{ agenda.tanggal_mulai.strftime('%d %b %Y') }}</small>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-muted">Tidak ada agenda mendatang.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="card mb-4 border-0 shadow-sm">
+                    <div class="card-header bg-dark text-white fw-bold">Kategori Berita</div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Kegiatan Pesantren <span class="badge bg-success rounded-pill">12</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Prestasi Santri <span class="badge bg-success rounded-pill">5</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Artikel Islami <span class="badge bg-success rounded-pill">8</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Info Alumni <span class="badge bg-success rounded-pill">3</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

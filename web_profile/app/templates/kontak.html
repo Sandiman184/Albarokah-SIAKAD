@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <h1 class="fw-bold mb-4">Hubungi Kami</h1>
+        <p class="lead text-muted mx-auto" style="max-width: 700px;">
+            Silakan hubungi kami untuk informasi lebih lanjut atau kunjungi lokasi pondok pesantren.
+        </p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100 p-4">
+                    <div class="card-body">
+                        <h3 class="fw-bold text-success mb-4">Informasi Kontak</h3>
+                        <ul class="list-unstyled">
+                            <li class="mb-4 d-flex">
+                                <i class="fas fa-map-marker-alt fa-2x text-success me-3"></i>
+                                <div>
+                                    <h5 class="fw-bold">Alamat</h5>
+                                    <p class="text-muted">{{ pengaturan.alamat if pengaturan else 'Jl. Pesantren No. 123, Yogyakarta' }}</p>
+                                </div>
+                            </li>
+                            <li class="mb-4 d-flex">
+                                <i class="fas fa-phone fa-2x text-success me-3"></i>
+                                <div>
+                                    <h5 class="fw-bold">Telepon / WhatsApp</h5>
+                                    <p class="text-muted">{{ pengaturan.telepon if pengaturan else '(0274) 123456' }}</p>
+                                </div>
+                            </li>
+                            <li class="mb-4 d-flex">
+                                <i class="fas fa-envelope fa-2x text-success me-3"></i>
+                                <div>
+                                    <h5 class="fw-bold">Email</h5>
+                                    <p class="text-muted">{{ pengaturan.email if pengaturan else 'info@albarokah.ponpes.id' }}</p>
+                                </div>
+                            </li>
+                            <li class="d-flex">
+                                <i class="fas fa-clock fa-2x text-success me-3"></i>
+                                <div>
+                                    <h5 class="fw-bold">Jam Operasional Kantor</h5>
+                                    <p class="text-muted">Senin - Sabtu: 08.00 - 16.00 WIB</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card border-0 shadow-sm h-100 p-4">
+                    <div class="card-body">
+                        <h3 class="fw-bold text-success mb-4">Kirim Pesan</h3>
+                        <form>
+                            <div class="mb-3">
+                                <label for="nama" class="form-label">Nama Lengkap</label>
+                                <input type="text" class="form-control" id="nama" placeholder="Masukkan nama Anda">
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" placeholder="contoh@email.com">
+                            </div>
+                            <div class="mb-3">
+                                <label for="subjek" class="form-label">Subjek</label>
+                                <input type="text" class="form-control" id="subjek" placeholder="Tujuan pesan">
+                            </div>
+                            <div class="mb-3">
+                                <label for="pesan" class="form-label">Pesan</label>
+                                <textarea class="form-control" id="pesan" rows="4" placeholder="Tuliskan pesan Anda di sini..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success fw-bold px-4">Kirim Pesan</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Google Maps Embed -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3953.056976662768!2d110.37526931477813!3d-7.783789994390098!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a59c3a3c2a3d3%3A0x4030bfbcaf8cf0!2sYogyakarta%2C%20Yogyakarta%20City%2C%20Special%20Region%20of%20Yogyakarta!5e0!3m2!1sen!2sid!4v1645501234567!5m2!1sen!2sid" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+  <div class="col-12">
+    <div class="card mb-4">
+      <div class="card-header pb-0 d-flex justify-content-between">
+        <h6>Raport Akademik</h6>
+        <a href="{{ url_for('akademik.raport_generate', santri_id=data.santri.id, semester=data.semester, format='pdf') }}" class="btn bg-gradient-success btn-sm mb-0">
+          <i class="fa fa-download me-2"></i>Download PDF
+        </a>
+      </div>
+      <div class="card-body px-4 pt-4 pb-2">
+        
+        <!-- Header Santri -->
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <p class="text-sm mb-0">Nama Santri: <strong>{{ data.santri.nama }}</strong></p>
+            <p class="text-sm mb-0">NIS: <strong>{{ data.santri.nis }}</strong></p>
+          </div>
+          <div class="col-md-6 text-end">
+            <p class="text-sm mb-0">Kelas: <strong>{{ data.santri.kelas.nama_kelas if data.santri.kelas else '-' }}</strong></p>
+            <p class="text-sm mb-0">Semester: <strong>{{ data.semester }}</strong></p>
+          </div>
+        </div>
+
+        <!-- Tabel Nilai -->
+        <h6 class="text-uppercase text-body text-xs font-weight-bolder opacity-7 ps-2">A. Nilai Akademik</h6>
+        <div class="table-responsive p-0 mb-4">
+          <table class="table align-items-center mb-0">
+            <thead>
+              <tr>
+                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Mata Pelajaran</th>
+                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">KKM</th>
+                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nilai Akhir</th>
+                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Predikat</th>
+                <th class="text-secondary opacity-7">Deskripsi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for n in data.nilai %}
+              <tr>
+                <td>
+                  <div class="d-flex px-2 py-1">
+                    <div class="d-flex flex-column justify-content-center">
+                      <h6 class="mb-0 text-sm">{{ n.mapel }}</h6>
+                    </div>
+                  </div>
+                </td>
+                <td class="align-middle text-center text-sm">
+                  <span class="text-secondary text-xs font-weight-bold">{{ n.kkm }}</span>
+                </td>
+                <td class="align-middle text-center text-sm">
+                  <span class="text-secondary text-xs font-weight-bold">{{ n.nilai_akhir }}</span>
+                </td>
+                <td class="align-middle text-center text-sm">
+                  <span class="badge badge-sm bg-gradient-{{ 'success' if n.predikat in ['A', 'B'] else 'warning' }}">{{ n.predikat }}</span>
+                </td>
+                <td class="align-middle text-sm">
+                  <span class="text-secondary text-xs">{{ n.deskripsi }}</span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Absensi -->
+        <h6 class="text-uppercase text-body text-xs font-weight-bolder opacity-7 ps-2">B. Ketidakhadiran</h6>
+        <div class="row mb-4 ps-2">
+          <div class="col-md-4">
+            <ul class="list-group">
+              <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Sakit:</strong> &nbsp; {{ data.absensi.Sakit }} hari</li>
+              <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Izin:</strong> &nbsp; {{ data.absensi.Izin }} hari</li>
+              <li class="list-group-item border-0 ps-0 text-sm"><strong class="text-dark">Alpha:</strong> &nbsp; {{ data.absensi.Alpha }} hari</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Tahfidz -->
+        <h6 class="text-uppercase text-body text-xs font-weight-bolder opacity-7 ps-2">C. Perkembangan Tahfidz</h6>
+        <div class="table-responsive p-0 mb-4">
+          <table class="table align-items-center mb-0">
+            <thead>
+              <tr>
+                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tanggal</th>
+                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Surat & Ayat</th>
+                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Kelancaran</th>
+                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tajwid</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for t in data.tahfidz %}
+              <tr>
+                <td>
+                  <span class="text-secondary text-xs font-weight-bold ps-2">{{ t.tanggal_setor.strftime('%d-%m-%Y') }}</span>
+                </td>
+                <td>
+                  <h6 class="mb-0 text-sm ps-2">{{ t.nama_surat }} : {{ t.ayat }}</h6>
+                </td>
+                <td class="align-middle text-center text-sm">
+                  <span class="text-secondary text-xs font-weight-bold">{{ t.kelancaran }}</span>
+                </td>
+                <td class="align-middle text-center text-sm">
+                  <span class="text-secondary text-xs font-weight-bold">{{ t.tajwid }}</span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Catatan & Status -->
+        <h6 class="text-uppercase text-body text-xs font-weight-bolder opacity-7 ps-2">D. Catatan & Status Akhir</h6>
+        <div class="card card-body border card-plain border-radius-lg d-flex align-items-center flex-row">
+          <div class="col-md-8">
+            <h6 class="mb-0">Catatan Wali Kelas:</h6>
+            <p class="text-sm mb-3">{{ data.catatan }}</p>
+            
+            <h6 class="mb-0">Keputusan:</h6>
+            <p class="text-sm mb-0 font-weight-bold">{{ data.status_kenaikan }}</p>
+          </div>
+          <div class="col-md-4 text-end">
+             <p class="text-sm text-secondary">Tanggal: {{ data.tanggal_cetak }}</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <h1 class="fw-bold mb-4">Penerimaan Peserta Didik Baru (PPDB)</h1>
+        <p class="lead text-muted mx-auto" style="max-width: 700px;">
+            Informasi lengkap mengenai pendaftaran santri baru Pondok Pesantren Albarokah Tahun Ajaran 2026/2027.
+        </p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row mb-5">
+            <div class="col-md-4 mb-4">
+                <div class="card bg-success text-white text-center h-100 p-4 border-0 shadow">
+                    <div class="card-body">
+                        <i class="fas fa-calendar-check fa-3x mb-3"></i>
+                        <h4 class="fw-bold">Waktu Pendaftaran</h4>
+                        <p class="mb-0">Gelombang 1: 1 Feb - 31 Mar 2026</p>
+                        <p class="mb-0">Gelombang 2: 1 Apr - 30 Mei 2026</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card bg-warning text-dark text-center h-100 p-4 border-0 shadow">
+                    <div class="card-body">
+                        <i class="fas fa-file-alt fa-3x mb-3"></i>
+                        <h4 class="fw-bold">Syarat Pendaftaran</h4>
+                        <ul class="text-start list-unstyled mx-auto" style="max-width: 250px;">
+                            <li><i class="fas fa-check me-2"></i> Mengisi Formulir</li>
+                            <li><i class="fas fa-check me-2"></i> FC Akta & KK</li>
+                            <li><i class="fas fa-check me-2"></i> Pas Foto 3x4 (4 lembar)</li>
+                            <li><i class="fas fa-check me-2"></i> FC Ijazah Terakhir</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card bg-info text-white text-center h-100 p-4 border-0 shadow">
+                    <div class="card-body">
+                        <i class="fas fa-phone-alt fa-3x mb-3"></i>
+                        <h4 class="fw-bold">Kontak Panitia</h4>
+                        <p class="mb-1">Ustadz Hasan: 0812-3456-7890</p>
+                        <p class="mb-0">Sekretariat: (0274) 123456</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card border-0 shadow-lg p-4">
+                    <div class="card-body">
+                        <h3 class="fw-bold text-center mb-4">Formulir Pendaftaran Online</h3>
+                        <form>
+                            <div class="mb-3">
+                                <label for="nama" class="form-label">Nama Lengkap Calon Santri</label>
+                                <input type="text" class="form-control" id="nama" placeholder="Masukkan nama lengkap">
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="tempat_lahir" class="form-label">Tempat Lahir</label>
+                                    <input type="text" class="form-control" id="tempat_lahir">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="tanggal_lahir" class="form-label">Tanggal Lahir</label>
+                                    <input type="date" class="form-control" id="tanggal_lahir">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="alamat" class="form-label">Alamat Lengkap</label>
+                                <textarea class="form-control" id="alamat" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="asal_sekolah" class="form-label">Asal Sekolah</label>
+                                <input type="text" class="form-control" id="asal_sekolah">
+                            </div>
+                            <div class="mb-3">
+                                <label for="no_hp_ortu" class="form-label">No. HP Orang Tua / Wali</label>
+                                <input type="tel" class="form-control" id="no_hp_ortu" placeholder="08xxxxxxxxxx">
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-lg fw-bold">Kirim Pendaftaran</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

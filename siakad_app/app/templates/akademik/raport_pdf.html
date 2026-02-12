@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="Laporan Hasil Belajar Santri Pondok Pesantren Albarokah">
+    <meta name="keywords" content="raport, santri, albarokah, pesantren, nilai">
+    <title>Raport Santri</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+        .header h2, .header h3 {
+            margin: 5px 0;
+        }
+        .info-table {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .info-table td {
+            padding: 5px;
+        }
+        .content-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .content-table th, .content-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+        .content-table th {
+            background-color: #f2f2f2;
+            text-align: center;
+        }
+        .section-title {
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        .footer {
+            margin-top: 50px;
+            width: 100%;
+        }
+        .footer-col {
+            width: 33%;
+            float: left;
+            text-align: center;
+        }
+        .signature-space {
+            height: 80px;
+        }
+        /* Helper classes to replace inline styles */
+        .text-center {
+            text-align: center;
+        }
+        .w-50 {
+            width: 50%;
+        }
+        .notes-box {
+            border: 1px solid #000;
+            padding: 10px;
+            min-height: 50px;
+        }
+        .w-5 { width: 5%; }
+        .w-30 { width: 30%; }
+        .w-10 { width: 10%; }
+        .w-35 { width: 35%; }
+        .w-15 { width: 15%; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>PONDOK PESANTREN ALBAROKAH</h2>
+        <h3>LAPORAN HASIL BELAJAR SANTRI</h3>
+    </div>
+
+    <table class="info-table">
+        <tr>
+            <td class="w-15">Nama</td>
+            <td class="w-35">: {{ data.santri.nama }}</td>
+            <td class="w-15">Kelas</td>
+            <td class="w-35">: {{ data.santri.kelas.nama_kelas if data.santri.kelas else '-' }}</td>
+        </tr>
+        <tr>
+            <td>NIS</td>
+            <td>: {{ data.santri.nis }}</td>
+            <td>Semester</td>
+            <td>: {{ data.semester }}</td>
+        </tr>
+        <tr>
+            <td>Tahun Ajaran</td>
+            <td>: {{ data.semester.split(' ')[1] if ' ' in data.semester else '-' }}</td>
+            <td></td>
+            <td></td>
+        </tr>
+    </table>
+
+    <div class="section-title">A. Nilai Akademik</div>
+    <table class="content-table">
+        <thead>
+            <tr>
+                <th class="w-5">No</th>
+                <th class="w-30">Mata Pelajaran</th>
+                <th class="w-10">KKM</th>
+                <th class="w-10">Nilai</th>
+                <th class="w-10">Predikat</th>
+                <th class="w-35">Deskripsi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for n in data.nilai %}
+            <tr>
+                <td class="text-center">{{ loop.index }}</td>
+                <td>{{ n.mapel }}</td>
+                <td class="text-center">{{ n.kkm }}</td>
+                <td class="text-center">{{ n.nilai_akhir }}</td>
+                <td class="text-center">{{ n.predikat }}</td>
+                <td>{{ n.deskripsi }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">B. Ketidakhadiran</div>
+    <table class="content-table w-50">
+        <tr>
+            <td class="w-50">Sakit</td>
+            <td class="w-50 text-center">{{ data.absensi.Sakit }} hari</td>
+        </tr>
+        <tr>
+            <td>Izin</td>
+            <td class="text-center">{{ data.absensi.Izin }} hari</td>
+        </tr>
+        <tr>
+            <td>Tanpa Keterangan</td>
+            <td class="text-center">{{ data.absensi.Alpha }} hari</td>
+        </tr>
+    </table>
+
+    <div class="section-title">C. Catatan Wali Kelas</div>
+    <div class="notes-box">
+        {{ data.catatan }}
+    </div>
+
+    <div class="section-title">D. Keputusan</div>
+    <div class="notes-box">
+        Berdasarkan hasil pencapaian kompetensi, peserta didik dinyatakan: <br>
+        <strong>{{ data.status_kenaikan }}</strong>
+    </div>
+
+    <div class="footer">
+        <div class="footer-col">
+            <br>
+            Orang Tua/Wali
+            <div class="signature-space"></div>
+            ( ............................. )
+        </div>
+        <div class="footer-col">
+            <br>
+            Wali Kelas
+            <div class="signature-space"></div>
+            ( ............................. )
+        </div>
+        <div class="footer-col">
+            Yogyakarta, {{ data.tanggal_cetak }} <br> 
+            Kepala Sekolah
+            <div class="signature-space"></div>
+            ( ............................. )
+        </div>
+    </div>
+</body>
+</html>

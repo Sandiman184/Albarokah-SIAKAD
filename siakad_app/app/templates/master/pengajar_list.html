@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                <h6>Daftar Pengajar</h6>
+                <a href="{{ url_for('master.pengajar_add') }}" class="btn btn-sm bg-gradient-primary">Tambah Pengajar</a>
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama Pengajar</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">No. HP</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Alamat</th>
+                                <th class="text-secondary opacity-7"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pengajar in pengajars %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex px-2 py-1">
+                                        <div>
+                                            <img src="https://demos.creative-tim.com/soft-ui-dashboard/assets/img/team-3.jpg" class="avatar avatar-sm me-3" alt="user1" width="48" height="48">
+                                        </div>
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <h6 class="mb-0 text-sm">{{ pengajar.nama }}</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ pengajar.no_hp }}</p>
+                                </td>
+                                <td>
+                                    <p class="text-xs text-secondary mb-0">{{ pengajar.alamat }}</p>
+                                </td>
+                                <td class="align-middle">
+                                    <a href="{{ url_for('master.pengajar_edit', id=pengajar.id) }}" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit pengajar">
+                                        <i class="fas fa-edit text-info me-2" aria-hidden="true"></i>
+                                    </a>
+                                    <form action="{{ url_for('master.pengajar_delete', id=pengajar.id) }}" method="post" class="d-inline ms-2" onsubmit="return confirm('Yakin ingin menghapus?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <button type="submit" class="btn btn-link text-danger text-xs font-weight-bold mb-0 p-0" data-toggle="tooltip" data-original-title="Hapus pengajar">
+                                            <i class="fas fa-trash text-danger" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

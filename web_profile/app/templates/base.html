@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Pondok Pesantren Albarokah</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        /* Fallback for hero image */
+        .hero-section {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://picsum.photos/seed/hero/1600/900');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{{ url_for('main.index') }}">
+                <i class="fas fa-mosque me-2"></i> {{ pengaturan.nama_pesantren if pengaturan else 'PP Albarokah' }}
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}">Beranda</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.profil') }}">Profil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.program') }}">Program</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.ppdb') }}">PPDB</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.berita') }}">Berita</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.galeri') }}">Galeri</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('main.kontak') }}">Kontak</a></li>
+                    <li class="nav-item ms-lg-3">
+                        <a href="http://localhost:5000/auth/login" class="btn btn-light text-success fw-bold rounded-pill px-4">Login SIAKAD</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main style="margin-top: 70px; min-height: 80vh;">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white pt-5 pb-3 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-success fw-bold mb-3">{{ pengaturan.nama_pesantren if pengaturan else 'PP Albarokah' }}</h5>
+                    <p class="small">{{ pengaturan.deskripsi_singkat if pengaturan else "Mewujudkan generasi Qur'ani yang berakhlak mulia, cerdas, dan mandiri." }}</p>
+                    <div class="social-links mt-3">
+                        {% if pengaturan and pengaturan.facebook %}
+                        <a href="{{ pengaturan.facebook }}" class="text-white me-3" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                        {% endif %}
+                        {% if pengaturan and pengaturan.instagram %}
+                        <a href="{{ pengaturan.instagram }}" class="text-white me-3" target="_blank"><i class="fab fa-instagram"></i></a>
+                        {% endif %}
+                        {% if pengaturan and pengaturan.youtube %}
+                        <a href="{{ pengaturan.youtube }}" class="text-white me-3" target="_blank"><i class="fab fa-youtube"></i></a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5 class="fw-bold mb-3">Tautan Cepat</h5>
+                    <ul class="list-unstyled small">
+                        <li><a href="{{ url_for('main.profil') }}" class="text-white text-decoration-none">Profil Pesantren</a></li>
+                        <li><a href="{{ url_for('main.program') }}" class="text-white text-decoration-none">Program Pendidikan</a></li>
+                        <li><a href="{{ url_for('main.ppdb') }}" class="text-white text-decoration-none">Info Pendaftaran</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <h5 class="fw-bold mb-3">Kontak</h5>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><i class="fas fa-map-marker-alt me-2 text-success"></i> {{ pengaturan.alamat if pengaturan else 'Jl. Pesantren No. 123, Yogyakarta' }}</li>
+                        <li class="mb-2"><i class="fas fa-phone me-2 text-success"></i> {{ pengaturan.telepon if pengaturan else '(0274) 123456' }}</li>
+                        <li class="mb-2"><i class="fas fa-envelope me-2 text-success"></i> {{ pengaturan.email if pengaturan else 'info@albarokah.ponpes.id' }}</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="border-secondary">
+            <div class="text-center small">
+                &copy; 2026 {{ pengaturan.nama_pesantren if pengaturan else 'Pondok Pesantren Albarokah' }}. All Rights Reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

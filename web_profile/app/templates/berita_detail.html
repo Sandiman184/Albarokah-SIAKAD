@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}" class="text-success text-decoration-none">Beranda</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('main.berita') }}" class="text-success text-decoration-none">Berita</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ berita.judul }}</li>
+            </ol>
+        </nav>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Article Content -->
+                <article>
+                    <img src="{{ berita.gambar }}" class="img-fluid rounded w-100 mb-4 shadow-sm" alt="{{ berita.judul }}" style="max-height: 500px; object-fit: cover;">
+                    
+                    <h1 class="fw-bold mb-3">{{ berita.judul }}</h1>
+                    
+                    <div class="d-flex align-items-center text-muted mb-4">
+                        <div class="me-4">
+                            <i class="far fa-calendar-alt me-2"></i>
+                            {{ berita.tanggal.strftime('%d %B %Y') }}
+                        </div>
+                        <div class="me-4">
+                            <i class="far fa-user me-2"></i>
+                            {{ berita.penulis }}
+                        </div>
+                        <div>
+                            <i class="far fa-folder me-2"></i>
+                            {{ berita.kategori|title }}
+                        </div>
+                    </div>
+                    
+                    <div class="article-content" style="line-height: 1.8; text-align: justify;">
+                        {{ berita.konten|safe }}
+                    </div>
+                </article>
+
+                <hr class="my-5">
+
+                <!-- Navigation -->
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('main.berita') }}" class="btn btn-outline-success rounded-pill px-4">
+                        <i class="fas fa-arrow-left me-2"></i> Kembali ke Berita
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-lg-4 mt-5 mt-lg-0">
+                <!-- Sidebar -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-success text-white fw-bold">Berita Lainnya</div>
+                    <ul class="list-group list-group-flush">
+                        {% for item in berita_lain %}
+                        <li class="list-group-item">
+                            <a href="{{ url_for('main.berita_detail', slug=item.slug) }}" class="text-decoration-none text-dark d-flex align-items-start">
+                                <img src="{{ item.gambar }}" class="rounded me-3" width="60" height="60" style="object-fit: cover;">
+                                <div>
+                                    <h6 class="fw-bold mb-1 small">{{ item.judul }}</h6>
+                                    <small class="text-muted" style="font-size: 0.75rem;">{{ item.tanggal.strftime('%d %b %Y') }}</small>
+                                </div>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-muted small">Tidak ada berita lain.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

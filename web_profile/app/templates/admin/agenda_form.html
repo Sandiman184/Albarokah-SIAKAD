@@ -1,0 +1,44 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h4 class="mb-0">{{ title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.nama_kegiatan.label(class="form-label") }}
+                        {{ form.nama_kegiatan(class="form-control") }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.tanggal_mulai.label(class="form-label") }}
+                            {{ form.tanggal_mulai(class="form-control", type="datetime-local") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.tanggal_selesai.label(class="form-label") }}
+                            {{ form.tanggal_selesai(class="form-control", type="datetime-local") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.lokasi.label(class="form-label") }}
+                        {{ form.lokasi(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.deskripsi.label(class="form-label") }}
+                        {{ form.deskripsi(class="form-control", rows="5") }}
+                    </div>
+                    <div class="d-flex justify-content-end">
+                        <a href="{{ url_for('admin.agenda_list') }}" class="btn btn-secondary me-2">Batal</a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

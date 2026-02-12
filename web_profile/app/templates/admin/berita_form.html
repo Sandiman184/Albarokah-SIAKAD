@@ -1,0 +1,53 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-success">{{ title }}</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.judul.label(class="form-label") }}
+                {{ form.judul(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.slug.label(class="form-label") }}
+                {{ form.slug(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.konten.label(class="form-label") }}
+                {{ form.konten(class="form-control", rows="5") }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.gambar.label(class="form-label") }}
+                {{ form.gambar(class="form-control") }}
+                {% if form.gambar.errors %}
+                    {% for error in form.gambar.errors %}
+                        <span class="text-danger small">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form.status.label(class="form-label") }}
+                    {{ form.status(class="form-select") }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form.kategori.label(class="form-label") }}
+                    {{ form.kategori(class="form-select") }}
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-success">{{ form.submit.label.text }}</button>
+            <a href="{{ url_for('admin.berita_list') }}" class="btn btn-secondary">Batal</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

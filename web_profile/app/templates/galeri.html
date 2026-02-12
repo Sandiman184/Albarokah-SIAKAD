@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <h1 class="fw-bold mb-4">Galeri Kegiatan</h1>
+        <p class="lead text-muted mx-auto" style="max-width: 700px;">
+            Dokumentasi visual kegiatan santri, fasilitas pesantren, dan momen-momen berharga.
+        </p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <!-- Filter Button Group -->
+        <div class="text-center mb-5">
+            <button type="button" class="btn btn-outline-success active rounded-pill px-4 mx-1">Semua</button>
+            <button type="button" class="btn btn-outline-success rounded-pill px-4 mx-1">Kegiatan</button>
+            <button type="button" class="btn btn-outline-success rounded-pill px-4 mx-1">Fasilitas</button>
+            <button type="button" class="btn btn-outline-success rounded-pill px-4 mx-1">Prestasi</button>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <img src="https://loremflickr.com/400/300/mosque" class="card-img-top" alt="Galeri 1">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold">Masjid Utama</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <img src="https://loremflickr.com/400/300/reading" class="card-img-top" alt="Galeri 2">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold">Kajian Kitab</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <img src="https://loremflickr.com/400/300/classroom" class="card-img-top" alt="Galeri 3">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold">Ruang Kelas</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <img src="https://loremflickr.com/400/300/computer" class="card-img-top" alt="Galeri 4">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold">Lab Komputer</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <img src="https://loremflickr.com/400/300/sports" class="card-img-top" alt="Galeri 5">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold">Olahraga Santri</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm h-100">
+                    <img src="https://loremflickr.com/400/300/garden" class="card-img-top" alt="Galeri 6">
+                    <div class="card-body text-center">
+                        <h5 class="card-title fw-bold">Taman Pesantren</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                <h6>E-Raport</h6>
+                <a href="{{ url_for('akademik.raport_input') }}" class="btn btn-sm bg-gradient-info">Input Data Raport (Catatan)</a>
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+                <div class="p-4">
+                    <form action="{{ url_for('akademik.raport_generate') }}" method="GET">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="santri_id" class="form-control-label">Pilih Santri</label>
+                                    <select class="form-control" id="santri_id" name="santri_id" required>
+                                        <option value="">-- Pilih Santri --</option>
+                                        {% for santri in santris %}
+                                        <option value="{{ santri.id }}">{{ santri.nama }} - {{ santri.nis }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="semester" class="form-control-label">Semester</label>
+                                    <select class="form-control" id="semester" name="semester" required>
+                                        <option value="">-- Pilih Semester --</option>
+                                        <option value="Ganjil 2024/2025">Ganjil 2024/2025</option>
+                                        <option value="Genap 2024/2025">Genap 2024/2025</option>
+                                        <option value="Ganjil 2025/2026">Ganjil 2025/2026</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn bg-gradient-primary">Lihat Raport</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

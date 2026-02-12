@@ -1,0 +1,14 @@
+[Unit]
+Description=Gunicorn instance to serve Web Profile App
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/Albarokah/web_profile
+Environment="PATH=/home/ubuntu/Albarokah/venv/bin"
+Environment="FLASK_APP=run.py"
+ExecStart=/home/ubuntu/Albarokah/venv/bin/gunicorn --workers 3 --bind 127.0.0.1:8001 -m 007 run:app
+
+[Install]
+WantedBy=multi-user.target

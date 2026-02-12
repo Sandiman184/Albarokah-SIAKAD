@@ -1,0 +1,42 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-success">{{ title }}</h6>
+    </div>
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.judul.label(class="form-label") }}
+                {{ form.judul(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.gambar.label(class="form-label") }}
+                {{ form.gambar(class="form-control") }}
+                {% if form.gambar.errors %}
+                    {% for error in form.gambar.errors %}
+                        <span class="text-danger small">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.kategori.label(class="form-label") }}
+                {{ form.kategori(class="form-select") }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.deskripsi.label(class="form-label") }}
+                {{ form.deskripsi(class="form-control", rows="3") }}
+            </div>
+            
+            <button type="submit" class="btn btn-success">{{ form.submit.label.text }}</button>
+            <a href="{{ url_for('admin.galeri_list') }}" class="btn btn-secondary">Batal</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

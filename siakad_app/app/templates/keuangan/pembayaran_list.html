@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                <h6>Daftar Pembayaran SPP & Keuangan</h6>
+                {% if current_user.role in ['admin', 'ustadz'] %}
+                <a href="{{ url_for('keuangan.add') }}" class="btn btn-sm bg-gradient-primary">Input Pembayaran</a>
+                {% endif %}
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Santri</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Periode</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Jumlah</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tanggal Bayar</th>
+                                {% if current_user.role in ['admin', 'ustadz'] %}
+                                <th class="text-secondary opacity-7"></th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pembayaran in pembayaran_list %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex px-2 py-1">
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <h6 class="mb-0 text-sm">{{ pembayaran.santri.nama }}</h6>
+                                            <p class="text-xs text-secondary mb-0">{{ pembayaran.santri.nis }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ pembayaran.bulan }} {{ pembayaran.tahun }}</p>
+                                </td>
+                                <td class="align-middle text-center text-sm">
+                                    <span class="text-secondary text-xs font-weight-bold">Rp {{ "{:,.0f}".format(pembayaran.jumlah) }}</span>
+                                </td>
+                                <td class="align-middle text-center text-sm">
+                                    <span class="badge badge-sm bg-gradient-{{ 'success' if pembayaran.status == 'Lunas' else 'danger' }}">
+                                        {{ pembayaran.status }}
+                                    </span>
+                                </td>
+                                <td class="align-middle text-center">
+                                    <span class="text-secondary text-xs font-weight-bold">{{ pembayaran.tanggal_bayar.strftime('%d %B %Y') if pembayaran.tanggal_bayar else '-' }}</span>
+                                </td>
+                                {% if current_user.role in ['admin', 'ustadz'] %}
+                                <td class="align-middle">
+                                    <a href="{{ url_for('keuangan.edit', id=pembayaran.id) }}" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit pembayaran">
+                                        <i class="fas fa-edit text-info me-2" aria-hidden="true"></i>
+                                    </a>
+                                    {% if current_user.role == 'admin' %}
+                                    <form action="{{ url_for('keuangan.delete', id=pembayaran.id) }}" method="post" class="d-inline ms-2" onsubmit="return confirm('Yakin ingin menghapus?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <button type="submit" class="btn btn-link text-danger text-xs font-weight-bold mb-0 p-0" data-toggle="tooltip" data-original-title="Hapus pembayaran">
+                                            <i class="fas fa-trash text-danger" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <p class="text-xs font-weight-bold mb-0">Belum ada data pembayaran</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

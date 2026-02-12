@@ -1,0 +1,29 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Daftar Galeri</h2>
+    <a href="{{ url_for('admin.galeri_add') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Tambah Foto</a>
+</div>
+
+<div class="row">
+    {% for galeri in galeris %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <img src="{{ galeri.gambar }}" class="card-img-top" alt="{{ galeri.judul }}" style="height: 200px; object-fit: cover;">
+            <div class="card-body">
+                <h5 class="card-title">{{ galeri.judul }}</h5>
+                <span class="badge bg-secondary">{{ galeri.kategori }}</span>
+                <p class="card-text text-muted small mt-2">{{ galeri.tanggal.strftime('%d/%m/%Y') }}</p>
+            </div>
+            <div class="card-footer bg-white border-top-0 d-flex justify-content-end">
+                <form action="{{ url_for('admin.galeri_delete', id=galeri.id) }}" method="post" onsubmit="return confirm('Yakin hapus?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i> Hapus</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

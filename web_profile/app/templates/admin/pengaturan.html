@@ -1,0 +1,74 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h4 class="mb-0"><i class="fas fa-cogs me-2 text-primary"></i> Pengaturan Website</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+                    
+                    <h5 class="text-muted mb-3">Identitas Pesantren</h5>
+                    <div class="mb-3">
+                        {{ form.nama_pesantren.label(class="form-label") }}
+                        {{ form.nama_pesantren(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.deskripsi_singkat.label(class="form-label") }}
+                        {{ form.deskripsi_singkat(class="form-control", rows="3") }}
+                        <div class="form-text">Ditampilkan di footer dan meta description SEO.</div>
+                    </div>
+
+                    <h5 class="text-muted mb-3 mt-4">Kontak</h5>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.telepon.label(class="form-label") }}
+                            {{ form.telepon(class="form-control") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.alamat.label(class="form-label") }}
+                        {{ form.alamat(class="form-control", rows="3") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.maps_embed.label(class="form-label") }}
+                        {{ form.maps_embed(class="form-control", rows="3") }}
+                        <div class="form-text">Paste kode iframe Google Maps di sini.</div>
+                    </div>
+
+                    <h5 class="text-muted mb-3 mt-4">Media Sosial</h5>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fab fa-facebook-f"></i></span>
+                            {{ form.facebook(class="form-control", placeholder="Link Facebook") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fab fa-instagram"></i></span>
+                            {{ form.instagram(class="form-control", placeholder="Link Instagram") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fab fa-youtube"></i></span>
+                            {{ form.youtube(class="form-control", placeholder="Link YouTube") }}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

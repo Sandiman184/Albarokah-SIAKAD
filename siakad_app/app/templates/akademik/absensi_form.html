@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-xl-6">
+        <div class="card mb-4">
+            <div class="card-header pb-0">
+                <h6>{{ title }}</h6>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.santri_id.label(class="form-control-label") }}
+                        {{ form.santri_id(class="form-control") }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.tanggal.label(class="form-control-label") }}
+                                {{ form.tanggal(class="form-control", type="date") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.status.label(class="form-control-label") }}
+                                {{ form.status(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <a href="{{ url_for('akademik.absensi_list') }}" class="btn btn-secondary">Batal</a>
+                        {{ form.submit(class="btn bg-gradient-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

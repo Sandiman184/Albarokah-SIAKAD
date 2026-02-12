@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-xl-8">
+        <div class="card mb-4">
+            <div class="card-header pb-0">
+                <h6>{{ title }}</h6>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.santri_id.label(class="form-control-label") }}
+                        {{ form.santri_id(class="form-control") }}
+                        {% for error in form.santri_id.errors %}
+                        <span class="text-danger text-xs">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.bulan.label(class="form-control-label") }}
+                                {{ form.bulan(class="form-control") }}
+                                {% for error in form.bulan.errors %}
+                                <span class="text-danger text-xs">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.tahun.label(class="form-control-label") }}
+                                {{ form.tahun(class="form-control") }}
+                                {% for error in form.tahun.errors %}
+                                <span class="text-danger text-xs">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.jumlah.label(class="form-control-label") }}
+                                {{ form.jumlah(class="form-control", type="number", min="0") }}
+                                {% for error in form.jumlah.errors %}
+                                <span class="text-danger text-xs">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.status.label(class="form-control-label") }}
+                                {{ form.status(class="form-control") }}
+                                {% for error in form.status.errors %}
+                                <span class="text-danger text-xs">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form.tanggal_bayar.label(class="form-control-label") }}
+                        {{ form.tanggal_bayar(class="form-control", type="date") }}
+                        {% for error in form.tanggal_bayar.errors %}
+                        <span class="text-danger text-xs">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="text-end">
+                        <a href="{{ url_for('keuangan.index') }}" class="btn btn-secondary">Batal</a>
+                        {{ form.submit(class="btn bg-gradient-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

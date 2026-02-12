@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-xl-6">
+        <div class="card mb-4">
+            <div class="card-header pb-0">
+                <h6>{{ title }}</h6>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.santri_id.label(class="form-control-label") }}
+                        {{ form.santri_id(class="form-control") }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.nama_surat.label(class="form-control-label") }}
+                                {{ form.nama_surat(class="form-control", placeholder="Nama Surat") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.ayat.label(class="form-control-label") }}
+                                {{ form.ayat(class="form-control", placeholder="Ayat ke-") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.kelancaran.label(class="form-control-label") }}
+                                {{ form.kelancaran(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.tajwid.label(class="form-control-label") }}
+                                {{ form.tajwid(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form.tanggal_setor.label(class="form-control-label") }}
+                        {{ form.tanggal_setor(class="form-control", type="date") }}
+                    </div>
+                    <div class="text-end">
+                        <a href="{{ url_for('akademik.tahfidz_list') }}" class="btn btn-secondary">Batal</a>
+                        {{ form.submit(class="btn bg-gradient-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

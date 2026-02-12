@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                <h6>Daftar Santri</h6>
+                <a href="{{ url_for('master.santri_add') }}" class="btn btn-sm bg-gradient-primary">Tambah Santri</a>
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Santri</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Jenjang/Kelas</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tanggal Lahir</th>
+                                <th class="text-secondary opacity-7"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for santri in santris %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex px-2 py-1">
+                                        <div>
+                                            <img src="https://demos.creative-tim.com/soft-ui-dashboard/assets/img/team-2.jpg" class="avatar avatar-sm me-3" alt="user1" width="48" height="48">
+                                        </div>
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <h6 class="mb-0 text-sm">{{ santri.nama }}</h6>
+                                            <p class="text-xs text-secondary mb-0">{{ santri.nis }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ santri.jenjang }}</p>
+                                    <p class="text-xs text-secondary mb-0">{{ santri.kelas.nama_kelas if santri.kelas else 'Belum ada kelas' }}</p>
+                                </td>
+                                <td class="align-middle text-center text-sm">
+                                    <span class="badge badge-sm bg-gradient-{{ 'success' if santri.status == 'aktif' else 'secondary' }}">{{ santri.status }}</span>
+                                </td>
+                                <td class="align-middle text-center">
+                                    <span class="text-secondary text-xs font-weight-bold">{{ santri.tanggal_lahir.strftime('%d/%m/%Y') }}</span>
+                                </td>
+                                <td class="align-middle">
+                                    <a href="{{ url_for('master.santri_edit', id=santri.id) }}" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Edit santri">
+                                        <i class="fas fa-edit text-info me-2" aria-hidden="true"></i>
+                                    </a>
+                                    <form action="{{ url_for('master.santri_delete', id=santri.id) }}" method="post" class="d-inline ms-2" onsubmit="return confirm('Yakin ingin menghapus?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <button type="submit" class="btn btn-link text-danger text-xs font-weight-bold mb-0 p-0" data-toggle="tooltip" data-original-title="Hapus santri">
+                                            <i class="fas fa-trash text-danger" aria-hidden="true"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

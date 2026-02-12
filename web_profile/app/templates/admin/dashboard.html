@@ -1,0 +1,33 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body">
+                <h5 class="card-title">Total Berita</h5>
+                <p class="card-text display-4">{{ total_berita }}</p>
+                <a href="{{ url_for('admin.berita_list') }}" class="btn btn-light btn-sm">Kelola Berita</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body">
+                <h5 class="card-title">Total Agenda</h5>
+                <p class="card-text display-4">{{ total_agenda }}</p>
+                <a href="{{ url_for('admin.agenda_list') }}" class="btn btn-light btn-sm">Kelola Agenda</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card text-white bg-warning h-100">
+            <div class="card-body">
+                <h5 class="card-title">Total Galeri</h5>
+                <p class="card-text display-4">{{ total_galeri }}</p>
+                <a href="{{ url_for('admin.galeri_list') }}" class="btn btn-light btn-sm">Kelola Galeri</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
