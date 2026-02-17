@@ -6,6 +6,7 @@ from app.models.akademik import Santri, MataPelajaran, Nilai, Absensi, Tahfidz, 
 from app.forms.akademik import NilaiForm, AbsensiForm, TahfidzForm, RaportForm
 from app.decorators import role_required
 from app.services.raport import RaportService
+from app.services.audit_service import log_audit
 try:
     from weasyprint import HTML
 except OSError:
@@ -28,6 +29,7 @@ def nilai_list():
 @bp.route('/nilai/add', methods=['GET', 'POST'])
 @login_required
 @role_required('admin', 'ustadz')
+@log_audit('CREATE', 'Nilai')
 def nilai_add():
     form = NilaiForm()
     
@@ -57,6 +59,7 @@ def nilai_add():
 @bp.route('/nilai/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @role_required('admin', 'ustadz')
+@log_audit('UPDATE', 'Nilai')
 def nilai_edit(id):
     nilai = Nilai.query.get_or_404(id)
     form = NilaiForm(obj=nilai)
@@ -236,8 +239,11 @@ def raport_generate():
             flash('Fitur PDF belum tersedia di server ini (Missing GTK libraries).', 'warning')
             return render_template('akademik/raport_detail.html', title='Detail Raport', data=data)
 
-        html = render_template('akademik/raport_pdf.html', data=data)
+        # For immediate download, we still need to wait, but this structure allows future async expansion.
+        # In a full async implementation, we would return a "Processing" status and poll for completion.
+        # For now, we keep it synchronous but refactored, or we could save to file and serve static.
         
+        html = render_template('akademik/raport_pdf.html', data=data)
         pdf = HTML(string=html).write_pdf()
         
         response = make_response(pdf)
@@ -250,6 +256,7 @@ def raport_generate():
 @bp.route('/raport/input', methods=['GET', 'POST'])
 @login_required
 @role_required('admin', 'ustadz', 'wali_kelas')
+@log_audit('UPDATE', 'Raport')
 def raport_input():
     santri_id = request.args.get('santri_id')
     semester = request.args.get('semester')

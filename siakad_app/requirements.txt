@@ -11,3 +11,4 @@ gunicorn
 weasyprint
 Flask-Limiter
 Flask-Talisman
+Flask-Caching

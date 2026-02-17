@@ -9,3 +9,6 @@ argon2-cffi
 python-dotenv
 gunicorn
 zopfli
+Flask-Limiter
+Flask-Talisman
+Flask-Caching

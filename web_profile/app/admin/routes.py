@@ -3,29 +3,19 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 import os
 import secrets
-from app import db, login
+from app import db, login, limiter
 from app.models import User, Berita, Agenda, Galeri, Pengaturan
 from app.admin.forms import LoginForm, BeritaForm, AgendaForm, GaleriForm, PengaturanForm
+from app.services.image_service import ImageService
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
-
-def save_picture(form_picture, folder):
-    random_hex = secrets.token_hex(8)
-    _, f_ext = os.path.splitext(form_picture.filename)
-    picture_fn = random_hex + f_ext
-    picture_path = os.path.join(current_app.root_path, 'static/uploads', folder, picture_fn)
-    
-    # Ensure directory exists
-    os.makedirs(os.path.dirname(picture_path), exist_ok=True)
-    
-    form_picture.save(picture_path)
-    return url_for('static', filename=f'uploads/{folder}/{picture_fn}')
 
 @login.user_loader
 def load_user(id):
     return User.query.get(int(id))
 
 @bp.route('/login', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('admin.dashboard'))
@@ -67,7 +57,11 @@ def berita_add():
     if form.validate_on_submit():
         gambar_file = "https://picsum.photos/seed/default/800/400"
         if form.gambar.data:
-            gambar_file = save_picture(form.gambar.data, 'berita')
+            try:
+                gambar_file = ImageService.save_picture(form.gambar.data, 'berita')
+            except ValueError as e:
+                flash(str(e), 'danger')
+                return render_template('admin/berita_form.html', form=form, title='Tambah Berita')
             
         berita = Berita(
             judul=form.judul.data,
@@ -91,8 +85,12 @@ def berita_edit(id):
     form = BeritaForm(obj=berita)
     if form.validate_on_submit():
         if form.gambar.data:
-            gambar_file = save_picture(form.gambar.data, 'berita')
-            berita.gambar = gambar_file
+            try:
+                gambar_file = ImageService.save_picture(form.gambar.data, 'berita')
+                berita.gambar = gambar_file
+            except ValueError as e:
+                flash(str(e), 'danger')
+                return render_template('admin/berita_form.html', form=form, title='Edit Berita')
             
         berita.judul = form.judul.data
         berita.slug = form.slug.data

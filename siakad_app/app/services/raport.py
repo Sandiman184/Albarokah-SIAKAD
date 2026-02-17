@@ -9,7 +9,9 @@ class RaportService:
         
         # 1. Nilai Akademik
         # Filter by semester
-        nilai_list = Nilai.query.filter_by(santri_id=santri_id, semester=semester).all()
+        # Optimize N+1 query: Eager load Mapel
+        nilai_list = Nilai.query.options(db.joinedload(Nilai.mapel))\
+            .filter_by(santri_id=santri_id, semester=semester).all()
         
         raport_nilai = []
         for n in nilai_list:

@@ -6,6 +6,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_talisman import Talisman
+from flask_caching import Cache
 from config import Config
 
 # Initialize extensions
@@ -15,6 +16,7 @@ login = LoginManager()
 csrf = CSRFProtect()
 limiter = Limiter(key_func=get_remote_address)
 talisman = Talisman()
+cache = Cache()
 
 login.login_view = 'auth.login'
 login.login_message = 'Silakan login untuk mengakses halaman ini.'
@@ -29,6 +31,7 @@ def create_app(config_class=Config):
     login.init_app(app)
     csrf.init_app(app)
     limiter.init_app(app)
+    cache.init_app(app)
     
     # Configure Talisman (Security Headers)
     # Note: content_security_policy needs careful tuning for external scripts (like FontAwesome, Google Fonts, etc.)
@@ -39,7 +42,7 @@ def create_app(config_class=Config):
         'img-src': ["'self'", 'data:', 'https://ui-avatars.com', 'https://demos.creative-tim.com']
     }
     # Disable force_https in dev/debug mode to avoid issues on localhost
-    talisman.init_app(app, content_security_policy=csp, force_https=not app.debug)
+    talisman.init_app(app, content_security_policy=csp, force_https=not (app.debug or app.testing))
 
     # Logging Configuration
     if not app.debug and not app.testing:
@@ -73,6 +76,12 @@ def create_app(config_class=Config):
 
     from app.routes.keuangan import bp as keuangan_bp
     app.register_blueprint(keuangan_bp)
+
+    from app.routes.audit import bp as audit_bp
+    app.register_blueprint(audit_bp)
+
+    from app.errors import bp as errors_bp
+    app.register_blueprint(errors_bp)
 
     # Import models to ensure they are registered with SQLAlchemy
     # We put this inside create_app or at bottom of file to avoid circular imports

@@ -4,6 +4,9 @@ from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
 from flask_login import LoginManager
+from flask_caching import Cache
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from config import Config
 
 db = SQLAlchemy()
@@ -11,6 +14,9 @@ migrate = Migrate()
 csrf = CSRFProtect()
 talisman = Talisman()
 login = LoginManager()
+cache = Cache()
+limiter = Limiter(key_func=get_remote_address)
+
 login.login_view = 'admin.login'
 login.login_message = 'Silakan login untuk mengakses halaman admin.'
 
@@ -22,6 +28,8 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     csrf.init_app(app)
     login.init_app(app)
+    cache.init_app(app)
+    limiter.init_app(app)
     
     # Configure Talisman (Security Headers)
     csp = {
