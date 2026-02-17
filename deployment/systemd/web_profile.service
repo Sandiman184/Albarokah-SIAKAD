@@ -3,21 +3,21 @@ Description=Gunicorn instance to serve Web Profile
 After=network.target
 
 [Service]
-# User yang menjalankan aplikasi
-User=ubuntu
-# Group=www-data
+# User diganti jadi root (sesuai user login Anda sekarang)
+User=root
+# Group=root
 
-# Direktori kerja aplikasi
-WorkingDirectory=/home/ubuntu/albarokah/web_profile
+# Path diganti jadi /root/...
+WorkingDirectory=/root/Albarokah-SIAKAD/web_profile
 
-# Environment variables
-Environment="PATH=/home/ubuntu/albarokah/web_profile/.venv/bin"
-EnvironmentFile=/home/ubuntu/albarokah/web_profile/.env
+# Path environment diganti jadi /root/...
+Environment="PATH=/root/Albarokah-SIAKAD/web_profile/.venv/bin"
 
-# Perintah menjalankan Gunicorn
-# -w 4: 4 worker processes
-# -b 127.0.0.1:8001: Bind ke localhost port 8001 (Internal)
-ExecStart=/home/ubuntu/albarokah/web_profile/.venv/bin/gunicorn --workers 4 --bind 127.0.0.1:8001 run:app
+# Baris ini DIKOMENTARI (diberi tanda #) agar systemd tidak error baca file
+# EnvironmentFile=/root/Albarokah-SIAKAD/web_profile/.env
+
+# Path ExecStart diganti jadi /root/...
+ExecStart=/root/Albarokah-SIAKAD/web_profile/.venv/bin/gunicorn --workers 4 --bind 127.0.0.1:8001 run:app
 
 [Install]
 WantedBy=multi-user.target

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ title }} - Pondok Pesantren Albarokah</title>
+    <title>{{ title }} - Pondok Pesantren Al-Barokah</title>
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
     <!-- Bootstrap CSS -->
@@ -26,7 +26,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold" href="{{ url_for('main.index') }}">
-                <i class="fas fa-mosque me-2"></i> {{ pengaturan.nama_pesantren if pengaturan else 'PP Albarokah' }}
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" height="40" class="me-2 d-inline-block align-text-top"> Pondok Pesantren Al-Barokah
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
