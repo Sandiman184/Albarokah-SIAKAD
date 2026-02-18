@@ -7,6 +7,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_talisman import Talisman
 from flask_caching import Cache
+from flask_compress import Compress
 from config import Config
 
 # Initialize extensions
@@ -17,6 +18,7 @@ csrf = CSRFProtect()
 limiter = Limiter(key_func=get_remote_address)
 talisman = Talisman()
 cache = Cache()
+compress = Compress()
 
 login.login_view = 'auth.login'
 login.login_message = 'Silakan login untuk mengakses halaman ini.'
@@ -32,6 +34,7 @@ def create_app(config_class=Config):
     csrf.init_app(app)
     limiter.init_app(app)
     cache.init_app(app)
+    compress.init_app(app)
     
     # Configure Talisman (Security Headers)
     # Note: content_security_policy needs careful tuning for external scripts (like FontAwesome, Google Fonts, etc.)

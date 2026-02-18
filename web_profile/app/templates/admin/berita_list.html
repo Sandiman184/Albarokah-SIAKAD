@@ -12,6 +12,8 @@
             <thead class="bg-light">
                 <tr>
                     <th>Judul</th>
+                    <th>Status</th>
+                    <th>Kategori</th>
                     <th>Penulis</th>
                     <th>Tanggal</th>
                     <th>Aksi</th>
@@ -21,6 +23,14 @@
                 {% for berita in beritas %}
                 <tr>
                     <td>{{ berita.judul }}</td>
+                    <td>
+                        {% if berita.status == 'published' %}
+                            <span class="badge bg-success">Published</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Draft</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge bg-secondary">{{ berita.kategori|capitalize }}</span></td>
                     <td>{{ berita.penulis }}</td>
                     <td>{{ berita.tanggal.strftime('%d/%m/%Y') }}</td>
                     <td>

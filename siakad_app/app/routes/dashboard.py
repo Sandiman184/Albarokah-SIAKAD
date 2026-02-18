@@ -9,7 +9,7 @@ from app.models.akademik import Santri, Pengajar, Kelas, MataPelajaran
 @bp.route('/')
 @bp.route('/dashboard')
 @login_required
-@cache.cached(timeout=60, key_prefix=lambda: f"dashboard_stats_{current_user.id}")
+@cache.cached(timeout=60, key_prefix='dashboard_stats_global')
 def index():
     total_santri = Santri.query.count()
     total_pengajar = Pengajar.query.count()

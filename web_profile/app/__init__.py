@@ -7,6 +7,8 @@ from flask_login import LoginManager
 from flask_caching import Cache
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_compress import Compress
+from flask_mail import Mail
 from config import Config
 
 db = SQLAlchemy()
@@ -16,6 +18,8 @@ talisman = Talisman()
 login = LoginManager()
 cache = Cache()
 limiter = Limiter(key_func=get_remote_address)
+compress = Compress()
+mail = Mail()
 
 login.login_view = 'admin.login'
 login.login_message = 'Silakan login untuk mengakses halaman admin.'
@@ -30,6 +34,8 @@ def create_app(config_class=Config):
     login.init_app(app)
     cache.init_app(app)
     limiter.init_app(app)
+    compress.init_app(app)
+    mail.init_app(app)
     
     # Configure Talisman (Security Headers)
     csp = {
@@ -37,7 +43,8 @@ def create_app(config_class=Config):
         'script-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://kit.fontawesome.com'],
         'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdn.jsdelivr.net', 'https://cdnjs.cloudflare.com'],
         'img-src': ["'self'", 'data:', 'https://loremflickr.com', 'https://source.unsplash.com', 'https://images.unsplash.com', 'https://placehold.co', 'https://picsum.photos', 'https://fastly.picsum.photos', 'https://ui-avatars.com'],
-        'font-src': ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com']
+        'font-src': ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
+        'frame-src': ["'self'", 'https://www.google.com', 'https://maps.google.com']
     }
     # Relaxing security policies to allow external images (fix ORB/CORB issues)
     talisman.init_app(
@@ -45,7 +52,7 @@ def create_app(config_class=Config):
         content_security_policy=csp, 
         force_https=not app.debug,
         permissions_policy={}, 
-        x_content_type_options=None,
+        x_content_type_options='nosniff',
         referrer_policy='no-referrer-when-downgrade',
         # Disable COEP/COOP to prevent ORB blocking external images
         feature_policy=None,

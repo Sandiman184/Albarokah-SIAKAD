@@ -12,3 +12,5 @@ zopfli
 Flask-Limiter
 Flask-Talisman
 Flask-Caching
+Flask-Compress
+Pillow

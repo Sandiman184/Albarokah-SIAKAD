@@ -1,0 +1,84 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Activity Logs</h1>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Riwayat Aktivitas Sistem</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th width="15%">Waktu</th>
+                        <th width="15%">User</th>
+                        <th width="10%">Action</th>
+                        <th width="10%">Target</th>
+                        <th>Details</th>
+                        <th width="10%">IP Address</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs.items %}
+                    <tr>
+                        <td>{{ log.timestamp.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                        <td>
+                            {% if log.user %}
+                            {{ log.user.username }}
+                            {% else %}
+                            <span class="text-muted">Unknown</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if log.action == 'CREATE' %}<span class="badge bg-success">CREATE</span>
+                            {% elif log.action == 'UPDATE' %}<span class="badge bg-warning text-dark">UPDATE</span>
+                            {% elif log.action == 'DELETE' %}<span class="badge bg-danger">DELETE</span>
+                            {% elif log.action == 'LOGIN' %}<span class="badge bg-info">LOGIN</span>
+                            {% elif log.action == 'LOGOUT' %}<span class="badge bg-secondary">LOGOUT</span>
+                            {% else %}<span class="badge bg-dark">{{ log.action }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ log.target }}</td>
+                        <td>{{ log.details }}</td>
+                        <td class="small font-monospace">{{ log.ip_address }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if logs.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.activity_logs', page=logs.prev_num) }}">Previous</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Previous</span>
+                </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">{{ logs.page }} of {{ logs.pages }}</span>
+                </li>
+
+                {% if logs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('admin.activity_logs', page=logs.next_num) }}">Next</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">Next</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}

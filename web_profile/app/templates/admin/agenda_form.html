@@ -30,7 +30,7 @@
                     </div>
                     <div class="mb-3">
                         {{ form.deskripsi.label(class="form-label") }}
-                        {{ form.deskripsi(class="form-control", rows="5") }}
+                        {{ form.deskripsi(class="form-control wysiwyg-editor", rows="5") }}
                     </div>
                     <div class="d-flex justify-content-end">
                         <a href="{{ url_for('admin.agenda_list') }}" class="btn btn-secondary me-2">Batal</a>

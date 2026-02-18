@@ -12,55 +12,52 @@
 
 <section class="py-5">
     <div class="container">
+        {% for program in programs %}
         <div class="row mb-5 align-items-center">
+            {% if loop.index % 2 != 0 %}
             <div class="col-md-5 mb-4">
-                <img src="https://picsum.photos/seed/tahfidz/600/400" class="img-fluid rounded shadow" alt="Tahfidz">
+                {% if program.gambar %}
+                <img src="{{ program.gambar }}" class="img-fluid rounded shadow" alt="{{ program.nama }}">
+                {% else %}
+                <img src="https://picsum.photos/seed/{{ program.id }}/600/400" class="img-fluid rounded shadow" alt="{{ program.nama }}">
+                {% endif %}
             </div>
             <div class="col-md-7">
-                <span class="badge bg-success mb-2">Unggulan</span>
-                <h3 class="fw-bold text-success mb-3">1. Program Tahfidz Al-Qur'an</h3>
-                <p>Program khusus menghafal Al-Qur'an 30 juz dengan target penyelesaian 2 tahun untuk kelas khusus (Takhassus) dan 3-6 tahun untuk program reguler.</p>
-                <ul class="list-unstyled">
-                    <li><i class="fas fa-check text-success me-2"></i> Metode Talaqqi & Murajaah Intensif</li>
-                    <li><i class="fas fa-check text-success me-2"></i> Sanad Qira'ah Bersambung</li>
-                    <li><i class="fas fa-check text-success me-2"></i> Ujian Tasmi' per Juz</li>
-                </ul>
+                <span class="badge bg-success mb-2">Program Unggulan</span>
+                <h3 class="fw-bold text-success mb-3">{{ loop.index }}. {{ program.nama }}</h3>
+                <p>{{ program.deskripsi }}</p>
+                {% for child in program.children.order_by('urutan') %}
+                <div class="mt-4">
+                    <h5 class="fw-bold"><i class="{{ child.icon }} text-success me-2"></i>{{ child.nama }}</h5>
+                    <p class="text-muted ms-4">{{ child.deskripsi }}</p>
+                </div>
+                {% endfor %}
             </div>
-        </div>
-        
-        <hr class="my-5">
-
-        <div class="row mb-5 align-items-center">
+            {% else %}
             <div class="col-md-7 order-md-2">
-                <h3 class="fw-bold text-success mb-3">2. Madrasah Diniyah Salafiyah</h3>
-                <p>Mengkaji kitab-kitab kuning (turats) warisan ulama salaf dalam berbagai disiplin ilmu seperti Fiqih, Nahwu, Shorof, Tauhid, Akhlaq, dan Tarikh.</p>
-                <ul class="list-unstyled">
-                    <li><i class="fas fa-check text-success me-2"></i> Kajian Kitab Kuning Berjenjang</li>
-                    <li><i class="fas fa-check text-success me-2"></i> Bahtsul Masail</li>
-                    <li><i class="fas fa-check text-success me-2"></i> Praktek Ibadah & Khitobah</li>
-                </ul>
+                <h3 class="fw-bold text-success mb-3">{{ loop.index }}. {{ program.nama }}</h3>
+                <p>{{ program.deskripsi }}</p>
+                {% for child in program.children.order_by('urutan') %}
+                <div class="mt-4">
+                    <h5 class="fw-bold"><i class="{{ child.icon }} text-success me-2"></i>{{ child.nama }}</h5>
+                    <p class="text-muted ms-4">{{ child.deskripsi }}</p>
+                </div>
+                {% endfor %}
             </div>
             <div class="col-md-5 order-md-1 mb-4">
-                <img src="https://picsum.photos/seed/madrasah/600/400" class="img-fluid rounded shadow" alt="Madrasah">
+                {% if program.gambar %}
+                <img src="{{ program.gambar }}" class="img-fluid rounded shadow" alt="{{ program.nama }}">
+                {% else %}
+                <img src="https://picsum.photos/seed/{{ program.id }}/600/400" class="img-fluid rounded shadow" alt="{{ program.nama }}">
+                {% endif %}
             </div>
+            {% endif %}
         </div>
-
+        
+        {% if not loop.last %}
         <hr class="my-5">
-
-        <div class="row mb-5 align-items-center">
-            <div class="col-md-5 mb-4">
-                <img src="https://picsum.photos/seed/sekolah/600/400" class="img-fluid rounded shadow" alt="Sekolah">
-            </div>
-            <div class="col-md-7">
-                <h3 class="fw-bold text-success mb-3">3. Pendidikan Formal (SMP & SMA)</h3>
-                <p>Pendidikan formal tingkat menengah (SMP) dan atas (SMA) yang terakreditasi dan mengikuti kurikulum nasional, dipadukan dengan nilai-nilai kepesantrenan.</p>
-                <ul class="list-unstyled">
-                    <li><i class="fas fa-check text-success me-2"></i> Kurikulum Merdeka Belajar</li>
-                    <li><i class="fas fa-check text-success me-2"></i> Ekstrakurikuler (Pramuka, Olahraga, Seni)</li>
-                    <li><i class="fas fa-check text-success me-2"></i> Laboratorium Komputer & IPA</li>
-                </ul>
-            </div>
-        </div>
+        {% endif %}
+        {% endfor %}
     </div>
 </section>
 {% endblock %}

@@ -1,0 +1,62 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Manajemen User</h1>
+    <a href="{{ url_for('admin.user_add') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+        <i class="fas fa-plus fa-sm text-white-50"></i> Tambah User
+    </a>
+</div>
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Daftar User Admin</h6>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Created At</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            {{ user.username }}
+                            {% if user.id == current_user.id %}
+                            <span class="badge bg-info">Anda</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if user.role == 'superadmin' %}
+                            <span class="badge bg-danger">Super Admin</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Admin</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.created_at.strftime('%d/%m/%Y %H:%M') if user.created_at else '-' }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.user_edit', id=user.id) }}" class="btn btn-warning btn-sm btn-circle">
+                                <i class="fas fa-pencil-alt"></i>
+                            </a>
+                            {% if user.id != current_user.id %}
+                            <form action="{{ url_for('admin.user_delete', id=user.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus user ini?');">
+                                <button type="submit" class="btn btn-danger btn-sm btn-circle">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

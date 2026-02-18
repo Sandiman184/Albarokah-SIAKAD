@@ -1,5 +1,6 @@
 import os
 import secrets
+from PIL import Image
 from flask import current_app, url_for
 from werkzeug.utils import secure_filename
 
@@ -56,6 +57,19 @@ class ImageService:
         os.makedirs(upload_folder, exist_ok=True)
         
         picture_path = os.path.join(upload_folder, picture_fn)
-        form_picture.save(picture_path)
+        
+        # Optimize and Save Image
+        try:
+            img = Image.open(form_picture)
+            # Resize if width > 1200px
+            if img.width > 1200:
+                output_size = (1200, int(1200 * img.height / img.width))
+                img.thumbnail(output_size)
+            
+            # Save with optimization (strip metadata)
+            img.save(picture_path, optimize=True, quality=85)
+        except Exception as e:
+            print(f"Image processing failed: {e}")
+            raise ValueError("Failed to process image. The file might be corrupted or invalid.")
         
         return url_for('static', filename=f'uploads/{folder}/{picture_fn}')

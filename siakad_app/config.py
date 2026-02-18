@@ -23,6 +23,9 @@ class Config:
     # Caching Configuration
     CACHE_TYPE = os.environ.get('CACHE_TYPE') or 'SimpleCache' # Use RedisCache in production
     CACHE_DEFAULT_TIMEOUT = 300
+    
+    # Compression Configuration
+    COMPRESS_ALGORITHM = 'gzip'
 
 class DevelopmentConfig(Config):
     DEBUG = True

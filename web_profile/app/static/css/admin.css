@@ -1,0 +1,266 @@
+:root {
+    --primary-color: #043927;
+    --secondary-color: #064e36;
+    --accent-color: #D4AF37;
+    --text-light: #f8f9fa;
+    --bg-light: #f4f6f9;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background-color: var(--bg-light);
+    color: #444;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+/* Sidebar Styling */
+#sidebar {
+    min-width: 260px;
+    max-width: 260px;
+    min-height: 100vh;
+    background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: #fff;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+    z-index: 1000;
+}
+
+#sidebar.active {
+    margin-left: -260px;
+}
+
+.sidebar-header {
+    padding: 25px 20px;
+    background: rgba(0,0,0,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.sidebar-brand {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--accent-color);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-brand:hover {
+    color: #fff;
+}
+
+.components {
+    padding: 20px 0;
+}
+
+.components li a {
+    padding: 12px 25px;
+    display: flex;
+    align-items: center;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-weight: 600;
+    transition: 0.3s;
+    border-left: 4px solid transparent;
+}
+
+.components li a:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.05);
+    padding-left: 30px;
+}
+
+.components li.active > a {
+    color: #fff;
+    background: rgba(212, 175, 55, 0.15);
+    border-left: 4px solid var(--accent-color);
+}
+
+.components li a i {
+    margin-right: 15px;
+    width: 20px;
+    text-align: center;
+    color: var(--accent-color);
+}
+
+.sidebar-heading {
+    padding: 15px 25px 10px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.4);
+    font-weight: 700;
+}
+
+/* Content Styling */
+#content {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-light);
+    position: relative;
+    z-index: 1;
+}
+
+.navbar-top {
+    background-color: #fff !important;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+    padding: 15px 30px;
+    border-bottom: 1px solid #eee;
+}
+
+.navbar-toggler-custom {
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* Card Styling */
+.card {
+    border: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    border-radius: 10px;
+    background: #fff;
+    margin-bottom: 20px;
+    transition: transform 0.2s;
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    padding: 20px 25px;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+/* Button Styling */
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+}
+
+.btn-gold {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #fff;
+}
+
+.btn-gold:hover {
+    background-color: #bfa34b;
+    color: #fff;
+}
+
+/* Footer Styling */
+footer {
+    background-color: var(--primary-color);
+    padding: 20px;
+    text-align: center;
+    color: rgba(255,255,255,0.8);
+    margin-top: auto;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    width: 100%;
+    position: relative;
+    z-index: 9999;
+}
+
+footer .copyright {
+    color: rgba(255,255,255,0.8);
+}
+
+/* Summernote Customization */
+.note-editor .note-toolbar {
+    background: #f8f9fa;
+    border-bottom: 1px solid #ced4da;
+    z-index: 50;
+}
+
+.note-editor.note-airframe, .note-editor.note-frame {
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.note-editor .note-statusbar {
+    background-color: #f8f9fa;
+    border-top: 1px solid #ced4da;
+}
+
+.note-editor .note-editable {
+    background-color: #fff !important;
+    color: #333 !important;
+    font-family: 'Open Sans', sans-serif !important;
+    font-size: 1.1rem !important;
+    line-height: 1.8 !important;
+    min-height: 300px;
+    padding: 20px !important;
+}
+
+.note-editor .note-editable p {
+    margin-top: 0 !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.note-editor .note-editable h1, 
+.note-editor .note-editable h2, 
+.note-editor .note-editable h3, 
+.note-editor .note-editable h4, 
+.note-editor .note-editable h5, 
+.note-editor .note-editable h6 {
+    font-family: 'Playfair Display', serif !important;
+    margin-top: 2.5rem !important;
+    margin-bottom: 1rem !important;
+    font-weight: 700 !important;
+    line-height: 1.3 !important;
+    color: #043927 !important;
+}
+
+.note-editor .note-editable ul, 
+.note-editor .note-editable ol {
+    padding-left: 2rem !important;
+    margin-bottom: 1rem !important;
+    list-style-position: outside !important;
+}
+
+.note-editor .note-editable ul li {
+    list-style-type: disc !important;
+}
+
+.note-editor .note-editable ol li {
+    list-style-type: decimal !important;
+}
+
+.note-editor .note-editable img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+.note-editor .note-editable table {
+    width: 100% !important;
+    margin-bottom: 1rem !important;
+    border-collapse: collapse !important;
+}
+
+.note-editor .note-editable table td, 
+.note-editor .note-editable table th {
+    border: 1px solid #dee2e6 !important;
+    padding: 0.75rem !important;
+}
+
+.note-editor .dropdown-toggle::after {
+    display: none;
+}

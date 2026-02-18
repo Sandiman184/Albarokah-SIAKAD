@@ -1,0 +1,17 @@
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../vendor/fonts/opensans/opensans-regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 700;
+  src: url('../vendor/fonts/opensans/opensans-bold.woff2') format('woff2');
+}
+
+/* Base Font Setting */
+body {
+    font-family: 'Open Sans', sans-serif !important;
+}

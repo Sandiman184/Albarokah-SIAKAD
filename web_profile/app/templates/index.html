@@ -2,61 +2,93 @@
 
 {% block content %}
 <!-- Hero Section -->
-<section class="hero-section bg-success text-white text-center py-5 mb-5" style="height: 80vh; display: flex; align-items: center; justify-content: center;">
-    <div class="container">
-        <h1 class="display-3 fw-bold mb-4">Selamat Datang di Pondok Pesantren Albarokah</h1>
-        <p class="lead mb-4">Mewujudkan Generasi Qur'ani yang Berakhlak Mulia, Cerdas, dan Mandiri</p>
-        <a href="{{ url_for('main.ppdb') }}" class="btn btn-light btn-lg rounded-pill px-5 fw-bold text-success">Daftar Sekarang</a>
+<section class="hero-section text-white">
+    <div class="container hero-content text-center">
+        <!-- Updated Typography Structure -->
+        <div class="animate-fade-in mb-5">
+            <span class="hero-line-1">{{ pengaturan.hero_title_1 if pengaturan and pengaturan.hero_title_1 else 'Selamat Datang di' }}</span>
+            <span class="hero-line-2">{{ pengaturan.hero_title_2 if pengaturan and pengaturan.hero_title_2 else 'Pondok Pesantren Al Qur\'an' }}</span>
+            <span class="hero-line-3">{{ pengaturan.hero_title_3 if pengaturan and pengaturan.hero_title_3 else 'Al-Barokah' }}</span>
+        </div>
+        
+        <!-- Slogan kept for context but styled lighter -->
+        <p class="lead mb-5 animate-fade-in-up" style="color: #f0f0f0; letter-spacing: 1px;">{{ pengaturan.hero_subtitle if pengaturan and pengaturan.hero_subtitle else 'Mewujudkan Generasi Qur\'ani yang Berakhlak Mulia, Cerdas, dan Mandiri' }}</p>
+        
+        <div class="d-flex justify-content-center gap-3 animate-fade-in-up">
+            <a href="{{ url_for('main.ppdb') }}" class="btn btn-gold btn-lg rounded-pill px-5 shadow">Daftar Sekarang</a>
+            <a href="{{ url_for('main.profil') }}" class="btn btn-outline-light btn-lg rounded-pill px-5 fw-bold">Profil Pesantren</a>
+        </div>
     </div>
 </section>
 
 <!-- Features Section -->
 <section class="py-5">
-    <div class="container">
-        <div class="row text-center">
-            <div class="col-md-4 mb-4">
-                <div class="card border-0 shadow-sm h-100 p-4">
-                    <div class="card-body">
-                        <i class="fas fa-quran fa-3x text-success mb-3"></i>
-                        <h4 class="fw-bold mb-3">Tahfidz Al-Qur'an</h4>
-                        <p class="text-muted">Program unggulan menghafal Al-Qur'an dengan metode mutqin dan sanad bersambung.</p>
+    <div class="container py-5">
+        <div class="section-title">
+            <h2>Program Unggulan</h2>
+            <p class="text-muted">Kami menyediakan berbagai program pendidikan berkualitas</p>
+        </div>
+        <div class="row justify-content-center">
+            {% for program in programs %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 p-4 shadow-sm border-0">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-4 text-success">
+                            <i class="{{ program.icon }} fa-3x"></i>
+                        </div>
+                        <h4 class="fw-bold mb-3">{{ program.nama }}</h4>
+                        <p class="text-muted mb-4">{{ program.deskripsi }}</p>
+                        
+                        <div class="row text-start mt-4">
+                            {% for child in program.children.order_by('urutan') %}
+                            <div class="col-12 mb-3">
+                                <div class="d-flex align-items-start">
+                                    <div class="me-3 mt-1">
+                                        <span class="badge bg-success rounded-circle p-2"><i class="{{ child.icon }} fa-fw"></i></span>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold mb-1">{{ child.nama }}</h6>
+                                        <small class="text-muted">{{ child.deskripsi }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 mb-4">
-                <div class="card border-0 shadow-sm h-100 p-4">
-                    <div class="card-body">
-                        <i class="fas fa-book-reader fa-3x text-success mb-3"></i>
-                        <h4 class="fw-bold mb-3">Pendidikan Diniyah</h4>
-                        <p class="text-muted">Kurikulum pesantren salafiyah yang mengajarkan kitab kuning dan adab islami.</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card border-0 shadow-sm h-100 p-4">
-                    <div class="card-body">
-                        <i class="fas fa-laptop-code fa-3x text-success mb-3"></i>
-                        <h4 class="fw-bold mb-3">Pendidikan Formal</h4>
-                        <p class="text-muted">Sekolah formal (SMP & SMA) terakreditasi dengan fasilitas modern dan berbasis IT.</p>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </section>
 
 <!-- About Preview -->
-<section class="bg-light py-5">
-    <div class="container">
+<section class="bg-light-pattern py-5">
+    <div class="container py-5">
         <div class="row align-items-center">
-            <div class="col-md-6 mb-4">
-                <img src="https://picsum.photos/seed/about/600/400" class="img-fluid rounded shadow" alt="Tentang Kami">
+            <div class="col-lg-6 mb-4 mb-lg-0">
+                <div class="position-relative">
+                    <img src="{{ pengaturan.sejarah_gambar if pengaturan and pengaturan.sejarah_gambar else 'https://picsum.photos/seed/about/600/400' }}" class="img-fluid rounded-4 shadow-lg" alt="Tentang Kami">
+                    <div class="position-absolute bottom-0 end-0 bg-white p-4 rounded-top-4 shadow d-none d-md-block" style="max-width: 250px; margin-right: -30px; margin-bottom: -30px;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-users fa-2x text-gold me-3"></i>
+                            <div>
+                                <h5 class="fw-bold m-0">1000+</h5>
+                                <small class="text-muted">Santri & Alumni</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-6 mb-4">
-                <h2 class="fw-bold mb-3 text-success">Tentang Albarokah</h2>
-                <p class="lead text-muted">Pondok Pesantren Albarokah berdiri sejak tahun 2010 dengan visi mencetak kader ulama yang intelek.</p>
-                <p class="text-muted">Kami memadukan pendidikan pesantren tradisional dengan pendidikan modern untuk menjawab tantangan zaman tanpa meninggalkan akar tradisi keislaman.</p>
-                <a href="{{ url_for('main.profil') }}" class="btn btn-outline-success rounded-pill px-4 mt-3">Selengkapnya</a>
+            <div class="col-lg-6 ps-lg-5">
+                <h2 class="fw-bold mb-4" style="color: var(--primary-color);">Tentang {{ pengaturan.hero_title_3 if pengaturan and pengaturan.hero_title_3 else 'Al-Barokah' }}</h2>
+                <div class="lead text-muted mb-4">
+                    {{ pengaturan.deskripsi_singkat if pengaturan and pengaturan.deskripsi_singkat else 'Pondok Pesantren Al Qur\'an Al-Barokah berdiri sejak tahun 2010 dengan visi mencetak kader ulama yang intelek dan berwawasan luas.' }}
+                </div>
+                <div class="text-muted text-justify mb-4">
+                    {{ pengaturan.sejarah[:300] | striptags if pengaturan and pengaturan.sejarah else 'Kami memadukan pendidikan pesantren tradisional dengan pendidikan modern untuk menjawab tantangan zaman tanpa meninggalkan akar tradisi keislaman. Dengan fasilitas yang memadai dan lingkungan yang asri, kami berkomitmen menciptakan suasana belajar yang kondusif.' }}...
+                </div>
+                <a href="{{ url_for('main.profil') }}" class="btn btn-primary-custom rounded-pill px-5">Selengkapnya <i class="fas fa-arrow-right ms-2"></i></a>
             </div>
         </div>
     </div>
@@ -64,30 +96,83 @@
 
 <!-- News Preview -->
 <section class="py-5">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="fw-bold text-success">Berita & Agenda Terbaru</h2>
+    <div class="container py-5">
+        <div class="section-title">
+            <h2>Berita & Agenda</h2>
             <p class="text-muted">Informasi terkini seputar kegiatan pondok pesantren</p>
         </div>
         <div class="row">
+            <!-- Berita Section -->
             {% for berita in beritas %}
             <div class="col-md-4 mb-4">
-                <div class="card border-0 shadow-sm h-100">
-                    <img src="{{ berita.gambar }}" class="card-img-top" alt="{{ berita.judul }}" style="height: 250px; object-fit: cover;">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="position-relative">
+                        <img src="{{ berita.gambar }}" class="card-img-top" alt="{{ berita.judul }}" style="height: 250px; object-fit: cover;">
+                        <div class="position-absolute top-0 end-0 bg-gold text-primary px-3 py-1 m-2 rounded-pill small fw-bold">
+                            {{ berita.tanggal.strftime('%d %b %Y') }}
+                        </div>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title fw-bold">{{ berita.judul }}</h5>
-                        <p class="card-text text-muted small">{{ berita.tanggal.strftime('%d %B %Y') }}</p>
-                        <p class="card-text">{{ berita.konten[:100] }}...</p>
-                        <a href="{{ url_for('main.berita_detail', slug=berita.slug) }}" class="text-success text-decoration-none fw-bold">Baca Selengkapnya <i class="fas fa-arrow-right ms-1"></i></a>
+                        <h5 class="card-title fw-bold mb-3"><a href="{{ url_for('main.berita_detail', slug=berita.slug) }}" class="text-dark text-decoration-none">{{ berita.judul }}</a></h5>
+                        <p class="card-text text-muted">{{ berita.konten[:100] | striptags }}...</p>
+                    </div>
+                    <div class="card-footer bg-white border-0 pb-4 pt-0">
+                        <a href="{{ url_for('main.berita_detail', slug=berita.slug) }}" class="text-gold fw-bold text-decoration-none">Baca Selengkapnya <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="text-muted">
+                    <i class="far fa-newspaper fa-3x mb-3"></i>
+                    <p>Belum ada berita terbaru saat ini.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Agenda Section -->
+        <div class="row mt-5">
+            <div class="col-12 text-center mb-4">
+                <h3 class="fw-bold section-subtitle">Agenda Kegiatan</h3>
+            </div>
+            {% for agenda in agendas %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-0 bg-light">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-success text-white rounded p-2 text-center me-3" style="min-width: 60px;">
+                                <h4 class="m-0 fw-bold">{{ agenda.tanggal_mulai.strftime('%d') }}</h4>
+                                <small class="text-uppercase">{{ agenda.tanggal_mulai.strftime('%b') }}</small>
+                            </div>
+                            <div>
+                                <h5 class="fw-bold mb-1">{{ agenda.nama_kegiatan }}</h5>
+                                <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i> {{ agenda.lokasi }}</small>
+                            </div>
+                        </div>
+                        <p class="card-text text-muted small">{{ agenda.deskripsi[:100] }}...</p>
                     </div>
                 </div>
             </div>
             {% else %}
             <div class="col-12 text-center">
-                <p class="text-muted">Belum ada berita terbaru.</p>
+                <p class="text-muted">Belum ada agenda mendatang.</p>
             </div>
             {% endfor %}
         </div>
+        
+        <div class="text-center mt-5">
+            <a href="{{ url_for('main.berita') }}" class="btn btn-outline-success rounded-pill px-4">Lihat Semua Berita & Agenda</a>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-gold text-primary text-center">
+    <div class="container">
+        <h2 class="fw-bold mb-3 text-dark">Mari Bergabung Bersama Kami</h2>
+        <p class="lead mb-4 text-dark">Pendaftaran Santri Baru Tahun Ajaran 2026/2027 Telah Dibuka</p>
+        <a href="{{ url_for('main.ppdb') }}" class="btn btn-primary-custom btn-lg rounded-pill px-5 fw-bold shadow">Daftar Sekarang</a>
     </div>
 </section>
 {% endblock %}

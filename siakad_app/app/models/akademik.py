@@ -13,8 +13,8 @@ class Santri(db.Model):
     status = db.Column(db.String(20), default='aktif') # aktif, lulus, keluar
     jenjang = db.Column(db.String(20)) # SD, SMP, SMA
     
-    kelas_id = db.Column(db.Integer, db.ForeignKey('kelas.id'))
-    wali_user_id = db.Column(db.Integer, db.ForeignKey('users.id')) # Akun ortu
+    kelas_id = db.Column(db.Integer, db.ForeignKey('kelas.id'), index=True)
+    wali_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True) # Akun ortu
     
     # Relations
     nilai = db.relationship('Nilai', backref='santri', lazy='dynamic')
@@ -56,8 +56,8 @@ class Nilai(db.Model):
     __tablename__ = 'nilai'
     
     id = db.Column(db.Integer, primary_key=True)
-    santri_id = db.Column(db.Integer, db.ForeignKey('santri.id'))
-    mapel_id = db.Column(db.Integer, db.ForeignKey('mata_pelajaran.id'))
+    santri_id = db.Column(db.Integer, db.ForeignKey('santri.id'), index=True)
+    mapel_id = db.Column(db.Integer, db.ForeignKey('mata_pelajaran.id'), index=True)
     semester = db.Column(db.String(20)) # Ganjil/Genap 2023/2024
     
     nilai_harian = db.Column(db.Float, default=0)
@@ -82,8 +82,8 @@ class Absensi(db.Model):
     __tablename__ = 'absensi'
     
     id = db.Column(db.Integer, primary_key=True)
-    santri_id = db.Column(db.Integer, db.ForeignKey('santri.id'))
-    tanggal = db.Column(db.Date, default=datetime.utcnow)
+    santri_id = db.Column(db.Integer, db.ForeignKey('santri.id'), index=True)
+    tanggal = db.Column(db.Date, default=datetime.utcnow, index=True)
     status = db.Column(db.String(10)) # Hadir, Izin, Sakit, Alpha
 
 class Raport(db.Model):

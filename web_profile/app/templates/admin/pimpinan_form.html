@@ -1,0 +1,41 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{{ title }}</h2>
+    <a href="{{ url_for('admin.pimpinan_list') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Kembali</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="POST" action="" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.nama.label(class="form-label") }}
+                {{ form.nama(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.jabatan.label(class="form-label") }}
+                {{ form.jabatan(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.urutan.label(class="form-label") }}
+                {{ form.urutan(class="form-control", type="number") }}
+                <div class="form-text">Angka lebih kecil tampil lebih awal.</div>
+            </div>
+            <div class="mb-3">
+                {{ form.gambar.label(class="form-label") }}
+                {{ form.gambar(class="form-control") }}
+                {% if form.gambar.data and form.gambar.data is string %}
+                    <div class="mt-2">
+                        <img src="{{ form.gambar.data }}" alt="Current Image" width="100" class="rounded">
+                    </div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

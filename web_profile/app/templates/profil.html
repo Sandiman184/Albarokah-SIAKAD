@@ -5,7 +5,7 @@
     <div class="container text-center">
         <h1 class="fw-bold mb-4">Profil Pesantren</h1>
         <p class="lead text-muted mx-auto" style="max-width: 700px;">
-            Mengenal lebih dekat Pondok Pesantren Albarokah, sejarah, visi misi, dan struktur organisasi.
+            Mengenal lebih dekat Pondok Pesantren Al Qur'an Al-Barokah, sejarah, visi misi, dan struktur organisasi.
         </p>
     </div>
 </section>
@@ -15,14 +15,17 @@
         <!-- Sejarah -->
         <div class="row mb-5 align-items-center">
             <div class="col-md-6 order-md-2">
-                <img src="https://picsum.photos/seed/sejarah/600/400" class="img-fluid rounded shadow" alt="Sejarah">
+                <img src="{{ pengaturan.sejarah_gambar if pengaturan.sejarah_gambar else 'https://picsum.photos/seed/sejarah/600/400' }}" class="img-fluid rounded shadow" alt="Sejarah">
             </div>
             <div class="col-md-6 order-md-1">
                 <h3 class="fw-bold text-success mb-3">Sejarah Singkat</h3>
-                <p>Pondok Pesantren Albarokah didirikan pada tahun 2010 oleh KH. Ahmad Dahlan dengan cita-cita mulia untuk mendidik generasi muda Islam yang berilmu, beramal, dan bertaqwa. Berawal dari sebuah majelis taklim kecil di pinggiran kota Yogyakarta, kini Albarokah telah berkembang menjadi lembaga pendidikan Islam terpadu yang menaungi ratusan santri dari berbagai daerah.</p>
-                <p>Perjalanan panjang selama lebih dari satu dekade ini penuh dengan dinamika dan tantangan, namun dengan semangat keikhlasan dan dukungan masyarakat, Albarokah terus berkomitmen untuk memberikan layanan pendidikan terbaik.</p>
+                <div class="text-muted">
+                    {{ pengaturan.sejarah | safe }}
+                </div>
             </div>
         </div>
+
+        <hr class="my-5">
 
         <div class="row mb-5">
             <div class="col-md-6 order-md-2 mb-4">
@@ -30,30 +33,28 @@
                     <div class="card-body p-5">
                         <h3 class="fw-bold mb-4"><i class="fas fa-bullseye me-2"></i> Visi & Misi</h3>
                         <h5 class="fw-bold">Visi:</h5>
-                        <p class="mb-4">"Menjadi pusat pendidikan Islam unggulan yang mencetak generasi Qur'ani, Berakhlak Mulia, Cerdas, dan Mandiri."</p>
+                        <div class="mb-4">
+                            {{ pengaturan.visi | safe }}
+                        </div>
                         <h5 class="fw-bold">Misi:</h5>
-                        <ul class="mb-0">
-                            <li>Menyelenggarakan pendidikan tahfidz Al-Qur'an yang berkualitas.</li>
-                            <li>Mengintegrasikan kurikulum pesantren dan sekolah formal.</li>
-                            <li>Membekali santri dengan life skill dan teknologi.</li>
-                            <li>Mengembangkan karakter kepemimpinan dan kemandirian.</li>
-                        </ul>
+                        <div>
+                            {{ pengaturan.misi | safe }}
+                        </div>
                     </div>
                 </div>
             </div>
             <div class="col-md-6 order-md-1">
-                <h3 class="fw-bold text-success mb-3">Pimpinan Pesantren</h3>
-                <div class="row text-center mt-4">
-                    <div class="col-md-6 mb-4">
-                        <img src="https://ui-avatars.com/api/?name=KH+Ahmad+Dahlan&size=200" class="rounded-circle mb-3 shadow-sm" alt="Kyai">
-                        <h5 class="fw-bold">KH. Ahmad Dahlan</h5>
-                        <p class="text-muted small">Pengasuh Pondok</p>
+                <h3 class="fw-bold text-success mb-4">Pimpinan Pesantren</h3>
+                <div class="row text-center justify-content-center mt-4">
+                    {% for p in pimpinan %}
+                    <div class="col-sm-6 col-md-6 mb-4">
+                        <div class="h-100">
+                            <img src="{{ p.gambar }}" class="rounded-circle mb-3 shadow-sm" alt="{{ p.nama }}" width="180" height="180" style="object-fit: cover;">
+                            <h5 class="fw-bold mb-1">{{ p.nama }}</h5>
+                            <p class="text-muted small">{{ p.jabatan }}</p>
+                        </div>
                     </div>
-                    <div class="col-md-6 mb-4">
-                        <img src="https://ui-avatars.com/api/?name=Ust+Fulan&size=200" class="rounded-circle mb-3 shadow-sm" alt="Ustadz">
-                        <h5 class="fw-bold">Ustadz Fulan, Lc., M.A.</h5>
-                        <p class="text-muted small">Kepala Madrasah</p>
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>

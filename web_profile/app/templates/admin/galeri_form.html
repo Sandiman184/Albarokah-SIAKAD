@@ -22,6 +22,12 @@
                         <span class="text-danger small">{{ error }}</span>
                     {% endfor %}
                 {% endif %}
+                {% if form.gambar.data and form.gambar.data is string %}
+                    <div class="mt-2">
+                        <small class="text-muted">Gambar saat ini:</small><br>
+                        <img src="{{ form.gambar.data }}" alt="Current Image" width="150" class="img-thumbnail mt-1">
+                    </div>
+                {% endif %}
             </div>
             
             <div class="mb-3">
@@ -31,7 +37,7 @@
             
             <div class="mb-3">
                 {{ form.deskripsi.label(class="form-label") }}
-                {{ form.deskripsi(class="form-control", rows="3") }}
+                {{ form.deskripsi(class="form-control wysiwyg-editor", rows="3") }}
             </div>
             
             <button type="submit" class="btn btn-success">{{ form.submit.label.text }}</button>

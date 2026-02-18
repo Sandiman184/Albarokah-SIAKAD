@@ -1,0 +1,56 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">Backup & Restore</h1>
+</div>
+
+<div class="row">
+    <!-- Backup Card -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 bg-success text-white">
+                <h6 class="m-0 font-weight-bold"><i class="fas fa-download me-2"></i>Backup Database</h6>
+            </div>
+            <div class="card-body">
+                <p>Download salinan data website (Berita, Agenda, Galeri, Pengaturan) dalam format JSON.</p>
+                <div class="alert alert-info small">
+                    <i class="fas fa-info-circle me-1"></i> File backup ini berguna jika terjadi kerusakan data atau untuk memindahkan data ke server lain.
+                </div>
+                <div class="d-grid">
+                    <a href="{{ url_for('admin.backup_download') }}" class="btn btn-success btn-lg">
+                        <i class="fas fa-file-download me-2"></i> Download Backup (.json)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Restore Card -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100">
+            <div class="card-header py-3 bg-warning text-dark">
+                <h6 class="m-0 font-weight-bold"><i class="fas fa-upload me-2"></i>Restore Database</h6>
+            </div>
+            <div class="card-body">
+                <p>Upload file backup (.json) untuk mengembalikan data.</p>
+                <div class="alert alert-warning small">
+                    <i class="fas fa-exclamation-triangle me-1"></i> <strong>Perhatian:</strong> Proses ini akan menambahkan data baru jika belum ada. Data dengan slug/ID yang sama tidak akan diduplikasi.
+                </div>
+                <form action="{{ url_for('admin.restore') }}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label for="file" class="form-label">Pilih File Backup</label>
+                        <input class="form-control" type="file" id="file" name="file" accept=".json" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-warning text-dark btn-lg" onclick="return confirm('Apakah Anda yakin ingin melakukan restore data?');">
+                            <i class="fas fa-history me-2"></i> Restore Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

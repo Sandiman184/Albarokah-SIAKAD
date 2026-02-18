@@ -1,0 +1,51 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{{ title }}</h2>
+    <a href="{{ url_for('admin.program_list') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Kembali</a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <form method="POST" action="" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.nama.label(class="form-label") }}
+                {{ form.nama(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.deskripsi.label(class="form-label") }}
+                {{ form.deskripsi(class="form-control", rows=3) }}
+            </div>
+            <div class="mb-3">
+                {{ form.icon.label(class="form-label") }}
+                {{ form.icon(class="form-control") }}
+                <div class="form-text">Gunakan class FontAwesome 5/6, contoh: <code>fas fa-book</code></div>
+            </div>
+            <div class="mb-3">
+                {{ form.gambar.label(class="form-label") }}
+                {{ form.gambar(class="form-control") }}
+                {% if form.gambar.errors %}
+                    {% for error in form.gambar.errors %}
+                        <span class="text-danger">{{ error }}</span>
+                    {% endfor %}
+                {% endif %}
+                {% if program and program.gambar %}
+                <div class="mt-2">
+                    <label>Gambar Saat Ini:</label><br>
+                    <img src="{{ program.gambar }}" alt="Program" class="img-thumbnail" style="max-height: 150px;">
+                </div>
+                {% endif %}
+            </div>
+            <div class="mb-3">
+                {{ form.parent_id.label(class="form-label") }}
+                {{ form.parent_id(class="form-select") }}
+            </div>
+            <div class="mb-3">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

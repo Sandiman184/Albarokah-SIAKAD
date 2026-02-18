@@ -8,7 +8,7 @@
                 <h4 class="mb-0"><i class="fas fa-cogs me-2 text-primary"></i> Pengaturan Website</h4>
             </div>
             <div class="card-body">
-                <form method="post">
+                <form method="post" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
                     
                     <h5 class="text-muted mb-3">Identitas Pesantren</h5>
@@ -20,6 +20,52 @@
                         {{ form.deskripsi_singkat.label(class="form-label") }}
                         {{ form.deskripsi_singkat(class="form-control", rows="3") }}
                         <div class="form-text">Ditampilkan di footer dan meta description SEO.</div>
+                    </div>
+
+                    <h5 class="text-muted mb-3 mt-4">Halaman Utama (Hero Section)</h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            {{ form.hero_title_1.label(class="form-label") }}
+                            {{ form.hero_title_1(class="form-control") }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.hero_title_2.label(class="form-label") }}
+                            {{ form.hero_title_2(class="form-control") }}
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            {{ form.hero_title_3.label(class="form-label") }}
+                            {{ form.hero_title_3(class="form-control") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ form.hero_subtitle.label(class="form-label") }}
+                        {{ form.hero_subtitle(class="form-control", rows="2") }}
+                    </div>
+
+                    <h5 class="text-muted mb-3 mt-4">Profil Pesantren</h5>
+                    <div class="mb-3">
+                        {{ form.sejarah.label(class="form-label") }}
+                        {{ form.sejarah(class="form-control wysiwyg-editor", rows="5") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.sejarah_gambar.label(class="form-label") }}
+                        {{ form.sejarah_gambar(class="form-control") }}
+                        {% if pengaturan.sejarah_gambar %}
+                            <div class="mt-2">
+                                <label>Gambar Saat Ini:</label><br>
+                                <img src="{{ pengaturan.sejarah_gambar }}" alt="Sejarah" class="img-thumbnail" style="max-height: 200px;">
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.visi.label(class="form-label") }}
+                            {{ form.visi(class="form-control wysiwyg-editor", rows="5") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.misi.label(class="form-label") }}
+                            {{ form.misi(class="form-control wysiwyg-editor", rows="5") }}
+                        </div>
                     </div>
 
                     <h5 class="text-muted mb-3 mt-4">Kontak</h5>
@@ -42,6 +88,11 @@
                         {{ form.maps_embed(class="form-control", rows="3") }}
                         <div class="form-text">Paste kode iframe Google Maps di sini.</div>
                     </div>
+                    <div class="mb-3">
+                        {{ form.maps_link.label(class="form-label") }}
+                        {{ form.maps_link(class="form-control") }}
+                        <div class="form-text">Link Google Maps untuk tombol di footer.</div>
+                    </div>
 
                     <h5 class="text-muted mb-3 mt-4">Media Sosial</h5>
                     <div class="mb-3">
@@ -54,6 +105,12 @@
                         <div class="input-group">
                             <span class="input-group-text"><i class="fab fa-instagram"></i></span>
                             {{ form.instagram(class="form-control", placeholder="Link Instagram") }}
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fab fa-tiktok"></i></span>
+                            {{ form.tiktok(class="form-control", placeholder="Link TikTok") }}
                         </div>
                     </div>
                     <div class="mb-3">

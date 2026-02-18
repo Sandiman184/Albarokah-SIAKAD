@@ -54,22 +54,35 @@
                 <div class="card border-0 shadow-sm h-100 p-4">
                     <div class="card-body">
                         <h3 class="fw-bold text-success mb-4">Kirim Pesan</h3>
-                        <form>
+                        
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                        {% endwith %}
+
+                        <form method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <div class="mb-3">
                                 <label for="nama" class="form-label">Nama Lengkap</label>
-                                <input type="text" class="form-control" id="nama" placeholder="Masukkan nama Anda">
+                                <input type="text" class="form-control" id="nama" name="nama" placeholder="Masukkan nama Anda" required>
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" placeholder="contoh@email.com">
+                                <input type="email" class="form-control" id="email" name="email" placeholder="contoh@email.com" required>
                             </div>
                             <div class="mb-3">
                                 <label for="subjek" class="form-label">Subjek</label>
-                                <input type="text" class="form-control" id="subjek" placeholder="Tujuan pesan">
+                                <input type="text" class="form-control" id="subjek" name="subjek" placeholder="Tujuan pesan" required>
                             </div>
                             <div class="mb-3">
                                 <label for="pesan" class="form-label">Pesan</label>
-                                <textarea class="form-control" id="pesan" rows="4" placeholder="Tuliskan pesan Anda di sini..."></textarea>
+                                <textarea class="form-control" id="pesan" name="pesan" rows="4" placeholder="Tuliskan pesan Anda di sini..." required></textarea>
                             </div>
                             <button type="submit" class="btn btn-success fw-bold px-4">Kirim Pesan</button>
                         </form>
@@ -83,7 +96,7 @@
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
                     <div class="card-body p-0">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3953.056976662768!2d110.37526931477813!3d-7.783789994390098!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a59c3a3c2a3d3%3A0x4030bfbcaf8cf0!2sYogyakarta%2C%20Yogyakarta%20City%2C%20Special%20Region%20of%20Yogyakarta!5e0!3m2!1sen!2sid!4v1645501234567!5m2!1sen!2sid" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                        <iframe src="{{ pengaturan.maps_embed if pengaturan and pengaturan.maps_embed else 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3956.270377789366!2d109.4355!3d-7.4355!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zN8KwMjYnMDcuOCJTIDEwOcKwMjYnMDcuOCJF!5e0!3m2!1sen!2sid!4v1620000000000!5m2!1sen!2sid' }}" width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
                     </div>
                 </div>
             </div>

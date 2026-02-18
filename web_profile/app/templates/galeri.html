@@ -14,62 +14,75 @@
     <div class="container">
         <!-- Filter Button Group -->
         <div class="text-center mb-5">
-            <button type="button" class="btn btn-outline-success active rounded-pill px-4 mx-1">Semua</button>
-            <button type="button" class="btn btn-outline-success rounded-pill px-4 mx-1">Kegiatan</button>
-            <button type="button" class="btn btn-outline-success rounded-pill px-4 mx-1">Fasilitas</button>
-            <button type="button" class="btn btn-outline-success rounded-pill px-4 mx-1">Prestasi</button>
+            <a href="{{ url_for('main.galeri', kategori='all') }}" class="btn {{ 'btn-success' if not current_kategori or current_kategori == 'all' else 'btn-outline-success' }} rounded-pill px-4 mx-1">Semua</a>
+            <a href="{{ url_for('main.galeri', kategori='Kegiatan') }}" class="btn {{ 'btn-success' if current_kategori == 'Kegiatan' else 'btn-outline-success' }} rounded-pill px-4 mx-1">Kegiatan</a>
+            <a href="{{ url_for('main.galeri', kategori='Fasilitas') }}" class="btn {{ 'btn-success' if current_kategori == 'Fasilitas' else 'btn-outline-success' }} rounded-pill px-4 mx-1">Fasilitas</a>
+            <a href="{{ url_for('main.galeri', kategori='Prestasi') }}" class="btn {{ 'btn-success' if current_kategori == 'Prestasi' else 'btn-outline-success' }} rounded-pill px-4 mx-1">Prestasi</a>
+            <a href="{{ url_for('main.galeri', kategori='Lainnya') }}" class="btn {{ 'btn-success' if current_kategori == 'Lainnya' else 'btn-outline-success' }} rounded-pill px-4 mx-1">Lainnya</a>
         </div>
 
         <div class="row g-4">
+            {% for galeri in galeris %}
             <div class="col-md-4 col-sm-6">
                 <div class="card border-0 shadow-sm h-100">
-                    <img src="https://loremflickr.com/400/300/mosque" class="card-img-top" alt="Galeri 1">
+                    <img src="{{ galeri.gambar }}" class="card-img-top" alt="{{ galeri.judul }}" style="height: 300px; object-fit: cover;" loading="lazy">
                     <div class="card-body text-center">
-                        <h5 class="card-title fw-bold">Masjid Utama</h5>
+                        <h5 class="card-title fw-bold">{{ galeri.judul }}</h5>
+                        {% if galeri.deskripsi %}
+                        <p class="card-text text-muted small">{{ galeri.deskripsi }}</p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="card border-0 shadow-sm h-100">
-                    <img src="https://loremflickr.com/400/300/reading" class="card-img-top" alt="Galeri 2">
-                    <div class="card-body text-center">
-                        <h5 class="card-title fw-bold">Kajian Kitab</h5>
-                    </div>
-                </div>
+            {% else %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted lead">Belum ada foto di galeri.</p>
             </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="card border-0 shadow-sm h-100">
-                    <img src="https://loremflickr.com/400/300/classroom" class="card-img-top" alt="Galeri 3">
-                    <div class="card-body text-center">
-                        <h5 class="card-title fw-bold">Ruang Kelas</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="card border-0 shadow-sm h-100">
-                    <img src="https://loremflickr.com/400/300/computer" class="card-img-top" alt="Galeri 4">
-                    <div class="card-body text-center">
-                        <h5 class="card-title fw-bold">Lab Komputer</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="card border-0 shadow-sm h-100">
-                    <img src="https://loremflickr.com/400/300/sports" class="card-img-top" alt="Galeri 5">
-                    <div class="card-body text-center">
-                        <h5 class="card-title fw-bold">Olahraga Santri</h5>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="card border-0 shadow-sm h-100">
-                    <img src="https://loremflickr.com/400/300/garden" class="card-img-top" alt="Galeri 6">
-                    <div class="card-body text-center">
-                        <h5 class="card-title fw-bold">Taman Pesantren</h5>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
+
+        <!-- Pagination -->
+        {% if pagination.pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-5">
+            <ul class="pagination justify-content-center">
+            {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.galeri', page=pagination.prev_num, kategori=current_kategori) }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">&laquo;</span>
+            </li>
+            {% endif %}
+        
+            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                {% if page_num %}
+                    {% if page_num == pagination.page %}
+                    <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                    {% else %}
+                    <li class="page-item"><a class="page-link" href="{{ url_for('main.galeri', page=page_num, kategori=current_kategori) }}">{{ page_num }}</a></li>
+                    {% endif %}
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                {% endif %}
+            {% endfor %}
+        
+            {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('main.galeri', page=pagination.next_num, kategori=current_kategori) }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">&raquo;</span>
+            </li>
+            {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

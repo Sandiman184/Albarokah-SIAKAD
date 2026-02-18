@@ -17,7 +17,7 @@
                 <!-- Berita Items -->
                 {% for berita in beritas %}
                 <div class="card mb-4 border-0 shadow-sm">
-                    <img src="{{ berita.gambar }}" class="card-img-top" alt="{{ berita.judul }}" style="height: 400px; object-fit: cover;">
+                    <img src="{{ berita.gambar }}" class="card-img-top" alt="{{ berita.judul }}" style="height: 400px; object-fit: cover;" loading="lazy">
                     <div class="card-body">
                         <h3 class="fw-bold">{{ berita.judul }}</h3>
                         <p class="text-muted small"><i class="far fa-calendar-alt me-2"></i> {{ berita.tanggal.strftime('%d %B %Y') }} | <i class="far fa-user me-2"></i> {{ berita.penulis }}</p>
@@ -28,6 +28,49 @@
                 {% else %}
                 <div class="alert alert-info">Belum ada berita.</div>
                 {% endfor %}
+
+                <!-- Pagination -->
+                {% if pagination.pages > 1 %}
+                <nav aria-label="Page navigation" class="mt-4">
+                  <ul class="pagination justify-content-center">
+                    {% if pagination.has_prev %}
+                    <li class="page-item">
+                      <a class="page-link" href="{{ url_for('main.berita', page=pagination.prev_num, kategori=current_kategori) }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                      </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                      <span class="page-link">&laquo;</span>
+                    </li>
+                    {% endif %}
+                
+                    {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                        {% if page_num %}
+                            {% if page_num == pagination.page %}
+                            <li class="page-item active"><span class="page-link">{{ page_num }}</span></li>
+                            {% else %}
+                            <li class="page-item"><a class="page-link" href="{{ url_for('main.berita', page=page_num, kategori=current_kategori) }}">{{ page_num }}</a></li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                
+                    {% if pagination.has_next %}
+                    <li class="page-item">
+                      <a class="page-link" href="{{ url_for('main.berita', page=pagination.next_num, kategori=current_kategori) }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                      </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                      <span class="page-link">&raquo;</span>
+                    </li>
+                    {% endif %}
+                  </ul>
+                </nav>
+                {% endif %}
             </div>
 
             <div class="col-md-4">
@@ -49,18 +92,16 @@
                 <div class="card mb-4 border-0 shadow-sm">
                     <div class="card-header bg-dark text-white fw-bold">Kategori Berita</div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Kegiatan Pesantren <span class="badge bg-success rounded-pill">12</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Prestasi Santri <span class="badge bg-success rounded-pill">5</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Artikel Islami <span class="badge bg-success rounded-pill">8</span>
-                        </li>
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            Info Alumni <span class="badge bg-success rounded-pill">3</span>
-                        </li>
+                        <a href="{{ url_for('main.berita') }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ 'active' if not current_kategori else '' }}">
+                            Semua Berita
+                        </a>
+                        {% for kategori, count in kategori_counts %}
+                        <a href="{{ url_for('main.berita', kategori=kategori) }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center {{ 'active' if current_kategori == kategori else '' }}">
+                            {{ kategori|capitalize }} <span class="badge {{ 'bg-white text-primary' if current_kategori == kategori else 'bg-success' }} rounded-pill">{{ count }}</span>
+                        </a>
+                        {% else %}
+                        <li class="list-group-item text-muted">Belum ada kategori.</li>
+                        {% endfor %}
                     </ul>
                 </div>
             </div>

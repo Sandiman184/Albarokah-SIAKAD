@@ -12,3 +12,4 @@ weasyprint
 Flask-Limiter
 Flask-Talisman
 Flask-Caching
+Flask-Compress

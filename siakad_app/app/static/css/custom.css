@@ -1,3 +1,25 @@
 .text-transform-none {
   text-transform: none !important;
 }
+
+/* Footer Styling - ULTRA ROBUST FIX for SIAKAD */
+footer.footer {
+    background: #f8f9fa !important; /* Light gray for Soft UI */
+    background-color: #f8f9fa !important;
+    padding: 20px !important;
+    color: #344767 !important; /* Dark text for contrast */
+    font-family: 'Open Sans', sans-serif !important; /* Fix Font Issue */
+    margin-top: auto !important;
+    border-top: 1px solid rgba(0,0,0,0.05) !important;
+    width: 100%;
+    position: relative;
+    z-index: 9999;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+footer .copyright {
+    color: #344767 !important;
+    font-family: 'Open Sans', sans-serif !important; /* Fix Font Issue */
+}
