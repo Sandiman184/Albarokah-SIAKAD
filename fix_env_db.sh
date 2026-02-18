@@ -34,19 +34,29 @@ END
 for DB in "$WEB_DB" "$SIAKAD_DB"; do
     echo "Mengatur permissions untuk database: $DB"
     
-    # Pastikan database ada (opsional, tapi bagus untuk safety)
-    sudo -u postgres psql -c "SELECT 'CREATE DATABASE $DB' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = '$DB')\gexec"
+    # Cek apakah database ada, jika tidak buat baru
+    DB_EXISTS=$(sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='$DB'")
+    if [ "$DB_EXISTS" != "1" ]; then
+        echo "Database $DB tidak ditemukan. Membuat database..."
+        sudo -u postgres psql -c "CREATE DATABASE $DB OWNER $DB_USER;"
+    else
+        echo "Database $DB sudah ada."
+        # Pastikan owner benar
+        sudo -u postgres psql -c "ALTER DATABASE $DB OWNER TO $DB_USER;"
+    fi
     
     # Grant connect & create
     sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE $DB TO $DB_USER;"
     
     # Grant schema permissions (penting untuk akses tabel)
+    # Kita harus connect ke database spesifik untuk grant schema permissions
     sudo -u postgres psql -d "$DB" -c "GRANT ALL ON SCHEMA public TO $DB_USER;"
-    sudo -u postgres psql -d "$DB" -c "GRANT ALL TABLES IN SCHEMA public TO $DB_USER;"
-    sudo -u postgres psql -d "$DB" -c "GRANT ALL SEQUENCES IN SCHEMA public TO $DB_USER;"
+    sudo -u postgres psql -d "$DB" -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO $DB_USER;"
+    sudo -u postgres psql -d "$DB" -c "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO $DB_USER;"
     
     # Ensure future tables are accessible
     sudo -u postgres psql -d "$DB" -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO $DB_USER;"
+    sudo -u postgres psql -d "$DB" -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO $DB_USER;"
 done
 
 echo -e "${GREEN}=== 2. Update File .env ===${NC}"
@@ -62,7 +72,8 @@ update_env() {
         cp "$env_file" "$env_file.bak.$(date +%s)"
         
         # Construct new DATABASE_URL
-        NEW_URL="postgresql://${DB_USER}:${DB_PASS}@localhost/${db_name}"
+        # Note: We use 127.0.0.1 instead of localhost to force TCP/IP and avoid socket issues
+        NEW_URL="postgresql://${DB_USER}:${DB_PASS}@127.0.0.1:5432/${db_name}"
         # Escape slashes for sed command
         ESCAPED_URL=$(echo "$NEW_URL" | sed 's/\//\\\//g')
         
@@ -86,12 +97,17 @@ update_env "web_profile" "$WEB_DB"
 update_env "siakad_app" "$SIAKAD_DB"
 
 echo -e "${GREEN}=== 3. Restart Services ===${NC}"
-echo "Restarting Gunicorn services..."
-sudo systemctl restart albarokah-web
-sudo systemctl restart albarokah-siakad
+# Nama service disesuaikan dengan file systemd yang ada (web_profile.service dan siakad.service)
+SERVICES=("web_profile" "siakad" "nginx")
 
-echo "Restarting Nginx..."
-sudo systemctl restart nginx
+for SERVICE in "${SERVICES[@]}"; do
+    if systemctl list-units --full -all | grep -Fq "$SERVICE.service"; then
+        echo "Restarting $SERVICE..."
+        sudo systemctl restart $SERVICE
+    else
+        echo -e "${RED}Service $SERVICE tidak ditemukan!${NC}"
+    fi
+done
 
 echo -e "${GREEN}=== Selesai! ===${NC}"
-echo "Silakan cek log kembali jika masih error: sudo journalctl -u albarokah-web -f"
+echo "Silakan cek log kembali jika masih error: sudo journalctl -u web_profile -f"
