@@ -7,6 +7,8 @@
 # Variables
 DB_USER="albarokah_user"
 DB_PASS="alnet@2026"
+# URL Encoded Password untuk connection string (ganti @ dengan %40)
+DB_PASS_ENCODED="alnet%402026"
 WEB_DB="web_profile_db"
 SIAKAD_DB="siakad_db"
 BASE_DIR="/var/www/Albarokah-SIAKAD"
@@ -72,8 +74,9 @@ update_env() {
         cp "$env_file" "$env_file.bak.$(date +%s)"
         
         # Construct new DATABASE_URL
-        # Note: We use 127.0.0.1 instead of localhost to force TCP/IP and avoid socket issues
-        NEW_URL="postgresql://${DB_USER}:${DB_PASS}@127.0.0.1:5432/${db_name}"
+        # PENTING: Menggunakan DB_PASS_ENCODED karena ada karakter '@' di password
+        # Karakter '@' di password akan dianggap sebagai pemisah user:pass@host jika tidak di-encode
+        NEW_URL="postgresql://${DB_USER}:${DB_PASS_ENCODED}@127.0.0.1:5432/${db_name}"
         # Escape slashes for sed command
         ESCAPED_URL=$(echo "$NEW_URL" | sed 's/\//\\\//g')
         
@@ -86,7 +89,7 @@ update_env() {
             echo "" >> "$env_file"
             echo "DATABASE_URL=${NEW_URL}" >> "$env_file"
         fi
-        echo "  -> Updated DATABASE_URL ke $db_name"
+        echo "  -> Updated DATABASE_URL ke $db_name (Password Encoded)"
     else
         echo -e "${RED}WARNING: File $env_file tidak ditemukan!${NC}"
     fi
