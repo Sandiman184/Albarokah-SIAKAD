@@ -3,21 +3,14 @@ Description=Gunicorn instance to serve SIAKAD App
 After=network.target
 
 [Service]
-# User diganti jadi root (sesuai user login Anda sekarang)
 User=root
-# Group=root
+# Group=www-data
 
-# Path diganti jadi /root/...
-WorkingDirectory=/root/Albarokah-SIAKAD/siakad_app
+WorkingDirectory=/var/www/Albarokah-SIAKAD/siakad_app
+Environment="PATH=/var/www/Albarokah-SIAKAD/siakad_app/.venv/bin"
+# EnvironmentFile=/var/www/Albarokah-SIAKAD/siakad_app/.env
 
-# Path environment diganti jadi /root/...
-Environment="PATH=/root/Albarokah-SIAKAD/siakad_app/.venv/bin"
-
-# Baris ini DIKOMENTARI (diberi tanda #) agar systemd tidak error baca file
-# EnvironmentFile=/root/Albarokah-SIAKAD/siakad_app/.env
-
-# Path ExecStart diganti jadi /root/...
-ExecStart=/root/Albarokah-SIAKAD/siakad_app/.venv/bin/gunicorn --workers 4 --bind 127.0.0.1:8000 run:app
+ExecStart=/var/www/Albarokah-SIAKAD/siakad_app/.venv/bin/gunicorn --workers 4 --bind 127.0.0.1:8000 run:app
 
 [Install]
 WantedBy=multi-user.target
