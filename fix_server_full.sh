@@ -40,15 +40,27 @@ usermod -a -G www-data $USER
 # 5. Jalankan Migrasi Database
 echo "[4/6] Menjalankan migrasi database..."
 
+# Cek lokasi venv yang benar
+if [ -d "$APP_ROOT/.venv" ]; then
+    VENV_PYTHON="$APP_ROOT/.venv/bin/python"
+    VENV_FLASK="$APP_ROOT/.venv/bin/flask"
+elif [ -d "$APP_ROOT/siakad_app/.venv" ]; then
+    VENV_PYTHON="$APP_ROOT/siakad_app/.venv/bin/python"
+    VENV_FLASK="$APP_ROOT/siakad_app/.venv/bin/flask"
+else
+    echo "ERROR: Virtual environment tidak ditemukan!"
+    exit 1
+fi
+
 echo "   -> Migrasi Web Profile..."
 cd $APP_ROOT/web_profile
 export FLASK_APP=run.py
-$APP_ROOT/.venv/bin/flask db upgrade
+$VENV_FLASK db upgrade
 
 echo "   -> Migrasi SIAKAD..."
 cd $APP_ROOT/siakad_app
 export FLASK_APP=run.py
-$APP_ROOT/.venv/bin/flask db upgrade
+$VENV_FLASK db upgrade
 
 # 6. Restart Service
 echo "[5/6] Merestart service..."
