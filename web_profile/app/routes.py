@@ -104,11 +104,19 @@ def program():
 def ppdb():
     return render_template('ppdb.html', title='PPDB Online')
 
+from datetime import datetime, timedelta
+
+# ... imports ...
+
 @bp.route('/ppdb/register', methods=['POST'])
 @limiter.limit("5 per minute")
 def ppdb_register():
     if request.method == 'POST':
         try:
+            # Set timezone to WIB (UTC+7)
+            wib_time = datetime.utcnow() + timedelta(hours=7)
+            timestamp_str = wib_time.strftime('%Y-%m-%d %H:%M:%S')
+
             # Collect form data
             data = {
                 'nama': request.form.get('nama'),
@@ -118,7 +126,7 @@ def ppdb_register():
                 'asal_sekolah': request.form.get('asal_sekolah'),
                 'nama_ortu': request.form.get('nama_ortu'),
                 'no_hp_ortu': request.form.get('no_hp_ortu'),
-                'timestamp': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+                'timestamp': timestamp_str
             }
             
             # 1. SECURITY: Input Validation & Sanitization
@@ -268,6 +276,27 @@ def kontak():
                     """
                 )
                 mail.send(msg)
+                
+                # Prepare data for Google Sheet (using same format as PPDB for simplicity or a new sheet)
+                # Ideally we should have a separate sheet for Contacts, but for now let's reuse the append function
+                # Or create a slightly different structure if needed.
+                # Let's add a "Contact" tag to differentiate in the sheet or just log it.
+                
+                # Set timezone to WIB (UTC+7)
+                wib_time = datetime.utcnow() + timedelta(hours=7)
+                timestamp_str = wib_time.strftime('%Y-%m-%d %H:%M:%S')
+                
+                contact_data = {
+                    'timestamp': timestamp_str,
+                    'nama': nama,
+                    'tempat_lahir': '-', # Not used in contact
+                    'tanggal_lahir': '-', # Not used in contact
+                    'alamat': email, # Storing email in alamat column for now
+                    'asal_sekolah': subjek, # Storing subject in asal_sekolah
+                    'nama_ortu': '-',
+                    'no_hp_ortu': '-' 
+                }
+                append_to_google_sheet(contact_data)
                 
                 # Custom notification message
                 contact_info = ""

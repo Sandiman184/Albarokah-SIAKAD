@@ -89,15 +89,42 @@ cd /var/www/Albarokah-SIAKAD/siakad_app
 
 ---
 
-## 5. Verifikasi Keamanan Server
+## 6. Sinkronisasi Fitur Baru (Google Sheets & Email)
 
-### Cek User Aplikasi (Wajib www-data)
-Pastikan aplikasi TIDAK berjalan sebagai root:
+Fitur baru (PPDB & Kontak) membutuhkan file kredensial yang tidak ada di GitHub. Anda wajib menguploadnya manual.
+
+### File yang Dibutuhkan:
+1.  **google-credentials.json** (Kunci Google Sheets)
+2.  **web_profile/.env** (Password Email SMTP)
+
+### Cara Upload (Dari Laptop ke Server):
+Gunakan perintah `scp` (Secure Copy) dari terminal laptop Anda:
+
 ```bash
-ps aux | grep gunicorn
+# Ganti IP_SERVER dengan alamat IP VPS Anda (contoh: 103.156.164.64)
+# Ganti USER dengan username server Anda (contoh: root atau ubuntu)
+
+# 1. Upload kunci Google Sheets ke folder root project
+scp google-credentials.json USER@IP_SERVER:/var/www/Albarokah-SIAKAD/
+
+# 2. Upload konfigurasi Email (.env) ke folder web_profile
+scp web_profile/.env USER@IP_SERVER:/var/www/Albarokah-SIAKAD/web_profile/
 ```
-*   **Aman:** Jika kolom user tertulis `www-data`.
-*   **Bahaya:** Jika kolom user tertulis `root`.
+
+### Verifikasi di Server:
+Setelah upload, pastikan file ada di server:
+```bash
+ls -l /var/www/Albarokah-SIAKAD/google-credentials.json
+ls -l /var/www/Albarokah-SIAKAD/web_profile/.env
+```
+
+### Restart Service (Wajib!)
+Setelah file terupload, restart aplikasi agar perubahan terbaca:
+```bash
+sudo supervisorctl restart albarokah_web
+# Atau jika pakai systemd:
+sudo systemctl restart albarokah_web
+```
 
 ### Cek Port yang Terbuka
 Pastikan hanya port penting (22, 80, 443) yang terbuka untuk publik:
@@ -116,3 +143,41 @@ journalctl -u web_profile -n 50
 # Log Nginx
 tail -n 50 /var/log/nginx/error.log
 ```
+
+## 7. Sinkronisasi Database & Konten (Foto)
+
+Jika Anda menambah data (berita, foto) di lokal dan ingin memindahkannya ke server, gunakan script otomatis yang sudah disiapkan.
+
+**PENTING:** Proses ini akan **MENGHAPUS** data lama di server dan menggantinya dengan data dari laptop Anda. Pastikan data di laptop adalah yang paling update.
+
+### Cara Menggunakan Script `sync_content.sh`
+
+1.  Buka terminal di laptop Anda (Git Bash atau PowerShell).
+2.  Masuk ke folder proyek:
+    ```bash
+    cd /path/to/Albarokah
+    ```
+3.  Jalankan script dengan menyertakan IP Server:
+    ```bash
+    # Ganti IP_SERVER dengan IP VPS Anda
+    bash sync_content.sh IP_SERVER
+    
+    # Contoh:
+    bash sync_content.sh 103.158.130.10
+    ```
+
+### Apa yang dilakukan script ini?
+1.  **Upload Foto:** Mengirim semua file di `web_profile/app/static/uploads` ke server.
+2.  **Upload Kredensial:** Mengecek dan mengirim `google-credentials.json` serta `.env` jika ada perubahan.
+3.  **Restore Database:** (Opsional, Anda akan ditanya "y/n") Mengambil backup database lokal (`web_profile_db`) dan merestore-nya ke server.
+
+---
+
+## Ringkasan Perintah Penting
+
+| Aksi | Perintah (di Server) |
+| :--- | :--- |
+| **Update Kode** | `git pull origin main` |
+| **Restart App** | `sudo systemctl restart web_profile` |
+| **Cek Status** | `sudo systemctl status web_profile` |
+| **Cek Error** | `sudo journalctl -u web_profile -f` |
