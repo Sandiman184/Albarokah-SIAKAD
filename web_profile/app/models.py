@@ -1,5 +1,6 @@
 from app import db
 from datetime import datetime
+import pytz
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from argon2 import PasswordHasher
@@ -7,12 +8,15 @@ from argon2.exceptions import VerifyMismatchError
 
 ph = PasswordHasher()
 
+def get_current_time():
+    return datetime.now(pytz.timezone('Asia/Jakarta'))
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     role = db.Column(db.String(20), default='admin') # superadmin, admin, editor
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=get_current_time)
 
     def set_password(self, password):
         self.password_hash = ph.hash(password)
@@ -42,7 +46,7 @@ class ActivityLog(db.Model):
     details = db.Column(db.Text)
     ip_address = db.Column(db.String(45))
     user_agent = db.Column(db.String(255)) # Device info
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=get_current_time)
 
 class Berita(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -50,7 +54,7 @@ class Berita(db.Model):
     slug = db.Column(db.String(255), unique=True, nullable=False)
     konten = db.Column(db.Text, nullable=False)
     gambar = db.Column(db.String(255))
-    tanggal = db.Column(db.DateTime, default=datetime.utcnow)
+    tanggal = db.Column(db.DateTime, default=get_current_time)
     penulis = db.Column(db.String(100))
     status = db.Column(db.String(20), default='published', index=True) # published, draft
     kategori = db.Column(db.String(50), default='berita', index=True) # berita, pengumuman, artikel
@@ -68,7 +72,7 @@ class Galeri(db.Model):
     judul = db.Column(db.String(255))
     gambar = db.Column(db.String(255), nullable=False)
     kategori = db.Column(db.String(50)) # Fasilitas, Kegiatan, Prestasi
-    tanggal = db.Column(db.DateTime, default=datetime.utcnow)
+    tanggal = db.Column(db.DateTime, default=get_current_time)
     deskripsi = db.Column(db.Text) # Alt text/caption
 
 class Pengaturan(db.Model):
