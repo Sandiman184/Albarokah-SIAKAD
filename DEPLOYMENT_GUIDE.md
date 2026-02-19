@@ -25,35 +25,72 @@ git commit -m "Perbaikan fitur X"
 git push origin main
 ```
 
-### Langkah 2: Di Server (Jalankan Update Otomatis)
-Masuk ke server via SSH, lalu jalankan satu perintah ini:
+### Langkah 2: Di Server (Jalankan Update)
+Masuk ke server via SSH, lalu jalankan perintah berikut:
 ```bash
 cd /var/www/Albarokah-SIAKAD
-./update_server.sh
+git pull origin main
+
+# Jika ada library baru
+source web_profile/.venv/bin/activate
+pip install -r web_profile/requirements.txt
+
+# Restart Aplikasi
+sudo systemctl restart web_profile
+sudo systemctl restart siakad
 ```
-*Script ini akan otomatis:*
-1. Mengambil kode terbaru dari GitHub (`git pull`)
-2. Mengupdate library Python jika ada perubahan
-3. Merestart service aplikasi (Web & SIAKAD)
-4. Mengecek status server
 
 ---
 
 ## 3. Workflow Sinkronisasi Konten (Foto & Database)
-**PENTING:** Git TIDAK menyimpan foto upload atau isi database. Jika Anda menambah berita/foto di lokal dan ingin menampilkannya di server, gunakan script `sync_content.sh`.
+**PENTING:** Git TIDAK menyimpan foto upload atau isi database. Gunakan `scp` untuk transfer manual.
 
-### Cara Sinkronisasi (Dari Laptop Lokal)
-Jalankan script ini menggunakan Git Bash atau Terminal Linux di laptop Anda:
-```bash
-# Pastikan script bisa dieksekusi
-chmod +x sync_content.sh
-
-# Jalankan sinkronisasi (Ganti IP_SERVER dengan IP VPS Anda)
-./sync_content.sh IP_SERVER
+### A. Sinkronisasi Foto (Upload Folder)
+Jalankan di Terminal Laptop (PowerShell/Git Bash):
+```powershell
+# Ganti IP_SERVER dengan IP VPS Anda (misal: 103.158.130.10)
+# Port SSH default: 22 (atau 8022 sesuai konfigurasi Anda)
+scp -r -P 8022 web_profile/app/static/uploads/* root@IP_SERVER:/var/www/Albarokah-SIAKAD/web_profile/app/static/uploads/
 ```
-*Script ini akan:*
-1. Mengirim folder `web_profile/app/static/uploads/` ke server via `rsync/scp`.
-2. (Opsional) Mem-backup database lokal dan me-restore-nya di server (Hati-hati: Data server akan tertimpa!).
+*Setelah upload, perbaiki permission di server:*
+```bash
+# Di Terminal Server
+chown -R www-data:www-data /var/www/Albarokah-SIAKAD/web_profile/app/static/uploads/
+```
+
+### B. Sinkronisasi Database (Full Restore)
+**PERINGATAN:** Ini akan MENGHAPUS data lama di server dan menggantinya dengan data lokal!
+
+1.  **Backup Lokal (Laptop):**
+    ```powershell
+    pg_dump -U postgres -d web_profile_db -f web_profile_sync.sql
+    ```
+2.  **Upload ke Server (Laptop):**
+    ```powershell
+    scp -P 8022 web_profile_sync.sql root@IP_SERVER:/tmp/
+    ```
+3.  **Restore di Server (SSH):**
+    ```bash
+    # Masuk sebagai user postgres
+    su - postgres
+    
+    # Reset Database
+    psql -c "DROP DATABASE IF EXISTS web_profile_db;"
+    psql -c "CREATE DATABASE web_profile_db;"
+    
+    # Import Data
+    psql -d web_profile_db -f /tmp/web_profile_sync.sql
+    
+    # Berikan Akses ke User Aplikasi
+    psql -d web_profile_db -c "GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO albarokah_user;"
+    psql -d web_profile_db -c "GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO albarokah_user;"
+    
+    exit
+    ```
+4.  **Restart Aplikasi (SSH):**
+    ```bash
+    sudo systemctl restart web_profile
+    ```
 
 ---
 
@@ -93,37 +130,35 @@ cd /var/www/Albarokah-SIAKAD/siakad_app
 
 Fitur baru (PPDB & Kontak) membutuhkan file kredensial yang tidak ada di GitHub. Anda wajib menguploadnya manual.
 
-### File yang Dibutuhkan:
-1.  **google-credentials.json** (Kunci Google Sheets)
-2.  **web_profile/.env** (Password Email SMTP)
+### A. Upload File Kredensial (Laptop)
+Gunakan PowerShell atau Git Bash di laptop:
 
-### Cara Upload (Dari Laptop ke Server):
-Gunakan perintah `scp` (Secure Copy) dari terminal laptop Anda:
+```powershell
+# Upload Google Sheets Key
+scp -P 8022 google-credentials.json root@IP_SERVER:/var/www/Albarokah-SIAKAD/
 
-```bash
-# Ganti IP_SERVER dengan alamat IP VPS Anda (contoh: 103.156.164.64)
-# Ganti USER dengan username server Anda (contoh: root atau ubuntu)
-
-# 1. Upload kunci Google Sheets ke folder root project
-scp google-credentials.json USER@IP_SERVER:/var/www/Albarokah-SIAKAD/
-
-# 2. Upload konfigurasi Email (.env) ke folder web_profile
-scp web_profile/.env USER@IP_SERVER:/var/www/Albarokah-SIAKAD/web_profile/
+# Upload Config Email (.env)
+# CATATAN: File .env di server sebaiknya diedit manual (nano) agar tidak tertimpa settingan database.
+# Jika ingin upload full, gunakan:
+scp -P 8022 web_profile/.env root@IP_SERVER:/var/www/Albarokah-SIAKAD/web_profile/
 ```
 
-### Verifikasi di Server:
-Setelah upload, pastikan file ada di server:
+### B. Edit Manual Config Server (Rekomendasi)
+Masuk ke SSH server, lalu edit file `.env`:
 ```bash
-ls -l /var/www/Albarokah-SIAKAD/google-credentials.json
-ls -l /var/www/Albarokah-SIAKAD/web_profile/.env
+nano /var/www/Albarokah-SIAKAD/web_profile/.env
+```
+*Pastikan isinya:*
+```env
+DATABASE_URL=postgresql://albarokah_user:alnet%402026@localhost/web_profile_db
+MAIL_USERNAME=email_anda@gmail.com
+MAIL_PASSWORD=app_password_anda
 ```
 
-### Restart Service (Wajib!)
-Setelah file terupload, restart aplikasi agar perubahan terbaca:
+### C. Restart Service (Wajib!)
+Setelah file terupload/diedit, restart aplikasi:
 ```bash
-sudo supervisorctl restart albarokah_web
-# Atau jika pakai systemd:
-sudo systemctl restart albarokah_web
+sudo systemctl restart web_profile
 ```
 
 ### Cek Port yang Terbuka
