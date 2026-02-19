@@ -23,10 +23,8 @@ pip-delete-this-directory.txt
 .idea/
 
 # Secret Documentation
-ACCESS_CREDENTIALS.md
-DEPLOYMENT_GUIDE.md
-PANDUAN_GOOGLE_SHEETS.md
-PANDUAN_EMAIL_SMTP.md
+*.md
+!README.md
 
 # Sensitive Credentials
 google-credentials.json

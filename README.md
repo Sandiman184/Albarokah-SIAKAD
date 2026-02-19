@@ -6,93 +6,68 @@ Project ini adalah solusi terintegrasi untuk manajemen akademik pesantren dan po
 
 ## Fitur Utama
 
-### SIAKAD App
-*   **Autentikasi & Otorisasi**: Login dengan role `admin`, `ustadz`, `wali_santri`.
-*   **Master Data**: CRUD Santri, Pengajar, Kelas, Mata Pelajaran, User.
-*   **Akademik**: Input Nilai, Absensi, Hafalan Tahfidz, Generate E-Raport (PDF).
-*   **Keuangan**: Pembayaran SPP dan history pembayaran.
-*   **Keamanan**:
-    *   Password Hashing (Argon2).
-    *   CSRF Protection (Flask-WTF).
-    *   Security Headers (Flask-Talisman, CSP).
-    *   Rate Limiting (Flask-Limiter) pada login.
-    *   Data Isolation (Wali Santri hanya melihat data anaknya).
+### SIAKAD App (Sistem Akademik)
+*   **Role Management**: Admin, Ustadz, Wali Santri, Santri.
+*   **Akademik**: Input Nilai, Absensi, Hafalan Tahfidz, E-Raport (PDF).
+*   **Keuangan**: Pembayaran SPP, Tabungan, Laporan Keuangan.
+*   **Keamanan**: Enkripsi Password, CSRF Protection, Rate Limiting.
 
-### Web Profile
-*   **Landing Page**: Informasi umum dan fitur unggulan.
-*   **Profil**: Sejarah, Visi Misi.
-*   **Program**: Tahfidz, Madrasah, Sekolah Formal.
-*   **Berita & Agenda**: Artikel dan pengumuman.
-*   **Galeri**: Foto kegiatan.
-*   **PPDB**: Informasi pendaftaran santri baru.
+### Web Profile (Portal Publik)
+*   **Informasi Publik**: Profil Pesantren, Berita, Agenda, Galeri.
+*   **PPDB Online**: Formulir pendaftaran santri baru (Terintegrasi Google Sheets).
+*   **Kontak**: Formulir hubungi kami (Notifikasi via Email SMTP & WhatsApp).
+*   **SEO & Performance**: Caching (Flask-Caching), Kompresi Aset.
 
 ## Persyaratan Sistem
 
-*   Python 3.8+
-*   PostgreSQL (Disarankan untuk Production) atau SQLite (Development).
-*   Library GTK (untuk WeasyPrint/PDF Generation).
+*   **Server**: Ubuntu 20.04/22.04/24.04 LTS
+*   **Bahasa**: Python 3.10+
+*   **Database**: PostgreSQL
+*   **Web Server**: Nginx + Gunicorn
+*   **Lainnya**: Supervisor (Process Control)
 
-## Instalasi
+## Instalasi & Deployment
 
+Proyek ini menggunakan struktur folder terpisah untuk `siakad_app` dan `web_profile`.
+
+### 1. Setup Lokal (Development)
 1.  **Clone Repository**
-    ```bash
-    git clone <repository_url>
-    cd Albarokah
-    ```
-
-2.  **Setup Virtual Environment**
+2.  **Buat Virtual Environment**
     ```bash
     python -m venv .venv
-    .venv\Scripts\activate  # Windows
-    # source .venv/bin/activate  # Linux/Mac
+    .venv\Scripts\activate
     ```
-
 3.  **Install Dependencies**
     ```bash
-    pip install -r siakad_app/requirements.txt
     pip install -r web_profile/requirements.txt
+    pip install -r siakad_app/requirements.txt
     ```
+4.  **Konfigurasi Environment (.env)**
+    *   Copy `.env.example` menjadi `.env` di masing-masing folder.
+    *   Sesuaikan `DATABASE_URL`, `MAIL_USERNAME`, `MAIL_PASSWORD`.
 
-4.  **Konfigurasi Database**
-    *   Buat file `.env` di folder `siakad_app` dan `web_profile`.
-    *   Isi dengan:
-        ```env
-        SECRET_KEY=kunci-rahasia-anda
-        DATABASE_URL=sqlite:///app.db  # Atau URL PostgreSQL
-        ```
+### 2. Deployment ke Server (VPS)
+Panduan lengkap deployment, update, dan sinkronisasi database/konten tersedia di file **`DEPLOYMENT_GUIDE.md`** (lokal only).
 
-5.  **Inisialisasi Database**
-    ```bash
-    # Untuk SIAKAD
-    cd siakad_app
-    flask db upgrade
-    python seed.py  # Isi data dummy
-
-    # Untuk Web Profile
-    cd ../web_profile
-    flask db upgrade
-    python seed.py
-    ```
-
-## Menjalankan Aplikasi
-
-Jalankan kedua aplikasi di terminal terpisah:
-
-**Terminal 1 (SIAKAD - Port 5000)**
+**Ringkasan Perintah Server:**
 ```bash
-cd siakad_app
-python run.py
+# Update Kode
+git pull origin main
+
+# Restart Aplikasi
+sudo systemctl restart web_profile
+sudo systemctl restart siakad
 ```
 
-**Terminal 2 (Web Profile - Port 8001)**
-```bash
-cd web_profile
-python run.py
+## Struktur Project
 ```
-
-Akses di browser:
-*   SIAKAD: `http://localhost:5000`
-*   Web Profile: `http://localhost:8001`
+Albarokah/
+├── siakad_app/       # Aplikasi Sistem Akademik
+├── web_profile/      # Website Profil & PPDB
+├── deployment/       # Konfigurasi Nginx & Systemd
+├── DEPLOYMENT_GUIDE.md # Panduan Teknis Server (Git Ignored)
+└── README.md         # Dokumentasi Umum
+```
 
 ## Akun Demo
 
