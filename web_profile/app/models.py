@@ -41,6 +41,7 @@ class ActivityLog(db.Model):
     target = db.Column(db.String(50)) # Berita, Agenda, User, System
     details = db.Column(db.Text)
     ip_address = db.Column(db.String(45))
+    user_agent = db.Column(db.String(255)) # Device info
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Berita(db.Model):

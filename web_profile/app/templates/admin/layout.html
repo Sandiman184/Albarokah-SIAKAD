@@ -169,6 +169,44 @@
     
     <!-- Admin Custom JS -->
     <script src="{{ url_for('static', filename='js/admin.js', v=1.1) }}"></script>
+    
+    <!-- Auto Logout Script -->
+    <script>
+        // Idle time in minutes before warning
+        const idleTimeWarning = 29; 
+        // Idle time in minutes before auto logout (must be same or less than server session)
+        const idleTimeLogout = 30; 
+        
+        let idleTimer;
+        
+        function resetIdleTimer() {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(warnUser, idleTimeWarning * 60 * 1000);
+        }
+        
+        function warnUser() {
+            // Optional: Show warning modal here
+            console.log("Session warning: User idle for " + idleTimeWarning + " minutes");
+            
+            // Set timer for remaining time to logout
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(logoutUser, (idleTimeLogout - idleTimeWarning) * 60 * 1000);
+        }
+        
+        function logoutUser() {
+            window.location.href = "{{ url_for('admin.logout') }}";
+        }
+        
+        // Reset timer on user interaction
+        document.addEventListener('mousemove', resetIdleTimer);
+        document.addEventListener('keypress', resetIdleTimer);
+        document.addEventListener('click', resetIdleTimer);
+        document.addEventListener('scroll', resetIdleTimer);
+        
+        // Initialize
+        resetIdleTimer();
+    </script>
+    
     {% block scripts %}{% endblock %}
 </body>
 </html>

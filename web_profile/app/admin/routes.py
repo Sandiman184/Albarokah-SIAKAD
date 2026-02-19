@@ -38,7 +38,8 @@ def log_activity(action, target, details=None):
             action=action,
             target=target,
             details=details,
-            ip_address=ip_address
+            ip_address=ip_address,
+            user_agent=request.user_agent.string
         )
         db.session.add(log)
         db.session.commit()

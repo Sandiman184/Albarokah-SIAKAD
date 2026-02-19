@@ -17,6 +17,9 @@ class Config:
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     # SESSION_COOKIE_SECURE = True  # Uncomment saat deploy HTTPS
+    
+    # Session Management
+    PERMANENT_SESSION_LIFETIME = 1800 # 30 minutes in seconds
 
     # Caching Configuration
     CACHE_TYPE = os.environ.get('CACHE_TYPE') or 'SimpleCache'
