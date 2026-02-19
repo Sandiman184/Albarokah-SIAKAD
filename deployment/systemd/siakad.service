@@ -3,8 +3,8 @@ Description=Gunicorn instance to serve SIAKAD App
 After=network.target
 
 [Service]
-User=root
-# Group=www-data
+User=www-data
+Group=www-data
 
 WorkingDirectory=/var/www/Albarokah-SIAKAD/siakad_app
 Environment="PATH=/var/www/Albarokah-SIAKAD/siakad_app/.venv/bin"

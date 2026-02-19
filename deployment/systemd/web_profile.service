@@ -3,8 +3,8 @@ Description=Gunicorn instance to serve Web Profile
 After=network.target
 
 [Service]
-User=root
-# Group=www-data
+User=www-data
+Group=www-data
 
 WorkingDirectory=/var/www/Albarokah-SIAKAD/web_profile
 Environment="PATH=/var/www/Albarokah-SIAKAD/web_profile/.venv/bin"
