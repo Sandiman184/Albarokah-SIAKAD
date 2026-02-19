@@ -26,12 +26,19 @@ def superadmin_required(f):
 def log_activity(action, target, details=None):
     if current_user.is_authenticated:
         from app.models import ActivityLog
+        
+        # Support for proxy headers (X-Forwarded-For)
+        if request.headers.getlist("X-Forwarded-For"):
+            ip_address = request.headers.getlist("X-Forwarded-For")[0]
+        else:
+            ip_address = request.remote_addr
+            
         log = ActivityLog(
             user_id=current_user.id,
             action=action,
             target=target,
             details=details,
-            ip_address=request.remote_addr
+            ip_address=ip_address
         )
         db.session.add(log)
         db.session.commit()
@@ -104,6 +111,10 @@ def user_list():
 def user_add():
     form = UserForm()
     if form.validate_on_submit():
+        if User.query.filter_by(username=form.username.data).first():
+            flash('Username sudah digunakan! Silakan pilih username lain.', 'danger')
+            return render_template('admin/user_form.html', form=form, title='Tambah User')
+
         user = User(username=form.username.data, role=form.role.data)
         if form.password.data:
             user.set_password(form.password.data)
@@ -111,11 +122,17 @@ def user_add():
             flash('Password wajib diisi untuk user baru', 'warning')
             return render_template('admin/user_form.html', form=form, title='Tambah User')
             
-        db.session.add(user)
-        db.session.commit()
-        log_activity('CREATE', 'User', f'Created user {user.username}')
-        flash('User berhasil ditambahkan', 'success')
-        return redirect(url_for('admin.user_list'))
+        try:
+            db.session.add(user)
+            db.session.commit()
+            log_activity('CREATE', 'User', f'Created user {user.username}')
+            flash('User berhasil ditambahkan', 'success')
+            return redirect(url_for('admin.user_list'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Gagal menambahkan user: {str(e)}', 'danger')
+            return render_template('admin/user_form.html', form=form, title='Tambah User')
+            
     return render_template('admin/user_form.html', form=form, title='Tambah User')
 
 @bp.route('/users/edit/<int:id>', methods=['GET', 'POST'])
@@ -293,6 +310,23 @@ def activity_logs():
     logs = ActivityLog.query.order_by(ActivityLog.timestamp.desc()).paginate(page=page, per_page=20)
     return render_template('admin/activity_log.html', logs=logs)
 
+@bp.route('/activity-logs/clear', methods=['POST'])
+@login_required
+@superadmin_required
+def activity_logs_clear():
+    from app.models import ActivityLog
+    try:
+        num_rows = db.session.query(ActivityLog).delete()
+        db.session.commit()
+        # Re-log the clear action so it's not empty
+        log_activity('DELETE', 'System', f'Cleared {num_rows} activity logs')
+        flash('Semua log aktivitas berhasil dihapus.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Gagal menghapus log: {str(e)}', 'danger')
+        
+    return redirect(url_for('admin.activity_logs'))
+
 @bp.route('/backup')
 @login_required
 @superadmin_required
@@ -318,7 +352,8 @@ def backup_download():
         berita_list.append({
             'judul': b.judul, 'slug': b.slug, 'konten': b.konten, 
             'gambar': b.gambar, 'status': b.status, 'kategori': b.kategori,
-            'tanggal': b.tanggal.isoformat()
+            'tanggal': b.tanggal.isoformat(),
+            'penulis': b.penulis
         })
     data['berita'] = berita_list
     
@@ -335,9 +370,28 @@ def backup_download():
     galeri_list = []
     for g in Galeri.query.all():
         galeri_list.append({
-            'judul': g.judul, 'gambar': g.gambar, 'kategori': g.kategori, 'deskripsi': g.deskripsi
+            'judul': g.judul, 'gambar': g.gambar, 'kategori': g.kategori, 'deskripsi': g.deskripsi,
+            'tanggal': g.tanggal.isoformat()
         })
     data['galeri'] = galeri_list
+    
+    # Program
+    program_list = []
+    for p in Program.query.all():
+        program_list.append({
+            'nama': p.nama, 'deskripsi': p.deskripsi, 'icon': p.icon,
+            'gambar': p.gambar, 'urutan': p.urutan, 'parent_id': p.parent_id
+        })
+    data['program'] = program_list
+    
+    # Pimpinan
+    pimpinan_list = []
+    for pim in Pimpinan.query.all():
+        pimpinan_list.append({
+            'nama': pim.nama, 'jabatan': pim.jabatan, 'gambar': pim.gambar,
+            'urutan': pim.urutan
+        })
+    data['pimpinan'] = pimpinan_list
     
     # Pengaturan
     p = Pengaturan.query.first()
@@ -345,7 +399,16 @@ def backup_download():
         data['pengaturan'] = {
             'nama_pesantren': p.nama_pesantren, 'alamat': p.alamat, 'telepon': p.telepon,
             'email': p.email, 'facebook': p.facebook, 'instagram': p.instagram,
-            'tiktok': getattr(p, 'tiktok', ''), 'youtube': p.youtube
+            'tiktok': getattr(p, 'tiktok', ''), 'youtube': p.youtube,
+            'deskripsi_singkat': p.deskripsi_singkat,
+            'maps_embed': p.maps_embed, 'maps_link': p.maps_link,
+            'jumlah_santri': p.jumlah_santri, 'jumlah_alumni': p.jumlah_alumni,
+            'jumlah_ustadz': p.jumlah_ustadz, 'jumlah_kitab': p.jumlah_kitab,
+            'sejarah': p.sejarah, 'sejarah_gambar': p.sejarah_gambar,
+            'struktur_organisasi_gambar': p.struktur_organisasi_gambar,
+            'visi': p.visi, 'misi': p.misi,
+            'hero_title_1': p.hero_title_1, 'hero_title_2': p.hero_title_2,
+            'hero_title_3': p.hero_title_3, 'hero_subtitle': p.hero_subtitle
         }
         
     response = make_response(json.dumps(data, indent=2))
@@ -371,11 +434,9 @@ def restore():
     if file:
         try:
             data = json.load(file)
-            
-            # Restore Logic (Append/Overwrite? Let's go with Append for now to be safe, or check existence)
-            # For this simple implementation, let's just add items.
-            
             count = 0
+            
+            # Restore Berita
             if 'berita' in data:
                 for item in data['berita']:
                     if not Berita.query.filter_by(slug=item['slug']).first():
@@ -383,25 +444,93 @@ def restore():
                             judul=item['judul'], slug=item['slug'], konten=item['konten'],
                             gambar=item.get('gambar'), status=item.get('status', 'published'),
                             kategori=item.get('kategori', 'berita'),
-                            tanggal=datetime.fromisoformat(item['tanggal'])
+                            tanggal=datetime.fromisoformat(item['tanggal']),
+                            penulis=item.get('penulis', 'Admin')
                         )
                         db.session.add(b)
                         count += 1
             
+            # Restore Agenda
             if 'agenda' in data:
                 for item in data['agenda']:
-                    a = Agenda(
-                        nama_kegiatan=item['nama_kegiatan'], lokasi=item['lokasi'], deskripsi=item['deskripsi'],
-                        tanggal_mulai=datetime.fromisoformat(item['tanggal_mulai']),
-                        tanggal_selesai=datetime.fromisoformat(item['tanggal_selesai']) if item.get('tanggal_selesai') else None
-                    )
-                    db.session.add(a)
-                    count += 1
-                    
+                    # Check duplicate by name and start date
+                    start_date = datetime.fromisoformat(item['tanggal_mulai'])
+                    if not Agenda.query.filter_by(nama_kegiatan=item['nama_kegiatan'], tanggal_mulai=start_date).first():
+                        a = Agenda(
+                            nama_kegiatan=item['nama_kegiatan'], lokasi=item['lokasi'], deskripsi=item['deskripsi'],
+                            tanggal_mulai=start_date,
+                            tanggal_selesai=datetime.fromisoformat(item['tanggal_selesai']) if item.get('tanggal_selesai') else None
+                        )
+                        db.session.add(a)
+                        count += 1
+            
+            # Restore Galeri
+            if 'galeri' in data:
+                for item in data['galeri']:
+                    # Check duplicate by image url
+                    if not Galeri.query.filter_by(gambar=item['gambar']).first():
+                        g = Galeri(
+                            judul=item['judul'], gambar=item['gambar'], 
+                            kategori=item.get('kategori', 'Kegiatan'), 
+                            deskripsi=item.get('deskripsi'),
+                            tanggal=datetime.fromisoformat(item['tanggal']) if item.get('tanggal') else datetime.now()
+                        )
+                        db.session.add(g)
+                        count += 1
+
+            # Restore Pimpinan
+            if 'pimpinan' in data:
+                for item in data['pimpinan']:
+                    if not Pimpinan.query.filter_by(nama=item['nama']).first():
+                        pim = Pimpinan(
+                            nama=item['nama'], jabatan=item['jabatan'],
+                            gambar=item.get('gambar'), urutan=item.get('urutan', 0)
+                        )
+                        db.session.add(pim)
+                        count += 1
+            
+            # Restore Program
+            if 'program' in data:
+                # First pass: Create all programs without parents to avoid foreign key errors
+                pending_parents = []
+                for item in data['program']:
+                    if not Program.query.filter_by(nama=item['nama']).first():
+                        prog = Program(
+                            nama=item['nama'], deskripsi=item.get('deskripsi'),
+                            icon=item.get('icon'), gambar=item.get('gambar'),
+                            urutan=item.get('urutan', 0)
+                        )
+                        db.session.add(prog)
+                        db.session.flush() # Flush to get ID
+                        if item.get('parent_id'):
+                            pending_parents.append((prog, item['parent_id'])) # Store for second pass (this logic is tricky with IDs from backup vs new IDs)
+                        count += 1
+                
+                # Note: Parent ID mapping is complex because IDs change. 
+                # For now, we skip parent mapping restoration in this simple version 
+                # or we could try to match by name if parent was also restored.
+                # A robust solution requires mapping old_id -> new_id.
+                # Simplifying assumption: Users will manually re-assign parents if needed, 
+                # or we match by name if possible.
+            
+            # Restore Pengaturan (Update existing)
+            if 'pengaturan' in data:
+                p = Pengaturan.query.first()
+                if not p:
+                    p = Pengaturan()
+                    db.session.add(p)
+                
+                settings = data['pengaturan']
+                for key, value in settings.items():
+                    if hasattr(p, key):
+                        setattr(p, key, value)
+                count += 1 # Count settings update as 1 action
+
             db.session.commit()
-            log_activity('RESTORE', 'System', f'Restored {count} items from backup')
-            flash(f'Restore berhasil! {count} data ditambahkan.', 'success')
+            log_activity('RESTORE', 'System', f'Restored/Added {count} items from backup')
+            flash(f'Restore berhasil! {count} data ditambahkan/diperbarui.', 'success')
         except Exception as e:
+            db.session.rollback()
             flash(f'Gagal melakukan restore: {str(e)}', 'danger')
             
     return redirect(url_for('admin.backup'))

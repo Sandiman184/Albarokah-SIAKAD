@@ -26,15 +26,26 @@ def user_list():
 def user_add():
     form = UserForm()
     if form.validate_on_submit():
+        if User.query.filter_by(username=form.username.data).first():
+            flash('Username sudah digunakan! Silakan pilih username lain.', 'danger')
+            return render_template('master/user_form.html', title='Tambah User', form=form)
+
         user = User(
             username=form.username.data,
             role=form.role.data
         )
         user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        flash('User berhasil ditambahkan', 'success')
-        return redirect(url_for('master.user_list'))
+        
+        try:
+            db.session.add(user)
+            db.session.commit()
+            flash('User berhasil ditambahkan', 'success')
+            return redirect(url_for('master.user_list'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Gagal menambahkan user: {str(e)}', 'danger')
+            return render_template('master/user_form.html', title='Tambah User', form=form)
+            
     return render_template('master/user_form.html', title='Tambah User', form=form)
 
 @bp.route('/users/edit/<int:id>', methods=['GET', 'POST'])
