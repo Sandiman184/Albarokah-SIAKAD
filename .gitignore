@@ -1,4 +1,27 @@
 
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Database
+*.sql
+*.sqlite3
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+
 # Secret Documentation
 ACCESS_CREDENTIALS.md
 DEPLOYMENT_GUIDE.md
