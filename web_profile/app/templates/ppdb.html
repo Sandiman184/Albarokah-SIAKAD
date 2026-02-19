@@ -44,6 +44,11 @@
                         <h4 class="fw-bold">Kontak Panitia</h4>
                         <p class="mb-1">Telepon/WA: {{ pengaturan.telepon if pengaturan else '(0274) 123456' }}</p>
                         <p class="mb-0">Email: {{ pengaturan.email if pengaturan else 'info@albarokah.ponpes.id' }}</p>
+                        <div class="mt-3">
+                            <a href="https://wa.me/{{ pengaturan.telepon|replace('0', '62', 1)|replace('-', '')|replace(' ', '') }}" target="_blank" class="btn btn-light text-info fw-bold rounded-pill px-4 shadow-sm">
+                                <i class="fab fa-whatsapp me-2"></i> Hubungi via WA
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -54,32 +59,37 @@
                 <div class="card border-0 shadow-lg p-4">
                     <div class="card-body">
                         <h3 class="fw-bold text-center mb-4">Formulir Pendaftaran Online</h3>
-                        <form>
+                        <form action="{{ url_for('main.ppdb_register') }}" method="POST">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <div class="mb-3">
                                 <label for="nama" class="form-label">Nama Lengkap Calon Santri</label>
-                                <input type="text" class="form-control" id="nama" placeholder="Masukkan nama lengkap">
+                                <input type="text" class="form-control" id="nama" name="nama" placeholder="Masukkan nama lengkap" required>
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="tempat_lahir" class="form-label">Tempat Lahir</label>
-                                    <input type="text" class="form-control" id="tempat_lahir">
+                                    <input type="text" class="form-control" id="tempat_lahir" name="tempat_lahir" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="tanggal_lahir" class="form-label">Tanggal Lahir</label>
-                                    <input type="date" class="form-control" id="tanggal_lahir">
+                                    <input type="date" class="form-control" id="tanggal_lahir" name="tanggal_lahir" required>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label for="alamat" class="form-label">Alamat Lengkap</label>
-                                <textarea class="form-control" id="alamat" rows="3"></textarea>
+                                <textarea class="form-control" id="alamat" name="alamat" rows="3" required></textarea>
                             </div>
                             <div class="mb-3">
                                 <label for="asal_sekolah" class="form-label">Asal Sekolah</label>
-                                <input type="text" class="form-control" id="asal_sekolah">
+                                <input type="text" class="form-control" id="asal_sekolah" name="asal_sekolah" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="nama_ortu" class="form-label">Nama Orang Tua / Wali</label>
+                                <input type="text" class="form-control" id="nama_ortu" name="nama_ortu" required>
                             </div>
                             <div class="mb-3">
                                 <label for="no_hp_ortu" class="form-label">No. HP Orang Tua / Wali</label>
-                                <input type="tel" class="form-control" id="no_hp_ortu" placeholder="08xxxxxxxxxx">
+                                <input type="tel" class="form-control" id="no_hp_ortu" name="no_hp_ortu" placeholder="08xxxxxxxxxx" required>
                             </div>
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-success btn-lg fw-bold">Kirim Pendaftaran</button>

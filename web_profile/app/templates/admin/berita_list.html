@@ -22,7 +22,10 @@
             <tbody>
                 {% for berita in beritas %}
                 <tr>
-                    <td>{{ berita.judul }}</td>
+                    <td>
+                        {{ berita.judul }}
+                        <div class="small text-muted">{{ berita.konten|striptags|truncate(50) }}</div>
+                    </td>
                     <td>
                         {% if berita.status == 'published' %}
                             <span class="badge bg-success">Published</span>

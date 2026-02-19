@@ -22,10 +22,19 @@
                         <span class="text-danger small">{{ error }}</span>
                     {% endfor %}
                 {% endif %}
-                {% if form.gambar.data and form.gambar.data is string %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.gambar_url.label(class="form-label") }}
+                {{ form.gambar_url(class="form-control", placeholder="https://...") }}
+                <small class="text-muted">Jika menggunakan gambar dari File Manager, paste URL di sini dan biarkan upload kosong.</small>
+            </div>
+            
+            <div class="mb-3">
+                {% if galeri and galeri.gambar %}
                     <div class="mt-2">
                         <small class="text-muted">Gambar saat ini:</small><br>
-                        <img src="{{ form.gambar.data }}" alt="Current Image" width="150" class="img-thumbnail mt-1">
+                        <img src="{{ galeri.gambar }}" alt="Current Image" width="150" class="img-thumbnail mt-1">
                     </div>
                 {% endif %}
             </div>

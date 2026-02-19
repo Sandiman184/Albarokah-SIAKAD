@@ -57,6 +57,30 @@
                             </div>
                         {% endif %}
                     </div>
+                    
+                    <div class="mb-3">
+                        {{ form.sejarah_gambar_url.label(class="form-label") }}
+                        {{ form.sejarah_gambar_url(class="form-control", placeholder="https://...") }}
+                        <small class="text-muted">Jika menggunakan gambar dari File Manager, paste URL di sini dan biarkan upload kosong.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form.struktur_organisasi_gambar.label(class="form-label") }}
+                        {{ form.struktur_organisasi_gambar(class="form-control") }}
+                        {% if pengaturan.struktur_organisasi_gambar %}
+                            <div class="mt-2">
+                                <label>Gambar Struktur Organisasi Saat Ini:</label><br>
+                                <img src="{{ pengaturan.struktur_organisasi_gambar }}" alt="Struktur Organisasi" class="img-thumbnail" style="max-height: 300px;">
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.struktur_organisasi_gambar_url.label(class="form-label") }}
+                        {{ form.struktur_organisasi_gambar_url(class="form-control", placeholder="https://...") }}
+                        <small class="text-muted">Jika menggunakan gambar dari File Manager, paste URL di sini dan biarkan upload kosong.</small>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             {{ form.visi.label(class="form-label") }}
@@ -65,6 +89,26 @@
                         <div class="col-md-6 mb-3">
                             {{ form.misi.label(class="form-label") }}
                             {{ form.misi(class="form-control wysiwyg-editor", rows="5") }}
+                        </div>
+                    </div>
+
+                    <h5 class="text-muted mb-3 mt-4">Statistik Pesantren</h5>
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            {{ form.jumlah_santri.label(class="form-label") }}
+                            {{ form.jumlah_santri(class="form-control", type="number") }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.jumlah_alumni.label(class="form-label") }}
+                            {{ form.jumlah_alumni(class="form-control", type="number") }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.jumlah_ustadz.label(class="form-label") }}
+                            {{ form.jumlah_ustadz(class="form-control", type="number") }}
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            {{ form.jumlah_kitab.label(class="form-label") }}
+                            {{ form.jumlah_kitab(class="form-control", type="number") }}
                         </div>
                     </div>
 

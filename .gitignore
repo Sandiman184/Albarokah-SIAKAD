@@ -25,3 +25,12 @@ pip-delete-this-directory.txt
 # Secret Documentation
 ACCESS_CREDENTIALS.md
 DEPLOYMENT_GUIDE.md
+PANDUAN_GOOGLE_SHEETS.md
+PANDUAN_EMAIL_SMTP.md
+
+# Sensitive Credentials
+google-credentials.json
+web_profile/test_email.py
+*.json
+!package.json
+!tsconfig.json

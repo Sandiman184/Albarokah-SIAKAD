@@ -14,3 +14,7 @@ Flask-Talisman
 Flask-Caching
 Flask-Compress
 Pillow
+gspread
+google-auth
+google-auth-oauthlib
+google-auth-httplib2

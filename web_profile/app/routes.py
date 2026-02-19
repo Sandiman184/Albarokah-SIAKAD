@@ -2,8 +2,72 @@ from app import db, cache, limiter, mail
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
 from flask_mail import Message
 from app.models import Berita, Agenda, Galeri, Pengaturan, Program, Pimpinan
+from datetime import datetime
+import os
+import json
+
+# Optional: Import gspread if you want to use it
+# import gspread
+# from oauth2client.service_account import ServiceAccountCredentials
 
 bp = Blueprint('main', __name__)
+
+def append_to_google_sheet(data):
+    """
+    Helper function to append data to Google Sheet.
+    Requires 'gspread' and 'oauth2client' packages installed.
+    Requires 'credentials.json' in the root folder.
+    """
+    try:
+        import gspread
+        from google.oauth2.service_account import Credentials
+        
+        # Define scopes
+        scopes = [
+            'https://www.googleapis.com/auth/spreadsheets',
+            'https://www.googleapis.com/auth/drive'
+        ]
+        
+        # Load credentials
+        # Ensure you have 'google-credentials.json' in your web_profile folder or root
+        creds_path = os.path.join(current_app.root_path, '..', '..', 'google-credentials.json')
+        if not os.path.exists(creds_path):
+             # Try fallback to project root if not found relative to app/routes
+             creds_path = os.path.join(os.getcwd(), 'google-credentials.json')
+        
+        if not os.path.exists(creds_path):
+            current_app.logger.warning(f"Google Sheets credentials not found at {creds_path}. Skipping sheet update.")
+            return False
+            
+        credentials = Credentials.from_service_account_file(creds_path, scopes=scopes)
+        client = gspread.authorize(credentials)
+        
+        # Open the sheet
+        # You must share your sheet with the client_email from json file
+        sheet_name = os.environ.get('GOOGLE_SHEET_NAME', 'PPDB_Albarokah_2026')
+        sheet = client.open(sheet_name).sheet1
+        
+        # Prepare row
+        row = [
+            data['timestamp'],
+            data['nama'],
+            data['tempat_lahir'],
+            data['tanggal_lahir'],
+            data['alamat'],
+            data['asal_sekolah'],
+            data['nama_ortu'],
+            data['no_hp_ortu']
+        ]
+        
+        sheet.append_row(row)
+        return True
+        
+    except ImportError:
+        current_app.logger.warning("gspread library not installed. Skipping sheet update.")
+        return False
+    except Exception as e:
+        current_app.logger.error(f"Google Sheets Error: {e}")
+        return False
 
 @bp.context_processor
 @cache.cached(timeout=300, key_prefix='global_pengaturan')
@@ -22,7 +86,7 @@ def index():
 
 @bp.route('/profil')
 @limiter.limit("30 per minute")
-@cache.cached(timeout=300)
+# @cache.cached(timeout=300) # Disable cache temporarily for debugging
 def profil():
     pimpinan = Pimpinan.query.order_by(Pimpinan.urutan.asc()).all()
     return render_template('profil.html', title='Profil Pesantren', pimpinan=pimpinan)
@@ -36,9 +100,69 @@ def program():
 
 @bp.route('/ppdb')
 @limiter.limit("30 per minute")
-@cache.cached(timeout=300)
+# @cache.cached(timeout=300) # Disable cache for PPDB to show flash messages
 def ppdb():
     return render_template('ppdb.html', title='PPDB Online')
+
+@bp.route('/ppdb/register', methods=['POST'])
+@limiter.limit("5 per minute")
+def ppdb_register():
+    if request.method == 'POST':
+        try:
+            # Collect form data
+            data = {
+                'nama': request.form.get('nama'),
+                'tempat_lahir': request.form.get('tempat_lahir'),
+                'tanggal_lahir': request.form.get('tanggal_lahir'),
+                'alamat': request.form.get('alamat'),
+                'asal_sekolah': request.form.get('asal_sekolah'),
+                'nama_ortu': request.form.get('nama_ortu'),
+                'no_hp_ortu': request.form.get('no_hp_ortu'),
+                'timestamp': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+            }
+            
+            # 1. SECURITY: Input Validation & Sanitization
+            # Check if all fields are filled
+            if not all(data.values()):
+                flash('Harap lengkapi semua kolom pendaftaran!', 'warning')
+                return redirect(url_for('main.ppdb'))
+            
+            # Simple XSS Sanitization: Remove dangerous characters
+            for key in data:
+                if isinstance(data[key], str):
+                    # Strip whitespace
+                    data[key] = data[key].strip()
+                    # Escape HTML characters to prevent XSS (Cross-Site Scripting)
+                    data[key] = data[key].replace('<', '&lt;').replace('>', '&gt;')
+            
+            # 2. SECURITY: CSRF Protection is handled automatically by Flask-WTF 
+            # if we use FlaskForm, but here we use HTML form.
+            # We must ensure csrf_token is present in the form (checked in template).
+            
+            # Here you would typically save to database or Google Sheets
+            # For now, we'll just flash a success message as a placeholder
+            # The actual Google Sheets integration will be implemented in the next step
+            
+            # Example placeholder for Google Sheets logic:
+            # append_to_sheet(data)
+            append_to_google_sheet(data)
+            
+            # Get contact number from settings if available
+            contact_info = ""
+            try:
+                pengaturan = Pengaturan.query.first()
+                if pengaturan and pengaturan.telepon:
+                    contact_info = f" di nomor {pengaturan.telepon}"
+            except:
+                pass
+            
+            flash(f'Alhamdulillah, formulir pendaftaran berhasil dikirim! Data Anda telah kami terima. Silakan konfirmasi pendaftaran ke Panitia melalui WhatsApp{contact_info} untuk proses selanjutnya.', 'success')
+            
+        except Exception as e:
+            current_app.logger.error(f"PPDB Error: {e}")
+            flash('Mohon maaf, terjadi kesalahan saat mengirim pendaftaran. Silakan coba lagi atau hubungi Panitia secara langsung.', 'danger')
+            
+    return redirect(url_for('main.ppdb'))
 
 from sqlalchemy import func
 from flask import request
@@ -118,16 +242,25 @@ def kontak():
         if not all([nama, email, subjek, pesan]):
             flash('Harap lengkapi semua kolom!', 'danger')
         else:
+            # Get destination email from settings or default
+            dest_email = 'ppqalbarokahkarangjati@gmail.com'
             try:
-                # Send email
+                pengaturan = Pengaturan.query.first()
+                if pengaturan and pengaturan.email:
+                    dest_email = pengaturan.email
+            except:
+                pass
+            
+            try:
+                # Send email via SMTP
                 msg = Message(
                     subject=f"[Kontak Website] {subjek}",
-                    sender=current_app.config['MAIL_DEFAULT_SENDER'],
-                    recipients=['ppqalbarokahkarangjati@gmail.com'],
+                    sender=current_app.config['MAIL_DEFAULT_SENDER'], # Must match MAIL_USERNAME
+                    recipients=[dest_email],
                     body=f"""
                     Pesan Baru dari Website Ponpes Al-Barokah
                     
-                    Nama: {nama}
+                    Pengirim: {nama}
                     Email: {email}
                     
                     Pesan:
@@ -135,10 +268,24 @@ def kontak():
                     """
                 )
                 mail.send(msg)
-                flash('Pesan Anda berhasil dikirim! Kami akan segera menghubungi Anda.', 'success')
+                
+                # Custom notification message
+                contact_info = ""
+                try:
+                    if pengaturan and pengaturan.telepon:
+                        contact_info = f" ({pengaturan.telepon})"
+                except:
+                    pass
+                    
+                flash(f'Alhamdulillah, pesan Anda berhasil dikirim! Terima kasih telah menghubungi kami. Untuk respon lebih cepat, Anda juga dapat menghubungi kami melalui WhatsApp{contact_info}.', 'success')
+                
             except Exception as e:
                 current_app.logger.error(f"Error sending email: {e}")
-                flash('Maaf, terjadi kesalahan saat mengirim pesan. Silakan coba lagi nanti atau hubungi kami via WhatsApp.', 'danger')
+                # Provide helpful error message if on localhost
+                if "ConnectionRefusedError" in str(e) or "authentication required" in str(e):
+                    flash('Gagal mengirim email: Konfigurasi Server Email belum disetting. Silakan hubungi admin.', 'danger')
+                else:
+                    flash('Maaf, terjadi kesalahan saat mengirim pesan. Silakan coba lagi nanti atau hubungi kami via WhatsApp.', 'danger')
             
             return redirect(url_for('main.kontak'))
             

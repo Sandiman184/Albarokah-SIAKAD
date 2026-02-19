@@ -84,9 +84,16 @@ class Pengaturan(db.Model):
     maps_embed = db.Column(db.Text)
     maps_link = db.Column(db.String(255)) # For clickable map link in footer
     
+    # Statistics
+    jumlah_santri = db.Column(db.Integer, default=150)
+    jumlah_alumni = db.Column(db.Integer, default=500)
+    jumlah_ustadz = db.Column(db.Integer, default=25)
+    jumlah_kitab = db.Column(db.Integer, default=50)
+    
     # New fields for Profile
     sejarah = db.Column(db.Text)
     sejarah_gambar = db.Column(db.String(255))
+    struktur_organisasi_gambar = db.Column(db.String(255))
     visi = db.Column(db.Text)
     misi = db.Column(db.Text)
     

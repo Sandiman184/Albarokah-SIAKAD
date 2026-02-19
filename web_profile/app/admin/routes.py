@@ -3,7 +3,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.utils import secure_filename
 import os
 import secrets
-from app import db, login, limiter
+from app import db, login, limiter, cache
 from app.models import User, Berita, Agenda, Galeri, Pengaturan, Program, Pimpinan
 from app.admin.forms import LoginForm, BeritaForm, AgendaForm, GaleriForm, PengaturanForm, ProgramForm, PimpinanForm, ProfileForm, UserForm
 from app.services.image_service import ImageService
@@ -151,6 +151,39 @@ def user_delete(id):
     flash('User berhasil dihapus', 'success')
     return redirect(url_for('admin.user_list'))
 
+def get_all_used_images():
+    """Helper to collect all image URLs currently in use by the database."""
+    used_images = set()
+    
+    try:
+        # Berita
+        for item in Berita.query.with_entities(Berita.gambar).all():
+            if item.gambar: used_images.add(item.gambar)
+            
+        # Galeri
+        for item in Galeri.query.with_entities(Galeri.gambar).all():
+            if item.gambar: used_images.add(item.gambar)
+            
+        # Program
+        for item in Program.query.with_entities(Program.gambar).all():
+            if item.gambar: used_images.add(item.gambar)
+            
+        # Pimpinan
+        for item in Pimpinan.query.with_entities(Pimpinan.gambar).all():
+            if item.gambar: used_images.add(item.gambar)
+            
+        # Pengaturan
+        setting = Pengaturan.query.first()
+        if setting:
+            if setting.sejarah_gambar: used_images.add(setting.sejarah_gambar)
+            if hasattr(setting, 'struktur_organisasi_gambar') and setting.struktur_organisasi_gambar:
+                used_images.add(setting.struktur_organisasi_gambar)
+            # Check other potential image fields in Pengaturan if any
+    except Exception as e:
+        print(f"Error collecting used images: {e}")
+        
+    return used_images
+
 @bp.route('/file-manager')
 @login_required
 @superadmin_required
@@ -158,12 +191,19 @@ def file_manager():
     upload_folder = current_app.config['UPLOAD_FOLDER']
     files = []
     
+    used_images = get_all_used_images()
+    
     # Walk through uploads directory
     for root, dirs, filenames in os.walk(upload_folder):
         for filename in filenames:
             if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
                 filepath = os.path.join(root, filename)
                 rel_path = os.path.relpath(filepath, upload_folder)
+                
+                # Generate URL matching how it's stored
+                # Note: url_for might return absolute URL if _external=True, but usually relative
+                url_path = url_for('static', filename='uploads/' + rel_path.replace('\\', '/'))
+                
                 size_kb = os.path.getsize(filepath) / 1024
                 
                 # Determine category based on folder name
@@ -173,9 +213,10 @@ def file_manager():
                 files.append({
                     'name': filename,
                     'path': filepath, # Absolute path for deletion
-                    'url': url_for('static', filename='uploads/' + rel_path.replace('\\', '/')),
+                    'url': url_path,
                     'size': f"{size_kb:.1f} KB",
-                    'category': category
+                    'category': category,
+                    'is_used': url_path in used_images
                 })
     
     return render_template('admin/file_manager.html', files=files)
@@ -201,6 +242,44 @@ def file_delete():
             flash(f'Gagal menghapus file: {str(e)}', 'danger')
     else:
         flash('File tidak ditemukan', 'danger')
+        
+    return redirect(url_for('admin.file_manager'))
+
+@bp.route('/file-manager/delete-unused', methods=['POST'])
+@login_required
+@superadmin_required
+def file_delete_unused():
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    used_images = get_all_used_images()
+    deleted_count = 0
+    errors = 0
+    
+    # Walk through uploads directory
+    for root, dirs, filenames in os.walk(upload_folder):
+        for filename in filenames:
+            if filename.lower().endswith(('.png', '.jpg', '.jpeg', '.gif')):
+                filepath = os.path.join(root, filename)
+                rel_path = os.path.relpath(filepath, upload_folder)
+                
+                # Check if file is used
+                url_path = url_for('static', filename='uploads/' + rel_path.replace('\\', '/'))
+                
+                if url_path not in used_images:
+                    try:
+                        os.remove(filepath)
+                        deleted_count += 1
+                    except Exception as e:
+                        print(f"Failed to delete {filepath}: {e}")
+                        errors += 1
+    
+    if deleted_count > 0:
+        log_activity('DELETE', 'File Manager', f'Deleted {deleted_count} unused files')
+        flash(f'Berhasil menghapus {deleted_count} file yang tidak digunakan.', 'success')
+    else:
+        flash('Tidak ada file tidak digunakan yang ditemukan.', 'info')
+        
+    if errors > 0:
+        flash(f'Gagal menghapus {errors} file.', 'warning')
         
     return redirect(url_for('admin.file_manager'))
 
@@ -363,14 +442,22 @@ def berita_list():
 @login_required
 def berita_add():
     form = BeritaForm()
+    
+    # Default author to current user's username if not submitted
+    if request.method == 'GET':
+        form.penulis.data = current_user.username.title()  # Capitalize first letter
+        
     if form.validate_on_submit():
         gambar_file = "https://picsum.photos/seed/default/800/400"
+        
         if form.gambar.data and hasattr(form.gambar.data, 'filename'):
             try:
                 gambar_file = ImageService.save_picture(form.gambar.data, 'berita')
             except ValueError as e:
                 flash(str(e), 'danger')
                 return render_template('admin/berita_form.html', form=form, title='Tambah Berita')
+        elif form.gambar_url.data:
+            gambar_file = form.gambar_url.data
         
         # Generate unique slug
         base_slug = form.slug.data
@@ -387,7 +474,7 @@ def berita_add():
             gambar=gambar_file,
             status=form.status.data,
             kategori=form.kategori.data,
-            penulis=current_user.username
+            penulis=form.penulis.data
         )
         db.session.add(berita)
         db.session.commit()
@@ -409,8 +496,11 @@ def berita_edit(id):
             except ValueError as e:
                 flash(str(e), 'danger')
                 return render_template('admin/berita_form.html', form=form, title='Edit Berita')
+        elif form.gambar_url.data:
+            berita.gambar = form.gambar_url.data
             
         berita.judul = form.judul.data
+        berita.penulis = form.penulis.data
         
         # Generate unique slug (exclude current berita)
         base_slug = form.slug.data
@@ -432,7 +522,7 @@ def berita_edit(id):
         log_activity('UPDATE', 'Berita', f'Updated berita: {berita.judul}')
         flash('Berita berhasil diupdate', 'success')
         return redirect(url_for('admin.berita_list'))
-    return render_template('admin/berita_form.html', form=form, title='Edit Berita')
+    return render_template('admin/berita_form.html', form=form, title='Edit Berita', berita=berita)
 
 @bp.route('/berita/delete/<int:id>', methods=['POST'])
 @login_required
@@ -510,6 +600,8 @@ def galeri_add():
         gambar_file = "https://picsum.photos/seed/default/800/600"
         if form.gambar.data and hasattr(form.gambar.data, 'filename'):
             gambar_file = ImageService.save_picture(form.gambar.data, 'galeri')
+        elif form.gambar_url.data:
+            gambar_file = form.gambar_url.data
             
         galeri = Galeri(
             judul=form.judul.data,
@@ -533,6 +625,8 @@ def galeri_edit(id):
         if form.gambar.data and hasattr(form.gambar.data, 'filename'):
             gambar_file = ImageService.save_picture(form.gambar.data, 'galeri')
             galeri.gambar = gambar_file
+        elif form.gambar_url.data:
+            galeri.gambar = form.gambar_url.data
             
         galeri.judul = form.judul.data
         galeri.kategori = form.kategori.data
@@ -542,7 +636,7 @@ def galeri_edit(id):
         log_activity('UPDATE', 'Galeri', f'Updated galeri: {galeri.judul}')
         flash('Foto berhasil diupdate', 'success')
         return redirect(url_for('admin.galeri_list'))
-    return render_template('admin/galeri_form.html', form=form, title='Edit Foto')
+    return render_template('admin/galeri_form.html', form=form, title='Edit Foto', galeri=galeri)
 
 @bp.route('/galeri/delete/<int:id>', methods=['POST'])
 @login_required
@@ -568,8 +662,14 @@ def pengaturan():
     form = PengaturanForm(obj=pengaturan)
     if form.validate_on_submit():
         current_sejarah_gambar = pengaturan.sejarah_gambar
+        current_struktur_organisasi_gambar = getattr(pengaturan, 'struktur_organisasi_gambar', None)
+        
         form.populate_obj(pengaturan)
         
+        # Clear cache when settings are updated
+        cache.clear()
+        
+        # Handle Sejarah Gambar
         if form.sejarah_gambar.data and hasattr(form.sejarah_gambar.data, 'filename') and form.sejarah_gambar.data.filename:
             try:
                 gambar_file = ImageService.save_picture(form.sejarah_gambar.data, 'sejarah')
@@ -578,8 +678,24 @@ def pengaturan():
                 pengaturan.sejarah_gambar = current_sejarah_gambar
                 flash(str(e), 'danger')
                 return render_template('admin/pengaturan.html', form=form)
+        elif form.sejarah_gambar_url.data:
+            pengaturan.sejarah_gambar = form.sejarah_gambar_url.data
         else:
             pengaturan.sejarah_gambar = current_sejarah_gambar
+
+        # Handle Struktur Organisasi Gambar
+        if form.struktur_organisasi_gambar.data and hasattr(form.struktur_organisasi_gambar.data, 'filename') and form.struktur_organisasi_gambar.data.filename:
+            try:
+                gambar_file = ImageService.save_picture(form.struktur_organisasi_gambar.data, 'struktur')
+                pengaturan.struktur_organisasi_gambar = gambar_file
+            except ValueError as e:
+                pengaturan.struktur_organisasi_gambar = current_struktur_organisasi_gambar
+                flash(f"Gagal upload struktur organisasi: {str(e)}", 'danger')
+                return render_template('admin/pengaturan.html', form=form)
+        elif form.struktur_organisasi_gambar_url.data:
+            pengaturan.struktur_organisasi_gambar = form.struktur_organisasi_gambar_url.data
+        else:
+            pengaturan.struktur_organisasi_gambar = current_struktur_organisasi_gambar
 
         db.session.commit()
         log_activity('UPDATE', 'System', 'Updated website settings')
@@ -615,6 +731,8 @@ def program_add():
             except ValueError as e:
                 flash(str(e), 'danger')
                 return render_template('admin/program_form.html', form=form, title='Tambah Program')
+        elif form.gambar_url.data:
+            gambar_file = form.gambar_url.data
             
         program = Program(
             nama=form.nama.data,
@@ -653,6 +771,8 @@ def program_edit(id):
             except ValueError as e:
                 flash(str(e), 'danger')
                 return render_template('admin/program_form.html', form=form, title='Edit Program', program=program)
+        elif form.gambar_url.data:
+            program.gambar = form.gambar_url.data
         
         program.nama = form.nama.data
         program.deskripsi = form.deskripsi.data
@@ -699,6 +819,8 @@ def pimpinan_add():
             except ValueError as e:
                 flash(str(e), 'danger')
                 return render_template('admin/pimpinan_form.html', form=form, title='Tambah Pimpinan')
+        elif form.gambar_url.data:
+            gambar_file = form.gambar_url.data
             
         pimpinan = Pimpinan(
             nama=form.nama.data,
@@ -708,6 +830,9 @@ def pimpinan_add():
         )
         db.session.add(pimpinan)
         db.session.commit()
+        # Clear cache when pimpinan data is updated
+        cache.clear()
+        
         log_activity('CREATE', 'Pimpinan', f'Created pimpinan: {pimpinan.nama}')
         flash('Data Pimpinan berhasil ditambahkan', 'success')
         return redirect(url_for('admin.pimpinan_list'))
@@ -726,16 +851,21 @@ def pimpinan_edit(id):
             except ValueError as e:
                 flash(str(e), 'danger')
                 return render_template('admin/pimpinan_form.html', form=form, title='Edit Pimpinan')
+        elif form.gambar_url.data:
+            pimpinan.gambar = form.gambar_url.data
             
         pimpinan.nama = form.nama.data
         pimpinan.jabatan = form.jabatan.data
         pimpinan.urutan = int(form.urutan.data or 0)
         
         db.session.commit()
+        # Clear cache when pimpinan data is updated
+        cache.clear()
+        
         log_activity('UPDATE', 'Pimpinan', f'Updated pimpinan: {pimpinan.nama}')
         flash('Data Pimpinan berhasil diupdate', 'success')
         return redirect(url_for('admin.pimpinan_list'))
-    return render_template('admin/pimpinan_form.html', form=form, title='Edit Pimpinan')
+    return render_template('admin/pimpinan_form.html', form=form, title='Edit Pimpinan', pimpinan=pimpinan)
 
 @bp.route('/pimpinan/delete/<int:id>', methods=['POST'])
 @login_required
@@ -744,6 +874,9 @@ def pimpinan_delete(id):
     nama = pimpinan.nama
     db.session.delete(pimpinan)
     db.session.commit()
+    # Clear cache when pimpinan data is updated
+    cache.clear()
+    
     log_activity('DELETE', 'Pimpinan', f'Deleted pimpinan: {nama}')
     flash('Data Pimpinan berhasil dihapus', 'success')
     return redirect(url_for('admin.pimpinan_list'))

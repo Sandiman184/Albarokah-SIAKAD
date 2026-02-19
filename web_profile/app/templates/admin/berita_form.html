@@ -18,6 +18,12 @@
                 {{ form.slug.label(class="form-label") }}
                 {{ form.slug(class="form-control") }}
             </div>
+
+            <div class="mb-3">
+                {{ form.penulis.label(class="form-label") }}
+                {{ form.penulis(class="form-control") }}
+                <div class="form-text">Nama penulis yang akan ditampilkan di halaman berita.</div>
+            </div>
             
             <div class="mb-3">
                 {{ form.konten.label(class="form-label") }}
@@ -31,6 +37,21 @@
                     {% for error in form.gambar.errors %}
                         <span class="text-danger small">{{ error }}</span>
                     {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.gambar_url.label(class="form-label") }}
+                {{ form.gambar_url(class="form-control", placeholder="https://...") }}
+                <small class="text-muted">Jika menggunakan gambar dari File Manager, paste URL di sini dan biarkan upload kosong.</small>
+            </div>
+            
+            <div class="mb-3">
+                {% if berita and berita.gambar %}
+                <div class="mt-2">
+                    <label>Gambar Saat Ini:</label><br>
+                    <img src="{{ berita.gambar }}" alt="Berita" class="img-thumbnail" style="max-height: 150px;">
+                </div>
                 {% endif %}
             </div>
             

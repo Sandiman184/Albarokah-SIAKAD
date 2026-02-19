@@ -27,6 +27,17 @@
 
         <hr class="my-5">
 
+        <!-- Struktur Organisasi -->
+        {% if pengaturan.struktur_organisasi_gambar %}
+        <div class="row mb-5 justify-content-center">
+            <div class="col-12 text-center">
+                <h3 class="fw-bold text-success mb-4">Struktur Organisasi</h3>
+                <img src="{{ pengaturan.struktur_organisasi_gambar }}" class="img-fluid rounded shadow-sm border" alt="Struktur Organisasi" style="max-height: 800px;">
+            </div>
+        </div>
+        <hr class="my-5">
+        {% endif %}
+
         <div class="row mb-5">
             <div class="col-md-6 order-md-2 mb-4">
                 <div class="card bg-success text-white h-100 border-0 shadow">

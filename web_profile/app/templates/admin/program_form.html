@@ -31,6 +31,15 @@
                         <span class="text-danger">{{ error }}</span>
                     {% endfor %}
                 {% endif %}
+            </div>
+
+            <div class="mb-3">
+                {{ form.gambar_url.label(class="form-label") }}
+                {{ form.gambar_url(class="form-control", placeholder="https://...") }}
+                <small class="text-muted">Jika menggunakan gambar dari File Manager, paste URL di sini dan biarkan upload kosong.</small>
+            </div>
+
+            <div class="mb-3">
                 {% if program and program.gambar %}
                 <div class="mt-2">
                     <label>Gambar Saat Ini:</label><br>

@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField, DateTimeField
-from wtforms.validators import DataRequired, Length
+from wtforms.validators import DataRequired, Length, Optional
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -12,7 +12,9 @@ class BeritaForm(FlaskForm):
     judul = StringField('Judul', validators=[DataRequired()])
     slug = StringField('Slug (URL)', validators=[DataRequired()])
     konten = TextAreaField('Konten', validators=[DataRequired()])
+    penulis = StringField('Penulis', validators=[DataRequired()])
     gambar = FileField('Upload Gambar', validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Hanya file gambar yang diperbolehkan!')])
+    gambar_url = StringField('Atau URL Gambar (Copy dari File Manager)')
     status = SelectField('Status', choices=[('published', 'Published'), ('draft', 'Draft')])
     kategori = SelectField('Kategori', choices=[('berita', 'Berita'), ('pengumuman', 'Pengumuman'), ('artikel', 'Artikel')])
     submit = SubmitField('Simpan')
@@ -27,7 +29,8 @@ class AgendaForm(FlaskForm):
 
 class GaleriForm(FlaskForm):
     judul = StringField('Judul')
-    gambar = FileField('Upload Gambar', validators=[DataRequired(), FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Hanya file gambar yang diperbolehkan!')])
+    gambar = FileField('Upload Gambar', validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Hanya file gambar yang diperbolehkan!')])
+    gambar_url = StringField('Atau URL Gambar (Copy dari File Manager)')
     kategori = SelectField('Kategori', choices=[('Fasilitas', 'Fasilitas'), ('Kegiatan', 'Kegiatan'), ('Prestasi', 'Prestasi'), ('Lainnya', 'Lainnya')])
     deskripsi = TextAreaField('Deskripsi / Caption')
     submit = SubmitField('Simpan')
@@ -57,8 +60,19 @@ class PengaturanForm(FlaskForm):
     
     sejarah = TextAreaField('Sejarah Pesantren')
     sejarah_gambar = FileField('Foto Sejarah', validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Hanya file gambar yang diperbolehkan!')])
+    sejarah_gambar_url = StringField('Atau URL Gambar Sejarah')
+    
+    struktur_organisasi_gambar = FileField('Gambar Struktur Organisasi', validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Hanya file gambar yang diperbolehkan!')])
+    struktur_organisasi_gambar_url = StringField('Atau URL Gambar Struktur Organisasi')
+    
     visi = TextAreaField('Visi')
     misi = TextAreaField('Misi')
+    
+    # Statistics
+    jumlah_santri = StringField('Jumlah Santri', default='150')
+    jumlah_alumni = StringField('Jumlah Alumni', default='500')
+    jumlah_ustadz = StringField('Jumlah Ustadz', default='25')
+    jumlah_kitab = StringField('Jumlah Kitab', default='50')
     
     submit = SubmitField('Simpan Pengaturan')
 
@@ -80,6 +94,7 @@ class ProgramForm(FlaskForm):
     deskripsi = TextAreaField('Deskripsi')
     icon = StringField('Icon FontAwesome (cth: fas fa-book)')
     gambar = FileField('Upload Gambar', validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Hanya file gambar yang diperbolehkan!')])
+    gambar_url = StringField('Atau URL Gambar (Copy dari File Manager)')
     parent_id = SelectField('Induk Program (Opsional)', coerce=int, choices=[(0, 'Utama')])
     submit = SubmitField('Simpan')
 
@@ -87,5 +102,6 @@ class PimpinanForm(FlaskForm):
     nama = StringField('Nama Lengkap', validators=[DataRequired()])
     jabatan = StringField('Jabatan', validators=[DataRequired()])
     gambar = FileField('Foto Profil', validators=[FileAllowed(['jpg', 'png', 'jpeg', 'gif'], 'Hanya file gambar yang diperbolehkan!')])
+    gambar_url = StringField('Atau URL Gambar (Copy dari File Manager)')
     urutan = StringField('Urutan Tampil (Angka)', default='0')
     submit = SubmitField('Simpan')
