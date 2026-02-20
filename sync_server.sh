@@ -34,7 +34,13 @@ if [ -f /etc/nginx/sites-enabled/default ]; then
     sudo rm /etc/nginx/sites-enabled/default
 fi
 # Test Nginx config
-sudo nginx -t
+if sudo nginx -t; then
+    echo "Nginx configuration valid. Reloading..."
+    sudo systemctl reload nginx
+else
+    echo "❌ Nginx configuration invalid! Check deployment/nginx/albarokah.conf"
+    exit 1
+fi
 
 # 2.5. Generate Production .env Files (Prevent local env override)
 echo "[2.5] Generating production .env files..."
