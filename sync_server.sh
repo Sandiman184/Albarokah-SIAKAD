@@ -22,6 +22,17 @@ sudo chmod -R 755 /var/www/Albarokah-SIAKAD
 # Khusus folder uploads butuh write access
 sudo chmod -R 775 /var/www/Albarokah-SIAKAD/web_profile/app/static/uploads
 
+# 2.0 FORCE GLOBAL NGINX CONFIG UPDATE
+echo "[2.0] Patching global Nginx config..."
+# Check if client_max_body_size is already set in nginx.conf
+if grep -q "client_max_body_size" /etc/nginx/nginx.conf; then
+    # Update existing value
+    sudo sed -i 's/client_max_body_size .*/client_max_body_size 100M;/g' /etc/nginx/nginx.conf
+else
+    # Add directive to http block
+    sudo sed -i '/http {/a \    client_max_body_size 100M;' /etc/nginx/nginx.conf
+fi
+
 # 2.1 Copy Nginx Configuration (Ensure 100MB limit is applied)
 echo "[2.1] Updating Nginx configuration..."
 sudo cp deployment/nginx/albarokah.conf /etc/nginx/sites-available/albarokah.conf
