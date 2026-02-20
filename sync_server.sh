@@ -90,22 +90,37 @@ sudo systemctl restart web_profile
 sudo systemctl restart siakad
 sudo systemctl restart nginx
 
+# Give services some time to start up
+echo "Waiting 5 seconds for services to initialize..."
+sleep 5
+
 # 7. Verification
 echo "[7] Verifying deployment..."
 # Web Profile runs on port 8001 (based on systemd service)
 # SIAKAD runs on port 8000 (based on nginx conf)
-WEB_HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8001)
+
+echo "Checking Web Profile on port 8001..."
+WEB_HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8001)
 if [ "$WEB_HTTP_CODE" -eq 200 ] || [ "$WEB_HTTP_CODE" -eq 302 ]; then
     echo "✅ Web Profile is UP (Port 8001) - HTTP $WEB_HTTP_CODE"
 else
-    echo "❌ Web Profile might be DOWN (Port 8001) - HTTP $WEB_HTTP_CODE. Check logs: sudo journalctl -u web_profile"
+    echo "❌ Web Profile might be DOWN (Port 8001) - HTTP $WEB_HTTP_CODE"
+    echo "   Diagnostic info:"
+    sudo systemctl status web_profile --no-pager | head -n 20
+    echo "   Recent logs:"
+    sudo journalctl -u web_profile --no-pager -n 20
 fi
 
-SIAKAD_HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000)
+echo "Checking SIAKAD on port 8000..."
+SIAKAD_HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000)
 if [ "$SIAKAD_HTTP_CODE" -eq 200 ] || [ "$SIAKAD_HTTP_CODE" -eq 302 ]; then
     echo "✅ SIAKAD is UP (Port 8000) - HTTP $SIAKAD_HTTP_CODE"
 else
-    echo "❌ SIAKAD might be DOWN (Port 8000) - HTTP $SIAKAD_HTTP_CODE. Check logs: sudo journalctl -u siakad"
+    echo "❌ SIAKAD might be DOWN (Port 8000) - HTTP $SIAKAD_HTTP_CODE"
+    echo "   Diagnostic info:"
+    sudo systemctl status siakad --no-pager | head -n 20
+    echo "   Recent logs:"
+    sudo journalctl -u siakad --no-pager -n 20
 fi
 
 echo "========================================="
