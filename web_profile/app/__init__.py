@@ -17,7 +17,8 @@ csrf = CSRFProtect()
 talisman = Talisman()
 login = LoginManager()
 cache = Cache()
-limiter = Limiter(key_func=get_remote_address)
+# Use default limits, but allow higher limits for admin routes to prevent 429 during heavy operations
+limiter = Limiter(key_func=get_remote_address, default_limits=["200 per day", "50 per hour"])
 compress = Compress()
 mail = Mail()
 

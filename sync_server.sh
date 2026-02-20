@@ -22,6 +22,20 @@ sudo chmod -R 755 /var/www/Albarokah-SIAKAD
 # Khusus folder uploads butuh write access
 sudo chmod -R 775 /var/www/Albarokah-SIAKAD/web_profile/app/static/uploads
 
+# 2.1 Copy Nginx Configuration (Ensure 100MB limit is applied)
+echo "[2.1] Updating Nginx configuration..."
+sudo cp deployment/nginx/albarokah.conf /etc/nginx/sites-available/albarokah.conf
+# Ensure symlink exists
+if [ ! -L /etc/nginx/sites-enabled/albarokah.conf ]; then
+    sudo ln -s /etc/nginx/sites-available/albarokah.conf /etc/nginx/sites-enabled/
+fi
+# Remove default nginx site if exists to avoid conflicts
+if [ -f /etc/nginx/sites-enabled/default ]; then
+    sudo rm /etc/nginx/sites-enabled/default
+fi
+# Test Nginx config
+sudo nginx -t
+
 # 2.5. Generate Production .env Files (Prevent local env override)
 echo "[2.5] Generating production .env files..."
 # Generate stable secret key based on machine ID or fallback to fixed production key
