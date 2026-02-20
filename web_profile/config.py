@@ -38,7 +38,7 @@ class Config:
 
     # Upload Configuration
     UPLOAD_FOLDER = os.path.join(basedir, 'app', 'static', 'uploads')
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max upload size
+    MAX_CONTENT_LENGTH = 100 * 1024 * 1024  # 100MB max upload size (Increased for restore)
 
 class ProductionConfig(Config):
     DEBUG = False

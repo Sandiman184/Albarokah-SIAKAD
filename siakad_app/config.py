@@ -13,7 +13,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Konfigurasi Upload
-    MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max upload
+    MAX_CONTENT_LENGTH = 100 * 1024 * 1024  # 100MB max upload (Increased for restore)
 
     # Konfigurasi Keamanan Cookie (Default untuk Production)
     SESSION_COOKIE_HTTPONLY = True
