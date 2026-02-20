@@ -97,8 +97,9 @@ def profil():
 
 @bp.route('/program')
 @limiter.limit("30 per minute")
-@cache.cached(timeout=300)
+# @cache.cached(timeout=300)
 def program():
+    # Force reload from DB to ensure updates are seen immediately
     programs = Program.query.filter_by(parent_id=None).order_by(Program.urutan.asc()).all()
     return render_template('program.html', title='Program Pendidikan', programs=programs)
 
