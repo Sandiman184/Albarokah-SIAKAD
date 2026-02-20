@@ -66,6 +66,13 @@ def create_app(config_class=Config):
         response.headers.pop('Cross-Origin-Embedder-Policy', None)
         response.headers.pop('Cross-Origin-Opener-Policy', None)
         response.headers.pop('Cross-Origin-Resource-Policy', None)
+        
+        # Add Cache-Control headers to prevent caching of dynamic content
+        if 'Cache-Control' not in response.headers:
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+            
         return response
 
     from app.routes import bp as main_bp
