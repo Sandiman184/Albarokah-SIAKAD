@@ -2,6 +2,7 @@ from app import db, cache, limiter, mail
 from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
 from flask_mail import Message
 from app.models import Berita, Agenda, Galeri, Pengaturan, Program, Pimpinan
+from sqlalchemy.orm import joinedload
 from datetime import datetime
 import os
 import json
@@ -81,6 +82,9 @@ def inject_pengaturan():
 def index():
     berita_terbaru = Berita.query.filter_by(status='published').order_by(Berita.tanggal.desc()).limit(3).all()
     agenda_terbaru = Agenda.query.order_by(Agenda.tanggal_mulai.desc()).limit(3).all()
+    # Relationship 'children' is lazy='dynamic', so joinedload cannot be used directly.
+    # We revert to standard query, or we would need to change model definition to lazy='select'/'joined' for eager loading.
+    # Given the small number of programs, standard lazy loading is acceptable here.
     programs = Program.query.filter_by(parent_id=None).order_by(Program.urutan.asc()).all()
     return render_template('index.html', title='Beranda', beritas=berita_terbaru, agendas=agenda_terbaru, programs=programs)
 

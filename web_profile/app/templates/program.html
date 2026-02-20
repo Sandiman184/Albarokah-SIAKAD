@@ -3,9 +3,10 @@
 {% block content %}
 <section class="py-5 bg-light">
     <div class="container text-center">
-        <h1 class="fw-bold mb-4">Program Pendidikan</h1>
-        <p class="lead text-muted mx-auto" style="max-width: 700px;">
-            Mengenal berbagai jenjang pendidikan dan program unggulan yang diselenggarakan di Albarokah.
+        <h1 class="fw-bold mb-2">PROGRAM PENDIDIKAN</h1>
+        <h3 class="fw-bold mb-4 text-success">Pondok Pesantren Al Barokah</h3>
+        <p class="lead text-muted mx-auto" style="max-width: 800px;">
+            Pondok Pesantren Al Barokah menyelenggarakan sistem pendidikan Islam terpadu dan berjenjang, mulai dari pendidikan Al-Qur’an usia dini hingga pendalaman kitab kuning tingkat lanjutan. Seluruh program dirancang untuk membentuk generasi Qur’ani yang berilmu, berakhlak, dan siap mengabdi kepada umat.
         </p>
     </div>
 </section>
@@ -13,51 +14,55 @@
 <section class="py-5">
     <div class="container">
         {% for program in programs %}
-        <div class="row mb-5 align-items-center">
-            {% if loop.index % 2 != 0 %}
-            <div class="col-md-5 mb-4">
-                {% if program.gambar %}
-                <img src="{{ program.gambar }}" class="img-fluid rounded shadow" alt="{{ program.nama }}">
-                {% else %}
-                <img src="https://picsum.photos/seed/{{ program.id }}/600/400" class="img-fluid rounded shadow" alt="{{ program.nama }}">
-                {% endif %}
-            </div>
-            <div class="col-md-7">
-                <span class="badge bg-success mb-2">Program Unggulan</span>
-                <h3 class="fw-bold text-success mb-3">{{ loop.index }}. {{ program.nama }}</h3>
-                <p>{{ program.deskripsi }}</p>
-                {% for child in program.children.order_by('urutan') %}
-                <div class="mt-4">
-                    <h5 class="fw-bold"><i class="{{ child.icon }} text-success me-2"></i>{{ child.nama }}</h5>
-                    <p class="text-muted ms-4">{{ child.deskripsi }}</p>
+        {% set outer_loop_index = loop.index %}
+        <div class="row mb-5">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm overflow-hidden">
+                    <div class="card-header bg-{{ 'success' if outer_loop_index == 1 else ('warning' if outer_loop_index == 2 else ('info' if outer_loop_index == 3 else ('primary' if outer_loop_index == 4 else 'gold'))) }} text-white py-3" {% if outer_loop_index == 5 %}style="background-color: #d4af37;"{% endif %}>
+                        <h3 class="fw-bold mb-0"><i class="{{ program.icon }} me-2"></i>{{ program.nama }}</h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <p class="lead text-muted">{{ program.deskripsi }}</p>
+                        
+                        <div class="row mt-4 g-4">
+                            {% for child in program.children.order_by('urutan') %}
+                            <div class="col-md-{{ '4' if program.children.count() >= 3 else '6' }}">
+                                <div class="h-100 p-3 border rounded bg-light">
+                                    <h5 class="fw-bold text-{{ 'success' if outer_loop_index == 1 else ('warning' if outer_loop_index == 2 else ('info' if outer_loop_index == 3 else ('primary' if outer_loop_index == 4 else 'dark'))) }} mb-3">{{ loop.index }}️⃣ {{ child.nama }}</h5>
+                                    <p class="small text-muted">{{ child.deskripsi }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
-                {% endfor %}
             </div>
-            {% else %}
-            <div class="col-md-7 order-md-2">
-                <h3 class="fw-bold text-success mb-3">{{ loop.index }}. {{ program.nama }}</h3>
-                <p>{{ program.deskripsi }}</p>
-                {% for child in program.children.order_by('urutan') %}
-                <div class="mt-4">
-                    <h5 class="fw-bold"><i class="{{ child.icon }} text-success me-2"></i>{{ child.nama }}</h5>
-                    <p class="text-muted ms-4">{{ child.deskripsi }}</p>
-                </div>
-                {% endfor %}
-            </div>
-            <div class="col-md-5 order-md-1 mb-4">
-                {% if program.gambar %}
-                <img src="{{ program.gambar }}" class="img-fluid rounded shadow" alt="{{ program.nama }}">
-                {% else %}
-                <img src="https://picsum.photos/seed/{{ program.id }}/600/400" class="img-fluid rounded shadow" alt="{{ program.nama }}">
-                {% endif %}
-            </div>
-            {% endif %}
         </div>
-        
-        {% if not loop.last %}
-        <hr class="my-5">
-        {% endif %}
         {% endfor %}
+
+        <!-- KOMITMEN -->
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <div class="p-5 rounded-3 bg-white shadow-sm border border-success border-opacity-25">
+                    <h3 class="fw-bold text-success mb-4">KOMITMEN PENDIDIKAN</h3>
+                    <p class="lead text-dark mb-4">Pondok Pesantren Al Barokah berkomitmen membangun sistem pendidikan Islam yang:</p>
+                    <div class="row text-start">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Berbasis Al-Qur’an & Kitab Kuning</li>
+                                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Terstruktur dan berjenjang</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Menguatkan aqidah dan akhlak</li>
+                                <li class="mb-2"><i class="fas fa-check-circle text-success me-2"></i>Mencetak generasi Qur’ani pengabdi umat</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 {% endblock %}

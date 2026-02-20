@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
+from sqlalchemy.orm import joinedload
 from app import db
 from app.models.keuangan import Keuangan
 from app.models.akademik import Santri
@@ -21,9 +22,9 @@ def index():
         # Santri has wali_user_id.
         santris = Santri.query.filter_by(wali_user_id=current_user.id).all()
         santri_ids = [s.id for s in santris]
-        pembayaran_list = Keuangan.query.filter(Keuangan.santri_id.in_(santri_ids)).order_by(Keuangan.tanggal_bayar.desc()).all()
+        pembayaran_list = Keuangan.query.filter(Keuangan.santri_id.in_(santri_ids)).options(joinedload(Keuangan.santri)).order_by(Keuangan.tanggal_bayar.desc()).all()
     else:
-        pembayaran_list = Keuangan.query.order_by(Keuangan.tanggal_bayar.desc()).all()
+        pembayaran_list = Keuangan.query.options(joinedload(Keuangan.santri)).order_by(Keuangan.tanggal_bayar.desc()).all()
         
     return render_template('keuangan/pembayaran_list.html', title='Data Keuangan', pembayaran_list=pembayaran_list)
 
@@ -33,7 +34,8 @@ def index():
 def add():
     form = PembayaranForm()
     # Populate santri choices
-    form.santri_id.choices = [(s.id, f"{s.nama} ({s.kelas.nama_kelas if s.kelas else '-'})") for s in Santri.query.all()]
+    santris = Santri.query.options(joinedload(Santri.kelas)).all()
+    form.santri_id.choices = [(s.id, f"{s.nama} ({s.kelas.nama_kelas if s.kelas else '-'})") for s in santris]
     
     # Populate tahun choices (current year - 2 to current year + 2)
     current_year = datetime.now().year
@@ -70,7 +72,8 @@ def edit(id):
     pembayaran = Keuangan.query.get_or_404(id)
     form = PembayaranForm(obj=pembayaran)
     
-    form.santri_id.choices = [(s.id, f"{s.nama} ({s.kelas.nama_kelas if s.kelas else '-'})") for s in Santri.query.all()]
+    santris = Santri.query.options(joinedload(Santri.kelas)).all()
+    form.santri_id.choices = [(s.id, f"{s.nama} ({s.kelas.nama_kelas if s.kelas else '-'})") for s in santris]
     current_year = datetime.now().year
     form.tahun.choices = [(y, y) for y in range(current_year - 2, current_year + 3)]
     
