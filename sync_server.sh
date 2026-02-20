@@ -28,7 +28,21 @@ else
     echo "psql is already installed."
 fi
 
+# 2.0.2 Ensure Database User & Password
+echo "[2.0.2] Configuring PostgreSQL User..."
+# Create user if not exists (will fail safely if exists)
+sudo -u postgres psql -c "CREATE USER albarokah_user WITH PASSWORD 'alnet@2026';" || true
+# Force update password to ensure it matches our config
+sudo -u postgres psql -c "ALTER USER albarokah_user WITH PASSWORD 'alnet@2026';"
+# Grant privileges
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE siakad_db TO albarokah_user;" || true
+sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE web_profile_db TO albarokah_user;" || true
+# Grant schema usage (often needed for public schema)
+sudo -u postgres psql -d siakad_db -c "GRANT ALL ON SCHEMA public TO albarokah_user;" || true
+sudo -u postgres psql -d web_profile_db -c "GRANT ALL ON SCHEMA public TO albarokah_user;" || true
+
 # 2.0 FORCE GLOBAL NGINX CONFIG UPDATE
+
 echo "[2.0] Patching global Nginx config..."
 # Check if client_max_body_size is already set in nginx.conf
 if grep -q "client_max_body_size" /etc/nginx/nginx.conf; then
