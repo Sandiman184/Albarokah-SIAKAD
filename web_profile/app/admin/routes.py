@@ -7,6 +7,7 @@ from app import db, login, limiter, cache
 from app.models import User, Berita, Agenda, Galeri, Pengaturan, Program, Pimpinan
 from app.admin.forms import LoginForm, BeritaForm, AgendaForm, GaleriForm, PengaturanForm, ProgramForm, PimpinanForm, ProfileForm, UserForm
 from app.services.image_service import ImageService
+from app.services.backup_service import BackupService
 from functools import wraps
 from flask import send_file, make_response
 import json
@@ -585,6 +586,60 @@ def restore():
         except Exception as e:
             db.session.rollback()
             flash(f'Gagal melakukan restore: {str(e)}', 'danger')
+            
+    return redirect(url_for('admin.backup'))
+
+@bp.route('/system/backup')
+@login_required
+@superadmin_required
+def system_backup_download():
+    try:
+        zip_path = BackupService.create_system_snapshot()
+        filename = os.path.basename(zip_path)
+        log_activity('BACKUP', 'System', 'Downloaded full system snapshot (ZIP)')
+        return send_file(zip_path, as_attachment=True, download_name=filename)
+    except Exception as e:
+        flash(f'Gagal membuat backup sistem: {str(e)}', 'danger')
+        return redirect(url_for('admin.backup'))
+
+@bp.route('/system/restore', methods=['POST'])
+@login_required
+@superadmin_required
+def system_restore():
+    if 'file' not in request.files:
+        flash('Tidak ada file yang diupload', 'danger')
+        return redirect(url_for('admin.backup'))
+        
+    file = request.files['file']
+    if file.filename == '':
+        flash('Tidak ada file yang dipilih', 'danger')
+        return redirect(url_for('admin.backup'))
+        
+    if file and file.filename.endswith('.zip'):
+        try:
+            # Save uploaded file temporarily
+            # Use instance path or just a temp folder
+            instance_path = current_app.instance_path if current_app.instance_path else current_app.root_path
+            temp_path = os.path.join(instance_path, 'temp_restore.zip')
+            
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(temp_path), exist_ok=True)
+            
+            file.save(temp_path)
+            
+            # Perform restore
+            BackupService.restore_system_snapshot(temp_path)
+            
+            # Clean up
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+                
+            log_activity('RESTORE', 'System', 'Restored full system snapshot (ZIP)')
+            flash('System restore berhasil! Database dan file upload telah dipulihkan. Silakan restart aplikasi jika diperlukan.', 'success')
+        except Exception as e:
+            flash(f'Gagal melakukan system restore: {str(e)}', 'danger')
+    else:
+        flash('File harus berformat .zip', 'danger')
             
     return redirect(url_for('admin.backup'))
 

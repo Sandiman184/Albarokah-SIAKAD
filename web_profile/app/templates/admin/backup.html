@@ -53,4 +53,57 @@
         </div>
     </div>
 </div>
+
+<div class="d-sm-flex align-items-center justify-content-between mb-4 mt-5 border-top pt-4">
+    <h1 class="h3 mb-0 text-gray-800">Full System Snapshot (Database + Files)</h1>
+</div>
+
+<div class="row">
+    <!-- System Backup Card -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100 border-left-primary">
+            <div class="card-header py-3 bg-primary text-white">
+                <h6 class="m-0 font-weight-bold"><i class="fas fa-archive me-2"></i>Download Snapshot</h6>
+            </div>
+            <div class="card-body">
+                <p>Download snapshot lengkap sistem yang mencakup Database (app.db) dan seluruh file media (Uploads).</p>
+                <div class="alert alert-info small">
+                    <i class="fas fa-shield-alt me-1"></i> <strong>Sangat Disarankan:</strong> Lakukan backup ini secara berkala dan simpan di tempat aman (offline) untuk memulihkan website jika terjadi serangan atau kerusakan fatal.
+                </div>
+                <div class="d-grid">
+                    <a href="{{ url_for('admin.system_backup_download') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-file-archive me-2"></i> Download Full Backup (.zip)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Restore Card -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow h-100 border-left-danger">
+            <div class="card-header py-3 bg-danger text-white">
+                <h6 class="m-0 font-weight-bold"><i class="fas fa-undo-alt me-2"></i>Restore Snapshot</h6>
+            </div>
+            <div class="card-body">
+                <p>Kembalikan kondisi website ke titik tertentu menggunakan file snapshot (.zip).</p>
+                <div class="alert alert-danger small">
+                    <i class="fas fa-exclamation-triangle me-1"></i> <strong>BAHAYA:</strong> Tindakan ini akan <strong>MENIMPA TOTAL</strong> database dan file media yang ada saat ini. Pastikan Anda benar-benar yakin.
+                </div>
+                <form action="{{ url_for('admin.system_restore') }}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label for="zip_file" class="form-label">Pilih File Snapshot (.zip)</label>
+                        <input class="form-control" type="file" id="zip_file" name="file" accept=".zip" required>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-danger btn-lg" onclick="return confirm('PERINGATAN KERAS: Tindakan ini akan MENGHAPUS data saat ini dan menggantinya dengan data dari backup. Apakah Anda yakin 100%?');">
+                            <i class="fas fa-radiation me-2"></i> Restore System Now
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

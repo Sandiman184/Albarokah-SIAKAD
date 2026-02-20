@@ -1,4 +1,9 @@
 
+# Backups
+backups/
+*.zip
+*.bak
+
 # Python
 __pycache__/
 *.pyc
