@@ -28,6 +28,54 @@ sudo -u postgres psql -c "CREATE DATABASE web_profile_db OWNER albarokah_user;"
 sudo -u postgres psql -c "DROP DATABASE IF EXISTS siakad_db;"
 sudo -u postgres psql -c "CREATE DATABASE siakad_db OWNER albarokah_user;"
 
+# 2.5 Re-Initialize Schema and Default User
+echo "[2.5] Initializing Schema and Default User..."
+# Web Profile
+if [ -d "web_profile" ]; then
+    echo "Initializing Web Profile..."
+    export FLASK_APP=web_profile/run.py
+    # Run Migrations to create tables
+    web_profile/.venv/bin/flask db upgrade -d web_profile/migrations
+    # Create Default Superadmin (so we can login to restore)
+    web_profile/.venv/bin/python3 -c "
+from web_profile.run import app
+from web_profile.app import db
+from web_profile.app.models import User
+from werkzeug.security import generate_password_hash
+
+with app.app_context():
+    # Create default superadmin if not exists
+    if not User.query.filter_by(username='admin').first():
+        u = User(username='admin', role='superadmin')
+        u.set_password('password123') # Default password
+        db.session.add(u)
+        db.session.commit()
+        print('Default superadmin created: admin / password123')
+    "
+fi
+
+# SIAKAD
+if [ -d "siakad_app" ]; then
+    echo "Initializing SIAKAD..."
+    export FLASK_APP=siakad_app/run.py
+    siakad_app/.venv/bin/flask db upgrade -d siakad_app/migrations
+    # Create default admin for SIAKAD too if needed
+    siakad_app/.venv/bin/python3 -c "
+from siakad_app.run import app
+from siakad_app.app import db
+from siakad_app.app.models.user import User
+
+with app.app_context():
+    # Create default admin
+    if not User.query.filter_by(username='admin').first():
+        u = User(username='admin', role='admin')
+        u.set_password('admin123')
+        db.session.add(u)
+        db.session.commit()
+        print('Default SIAKAD admin created: admin / admin123')
+    "
+fi
+
 # 3. Clear Uploads
 echo "[3] Clearing Uploads..."
 UPLOADS_DIR="/var/www/Albarokah-SIAKAD/web_profile/app/static/uploads"
