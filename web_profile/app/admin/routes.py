@@ -82,7 +82,10 @@ def background_restore_task(app, task_id, zip_path):
     """Run restore in background thread"""
     with app.app_context():
         try:
+            print(f"Starting restore task {task_id} with file {zip_path}")
+            
             def progress_callback(progress, message):
+                print(f"Restore Progress: {progress}% - {message}")
                 update_task_status(task_id, progress, message)
             
             BackupService.restore_system_snapshot(zip_path, progress_callback=progress_callback)
@@ -95,9 +98,16 @@ def background_restore_task(app, task_id, zip_path):
                 os.remove(zip_path)
                 
             update_task_status(task_id, 100, "Restore Complete!", "completed")
+            print(f"Restore task {task_id} completed successfully.")
             
         except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            print(f"Restore task failed: {str(e)}\n{error_details}")
+            
+            # Try to update status with more details if possible, or just generic error
             update_task_status(task_id, 0, f"Error: {str(e)}", "failed")
+            
             # Try to cleanup even on error
             if os.path.exists(zip_path):
                 try: os.remove(zip_path)
@@ -188,7 +198,17 @@ def system_restore_start():
         
     try:
         # Save uploaded file
-        instance_path = current_app.instance_path if current_app.instance_path else current_app.root_path
+        instance_path = current_app.instance_path
+        
+        # Ensure instance path exists and is writable
+        if not os.path.exists(instance_path):
+            try:
+                os.makedirs(instance_path)
+            except Exception:
+                # Fallback to temp dir if instance path creation fails
+                import tempfile
+                instance_path = tempfile.gettempdir()
+        
         temp_dir = os.path.join(instance_path, 'temp_uploads')
         if not os.path.exists(temp_dir):
             os.makedirs(temp_dir)
@@ -201,6 +221,7 @@ def system_restore_start():
         task_id = str(uuid.uuid4())
         update_task_status(task_id, 0, "Initializing restore...", "pending")
         
+        # Pass real app object to thread to ensure context is available
         app = current_app._get_current_object()
         thread = threading.Thread(target=background_restore_task, args=(app, task_id, temp_path))
         thread.start()
@@ -208,6 +229,8 @@ def system_restore_start():
         return jsonify({'task_id': task_id, 'status': 'started'})
         
     except Exception as e:
+        import traceback
+        print(traceback.format_exc())
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
