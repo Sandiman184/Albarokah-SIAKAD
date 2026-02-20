@@ -14,13 +14,9 @@ git fetch origin
 git reset --hard origin/main
 git clean -fd
 
-# 2. Update Permissions (Crucial for static files)
-echo "[2] Fixing permissions..."
-# Ensure www-data (Nginx/Gunicorn user) owns the files
-sudo chown -R www-data:www-data /var/www/Albarokah-SIAKAD
-sudo chmod -R 755 /var/www/Albarokah-SIAKAD
-# Khusus folder uploads butuh write access
-sudo chmod -R 775 /var/www/Albarokah-SIAKAD/web_profile/app/static/uploads
+# 2. Update Permissions (Moved to Step 5.5 to allow pip install as user)
+echo "[2] Skipping permissions for now (will apply later)..."
+
 
 # 2.0.1 Install PostgreSQL Client Tools (Required for Backup/Restore)
 echo "[2.0.1] Installing PostgreSQL client tools..."
@@ -63,6 +59,11 @@ else
     exit 1
 fi
 
+# 2.2 Update Systemd Services
+echo "[2.2] Updating Systemd service files..."
+sudo cp deployment/systemd/web_profile.service /etc/systemd/system/
+sudo cp deployment/systemd/siakad.service /etc/systemd/system/
+
 # 2.5. Generate Production .env Files (Prevent local env override)
 echo "[2.5] Generating production .env files..."
 # Generate stable secret key based on machine ID or fallback to fixed production key
@@ -97,37 +98,57 @@ find . -name "*.pyc" -delete
 
 # 4. Install/Update Dependencies
 echo "[4] Updating dependencies..."
-# Check for venv
-if [ ! -d ".venv" ]; then
-    echo "Creating .venv..."
-    python3 -m venv .venv
-fi
-source .venv/bin/activate
 
-# Install requirements from both apps
-if [ -f "siakad_app/requirements.txt" ]; then
-    echo "Installing siakad_app dependencies..."
-    pip install -r siakad_app/requirements.txt
+# 4.1 SIAKAD Setup
+echo "[4.1] Setting up SIAKAD Environment..."
+if [ ! -d "siakad_app/.venv" ]; then
+    echo "Creating siakad_app/.venv..."
+    python3 -m venv siakad_app/.venv
 fi
+# Install requirements
+if [ -f "siakad_app/requirements.txt" ]; then
+    echo "Installing SIAKAD dependencies..."
+    siakad_app/.venv/bin/pip install -r siakad_app/requirements.txt
+fi
+
+# 4.2 Web Profile Setup
+echo "[4.2] Setting up Web Profile Environment..."
+if [ ! -d "web_profile/.venv" ]; then
+    echo "Creating web_profile/.venv..."
+    python3 -m venv web_profile/.venv
+fi
+# Install requirements
 if [ -f "web_profile/requirements.txt" ]; then
-    echo "Installing web_profile dependencies..."
-    pip install -r web_profile/requirements.txt
+    echo "Installing Web Profile dependencies..."
+    web_profile/.venv/bin/pip install -r web_profile/requirements.txt
 fi
 
 # 5. Database Migrations
 echo "[5] Running database migrations..."
-# SIAKAD
+
+# SIAKAD Migrations
 if [ -d "siakad_app/migrations" ]; then
     echo "Migrating SIAKAD..."
     export FLASK_APP=siakad_app/run.py
-    flask db upgrade -d siakad_app/migrations
+    # Use the correct venv
+    siakad_app/.venv/bin/flask db upgrade -d siakad_app/migrations
 fi
-# Web Profile
+
+# Web Profile Migrations
 if [ -d "web_profile/migrations" ]; then
     echo "Migrating Web Profile..."
     export FLASK_APP=web_profile/run.py
-    flask db upgrade -d web_profile/migrations
+    # Use the correct venv
+    web_profile/.venv/bin/flask db upgrade -d web_profile/migrations
 fi
+
+# 5.5. Update Permissions (Crucial for static files and service access)
+echo "[5.5] Fixing permissions..."
+# Ensure www-data (Nginx/Gunicorn user) owns the files
+sudo chown -R www-data:www-data /var/www/Albarokah-SIAKAD
+sudo chmod -R 755 /var/www/Albarokah-SIAKAD
+# Khusus folder uploads butuh write access
+sudo chmod -R 775 /var/www/Albarokah-SIAKAD/web_profile/app/static/uploads
 
 # 6. Restart All Services
 echo "[6] Restarting services..."
