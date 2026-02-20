@@ -4,6 +4,11 @@ backups/
 *.zip
 *.bak
 
+# Cache
+cache/
+web_profile/cache/
+siakad_app/cache/
+
 # Python
 __pycache__/
 *.pyc

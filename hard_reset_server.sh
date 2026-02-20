@@ -30,20 +30,23 @@ sudo -u postgres psql -c "CREATE DATABASE siakad_db OWNER albarokah_user;"
 
 # 2.5 Re-Initialize Schema and Default User
 echo "[2.5] Initializing Schema and Default User..."
+
 # Web Profile
 if [ -d "web_profile" ]; then
     echo "Initializing Web Profile..."
-    export FLASK_APP=web_profile/run.py
-    # Run Migrations to create tables
-    web_profile/.venv/bin/flask db upgrade -d web_profile/migrations
-    # Create Default Superadmin (so we can login to restore)
-    web_profile/.venv/bin/python3 -c "
-from web_profile.run import app
-from web_profile.app import db
-from web_profile.app.models import User
-from werkzeug.security import generate_password_hash
+    cd web_profile || exit
+    
+    # Method 1: Try db.create_all() first because migrations might be broken (missing activity_log creation)
+    # This is safer for a hard reset as it uses the current code definition
+    .venv/bin/python3 -c "
+from run import app
+from app import db
+from app.models import User
 
 with app.app_context():
+    print('Creating all tables...')
+    db.create_all()
+    
     # Create default superadmin if not exists
     if not User.query.filter_by(username='admin').first():
         u = User(username='admin', role='superadmin')
@@ -51,21 +54,30 @@ with app.app_context():
         db.session.add(u)
         db.session.commit()
         print('Default superadmin created: admin / password123')
-    "
+"
+    
+    # Stamp the DB as up-to-date so Flask-Migrate doesn't complain later
+    export FLASK_APP=run.py
+    .venv/bin/flask db stamp head
+    
+    cd ..
 fi
 
 # SIAKAD
 if [ -d "siakad_app" ]; then
     echo "Initializing SIAKAD..."
-    export FLASK_APP=siakad_app/run.py
-    siakad_app/.venv/bin/flask db upgrade -d siakad_app/migrations
-    # Create default admin for SIAKAD too if needed
-    siakad_app/.venv/bin/python3 -c "
-from siakad_app.run import app
-from siakad_app.app import db
-from siakad_app.app.models.user import User
+    cd siakad_app || exit
+    
+    # Use db.create_all() for stability
+    .venv/bin/python3 -c "
+from run import app
+from app import db
+from app.models.user import User
 
 with app.app_context():
+    print('Creating all tables...')
+    db.create_all()
+    
     # Create default admin
     if not User.query.filter_by(username='admin').first():
         u = User(username='admin', role='admin')
@@ -73,7 +85,13 @@ with app.app_context():
         db.session.add(u)
         db.session.commit()
         print('Default SIAKAD admin created: admin / admin123')
-    "
+"
+    
+    # Stamp migrations
+    export FLASK_APP=run.py
+    .venv/bin/flask db stamp head
+    
+    cd ..
 fi
 
 # 3. Clear Uploads
