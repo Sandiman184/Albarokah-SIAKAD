@@ -24,9 +24,13 @@ sudo chmod -R 775 /var/www/Albarokah-SIAKAD/web_profile/app/static/uploads
 
 # 2.5. Generate Production .env Files (Prevent local env override)
 echo "[2.5] Generating production .env files..."
+# Generate stable secret key based on machine ID or fallback to fixed production key
+# Using fixed key for production stability to prevent session invalidation on re-deploy
+PROD_SECRET_KEY="prod-secret-key-albarokah-2026-fixed"
+
 # SIAKAD .env
 cat <<EOF > siakad_app/.env
-SECRET_KEY=$(openssl rand -hex 32)
+SECRET_KEY=${PROD_SECRET_KEY}
 DATABASE_URL=postgresql://albarokah_user:alnet%402026@localhost/siakad_db
 FLASK_APP=run.py
 FLASK_DEBUG=0
@@ -34,7 +38,7 @@ EOF
 
 # Web Profile .env
 cat <<EOF > web_profile/.env
-SECRET_KEY=$(openssl rand -hex 32)
+SECRET_KEY=${PROD_SECRET_KEY}
 DATABASE_URL=postgresql://albarokah_user:alnet%402026@localhost/web_profile_db
 FLASK_APP=run.py
 FLASK_DEBUG=0
@@ -86,6 +90,8 @@ fi
 
 # 6. Restart All Services
 echo "[6] Restarting services..."
+# Reload daemon to pick up systemd changes (timeout increase)
+sudo systemctl daemon-reload
 sudo systemctl restart web_profile
 sudo systemctl restart siakad
 sudo systemctl restart nginx
