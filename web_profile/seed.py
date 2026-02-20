@@ -1,4 +1,4 @@
-from app import create_app, db
+from app import create_app, db, cache
 from app.models import Berita, Agenda, Galeri, User, Pengaturan, Program, Pimpinan
 from datetime import datetime, timedelta
 
@@ -194,7 +194,17 @@ def seed_data():
                 ))
 
         db.session.commit()
+        
+        # Clear cache
+        try:
+            cache.clear()
+            print("Cache berhasil dibersihkan.")
+        except Exception as e:
+            print(f"Gagal membersihkan cache: {e}")
+            
         print("Seeding selesai. Data yang ada tidak dihapus.")
+        print("PENTING: Jika menggunakan SimpleCache (default), Anda HARUS me-restart service aplikasi agar perubahan terlihat.")
+        print("Command: sudo systemctl restart web_profile")
 
 if __name__ == '__main__':
     seed_data()
