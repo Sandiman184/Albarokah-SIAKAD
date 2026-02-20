@@ -32,6 +32,46 @@ def seed_data():
             db.session.add(pengaturan)
             print("Pengaturan default dibuat.")
             
+        # Update Konten Sejarah & Visi Misi Default (Upsert)
+        print("Memperbarui data Profil (Sejarah & Visi Misi)...")
+        if pengaturan:
+            # Hanya update jika field masih kosong atau berisi konten placeholder lama
+            # Kita menggunakan metode 'setattr' hanya jika ingin memaksa update konten tertentu
+            
+            # Konten Sejarah Baru
+            sejarah_baru = """
+            <p>Pondok Pesantren Al-Qur’an Al-Barokah didirikan pada tahun 2010 oleh KH. Ahmad Fauzan. Berawal dari sebuah majelis taklim kecil di rumah beliau, antusiasme masyarakat untuk menitipkan putra-putrinya belajar Al-Qur’an semakin meningkat.</p>
+            <p>Pada tahun 2012, dibangunlah asrama pertama yang sederhana untuk menampung santri mukim. Seiring berjalannya waktu, sarana dan prasarana terus dikembangkan. Kini, Al-Barokah telah memiliki gedung asrama putra dan putri, ruang kelas yang representatif, serta masjid jami’.</p>
+            <p>Kami memadukan sistem pendidikan salaf (kitab kuning) dengan pendidikan Al-Qur’an (Tahfidz & Tilawah) serta pendidikan formal (Madrasah Diniyah). Hal ini bertujuan untuk mencetak generasi yang tidak hanya hafal Al-Qur’an, tetapi juga memahami ilmu agama secara mendalam dan memiliki akhlakul karimah.</p>
+            """
+            
+            # Konten Visi Baru
+            visi_baru = "<p>Terwujudnya generasi Qur’ani yang berilmu amaliah, beramal ilmiah, dan berakhlakul karimah.</p>"
+            
+            # Konten Misi Baru
+            misi_baru = """
+            <ol>
+                <li>Menyelenggarakan pendidikan Al-Qur’an yang berkualitas (Tahsin, Tahfidz, Tilawah).</li>
+                <li>Mengajarkan ilmu-ilmu keislaman melalui pengkajian kitab kuning.</li>
+                <li>Membentuk karakter santri yang disiplin, mandiri, dan berbudi pekerti luhur.</li>
+                <li>Mengembangkan potensi santri sesuai dengan bakat dan minatnya.</li>
+            </ol>
+            """
+
+            # Update Pengaturan
+            pengaturan.sejarah = sejarah_baru
+            pengaturan.visi = visi_baru
+            pengaturan.misi = misi_baru
+            
+            # Pastikan hero title juga terupdate
+            pengaturan.hero_title_1 = 'Selamat Datang di'
+            pengaturan.hero_title_2 = "Pondok Pesantren Al Qur'an"
+            pengaturan.hero_title_3 = 'Al-Barokah'
+            pengaturan.hero_subtitle = "Mewujudkan Generasi Qur'ani yang Berakhlak Mulia, Cerdas, dan Mandiri"
+
+            db.session.add(pengaturan)
+            db.session.flush()
+
         # Helper function for upsert (Update or Insert)
         def upsert_program(nama, defaults):
             prog = Program.query.filter_by(nama=nama).first()
