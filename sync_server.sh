@@ -29,15 +29,40 @@ find . -name "*.pyc" -delete
 
 # 4. Install/Update Dependencies
 echo "[4] Updating dependencies..."
-if [ -d ".venv" ]; then
-    source .venv/bin/activate
-    pip install -r requirements.txt
-else
-    echo "⚠️  No .venv found, skipping pip install"
+# Check for venv
+if [ ! -d ".venv" ]; then
+    echo "Creating .venv..."
+    python3 -m venv .venv
+fi
+source .venv/bin/activate
+
+# Install requirements from both apps
+if [ -f "siakad_app/requirements.txt" ]; then
+    echo "Installing siakad_app dependencies..."
+    pip install -r siakad_app/requirements.txt
+fi
+if [ -f "web_profile/requirements.txt" ]; then
+    echo "Installing web_profile dependencies..."
+    pip install -r web_profile/requirements.txt
 fi
 
-# 5. Restart All Services
-echo "[5] Restarting services..."
+# 5. Database Migrations
+echo "[5] Running database migrations..."
+# SIAKAD
+if [ -d "siakad_app/migrations" ]; then
+    echo "Migrating SIAKAD..."
+    export FLASK_APP=siakad_app/run.py
+    flask db upgrade -d siakad_app/migrations
+fi
+# Web Profile
+if [ -d "web_profile/migrations" ]; then
+    echo "Migrating Web Profile..."
+    export FLASK_APP=web_profile/run.py
+    flask db upgrade -d web_profile/migrations
+fi
+
+# 6. Restart All Services
+echo "[6] Restarting services..."
 sudo systemctl restart web_profile
 sudo systemctl restart siakad
 sudo systemctl restart nginx
