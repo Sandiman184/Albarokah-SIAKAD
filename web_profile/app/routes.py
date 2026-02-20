@@ -78,7 +78,7 @@ def inject_pengaturan():
 
 @bp.route('/')
 @limiter.limit("30 per minute")
-@cache.cached(timeout=60)
+# @cache.cached(timeout=60)
 def index():
     berita_terbaru = Berita.query.filter_by(status='published').order_by(Berita.tanggal.desc()).limit(3).all()
     agenda_terbaru = Agenda.query.order_by(Agenda.tanggal_mulai.desc()).limit(3).all()
