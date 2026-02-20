@@ -67,6 +67,15 @@ sudo systemctl restart web_profile
 sudo systemctl restart siakad
 sudo systemctl restart nginx
 
+# 7. Verification
+echo "[7] Verifying deployment..."
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8000)
+if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 302 ]; then
+    echo "✅ Web Profile is UP (HTTP $HTTP_CODE)"
+else
+    echo "❌ Web Profile might be DOWN (HTTP $HTTP_CODE). Check logs: sudo journalctl -u web_profile"
+fi
+
 echo "========================================="
 echo "✅ SYNC COMPLETE!"
 echo "   Code, Assets, and Services have been refreshed."
