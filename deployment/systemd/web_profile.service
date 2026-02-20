@@ -10,7 +10,7 @@ WorkingDirectory=/var/www/Albarokah-SIAKAD/web_profile
 Environment="PATH=/var/www/Albarokah-SIAKAD/web_profile/.venv/bin"
 # EnvironmentFile=/var/www/Albarokah-SIAKAD/web_profile/.env
 
-ExecStart=/var/www/Albarokah-SIAKAD/web_profile/.venv/bin/gunicorn --workers 4 --timeout 120 --bind 127.0.0.1:8001 run:app
+ExecStart=/var/www/Albarokah-SIAKAD/web_profile/.venv/bin/gunicorn --workers 4 --timeout 600 --bind 127.0.0.1:8001 run:app
 
 [Install]
 WantedBy=multi-user.target
