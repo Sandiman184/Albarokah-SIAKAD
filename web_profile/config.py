@@ -22,8 +22,11 @@ class Config:
     PERMANENT_SESSION_LIFETIME = 1800 # 30 minutes in seconds
 
     # Caching Configuration
-    CACHE_TYPE = os.environ.get('CACHE_TYPE') or 'SimpleCache'
+    # Use FileSystemCache to share cache between Gunicorn workers and persist across restarts if needed
+    CACHE_TYPE = os.environ.get('CACHE_TYPE') or 'FileSystemCache'
+    CACHE_DIR = os.path.join(basedir, 'cache')
     CACHE_DEFAULT_TIMEOUT = 300
+    CACHE_THRESHOLD = 1000
 
     # Email Configuration
     MAIL_SERVER = 'smtp.googlemail.com'
