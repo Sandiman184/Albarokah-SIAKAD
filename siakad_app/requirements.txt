@@ -13,3 +13,4 @@ Flask-Limiter
 Flask-Talisman
 Flask-Caching
 Flask-Compress
+Flask-Mail
