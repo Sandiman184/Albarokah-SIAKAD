@@ -170,7 +170,7 @@ class BackupService:
         return None
 
     @staticmethod
-    def create_system_snapshot(backup_dir=None):
+    def create_system_snapshot(backup_dir=None, progress_callback=None):
         """
         Membuat snapshot sistem (Web Profile + SIAKAD).
         """
@@ -195,8 +195,12 @@ class BackupService:
         temp_files = []
 
         try:
+            if progress_callback: progress_callback(10, "Initializing backup...")
+            
             with zipfile.ZipFile(zip_filepath, 'w', zipfile.ZIP_DEFLATED) as zipf:
                 print("--- Backing up Web Profile ---")
+                if progress_callback: progress_callback(20, "Backing up Web Profile Database...")
+                
                 # 1. Web Profile Database
                 if web_db_uri.startswith('sqlite:///'):
                     db_path = web_db_uri.replace('sqlite:///', '')
@@ -215,6 +219,7 @@ class BackupService:
                 # 2. Web Profile Uploads
                 if os.path.exists(web_uploads_dir):
                     print(f"Backing up Web Profile uploads...")
+                    if progress_callback: progress_callback(40, "Backing up Uploaded Files...")
                     for root, dirs, files in os.walk(web_uploads_dir):
                         for file in files:
                             file_path = os.path.join(root, file)
@@ -227,6 +232,7 @@ class BackupService:
                 # 3. SIAKAD Database
                 if siakad_db_uri:
                     print("--- Backing up SIAKAD ---")
+                    if progress_callback: progress_callback(70, "Backing up SIAKAD Database...")
                     if siakad_db_uri.startswith('postgresql'):
                         print("Backing up PostgreSQL (SIAKAD)...")
                         dump_file = os.path.join(backup_dir, f'siakad_{timestamp}.sql')
@@ -237,6 +243,8 @@ class BackupService:
                         print(f"Skipping SIAKAD DB (Unsupported URI scheme): {siakad_db_uri}")
                 else:
                     print("Warning: SIAKAD database configuration not found.")
+                
+                if progress_callback: progress_callback(90, "Finalizing backup archive...")
 
         finally:
             # Cleanup temp files
@@ -247,10 +255,11 @@ class BackupService:
                     except:
                         pass
         
+        if progress_callback: progress_callback(100, "Backup complete!")
         return zip_filepath
 
     @staticmethod
-    def restore_system_snapshot(zip_source_path):
+    def restore_system_snapshot(zip_source_path, progress_callback=None):
         """
         Merestore snapshot sistem (Web Profile + SIAKAD).
         """
@@ -265,11 +274,14 @@ class BackupService:
         # SIAKAD Targets
         siakad_db_uri = BackupService._get_siakad_db_uri()
 
+        if progress_callback: progress_callback(10, "Reading backup archive...")
+
         with zipfile.ZipFile(zip_source_path, 'r') as zipf:
             file_list = zipf.namelist()
             
             # --- Restore Web Profile ---
             print("--- Restoring Web Profile ---")
+            if progress_callback: progress_callback(20, "Restoring Web Profile Database...")
             
             # 1. Database
             # Check for legacy names first (database.sql / app.db) for backward compatibility
@@ -315,6 +327,7 @@ class BackupService:
                 zipf.extract('app.db', path=os.path.dirname(db_path))
 
             # 2. Uploads
+            if progress_callback: progress_callback(50, "Restoring Uploaded Files...")
             # Filter files starting with uploads/
             upload_files = [f for f in file_list if f.startswith('uploads/') or f.startswith('uploads\\')]
             
@@ -335,6 +348,7 @@ class BackupService:
             # --- Restore SIAKAD ---
             if siakad_db_uri:
                 print("--- Restoring SIAKAD ---")
+                if progress_callback: progress_callback(80, "Restoring SIAKAD Database...")
                 if 'siakad.sql' in file_list and siakad_db_uri.startswith('postgresql'):
                     print("Restoring PostgreSQL (SIAKAD)...")
                     zipf.extract('siakad.sql', path=web_static_dir)
@@ -348,4 +362,5 @@ class BackupService:
             else:
                 print("Skipping SIAKAD: Configuration not found.")
 
+        if progress_callback: progress_callback(100, "Restore complete!")
         return True

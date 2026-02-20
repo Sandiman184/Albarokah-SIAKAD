@@ -71,9 +71,9 @@
                     <i class="fas fa-shield-alt me-1"></i> <strong>Sangat Disarankan:</strong> Lakukan backup ini secara berkala dan simpan di tempat aman (offline) untuk memulihkan website jika terjadi serangan atau kerusakan fatal.
                 </div>
                 <div class="d-grid">
-                    <a href="{{ url_for('admin.system_backup_download') }}" class="btn btn-primary btn-lg">
+                    <button type="button" id="btn-backup-start" class="btn btn-primary btn-lg">
                         <i class="fas fa-file-archive me-2"></i> Download Full Backup (.zip)
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -90,14 +90,14 @@
                 <div class="alert alert-danger small">
                     <i class="fas fa-exclamation-triangle me-1"></i> <strong>BAHAYA:</strong> Tindakan ini akan <strong>MENIMPA TOTAL</strong> database dan file media yang ada saat ini. Pastikan Anda benar-benar yakin.
                 </div>
-                <form action="{{ url_for('admin.system_restore') }}" method="post" enctype="multipart/form-data">
+                <form id="form-restore-system" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="mb-3">
                         <label for="zip_file" class="form-label">Pilih File Snapshot (.zip)</label>
                         <input class="form-control" type="file" id="zip_file" name="file" accept=".zip" required>
                     </div>
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-danger btn-lg" onclick="return confirm('PERINGATAN KERAS: Tindakan ini akan MENGHAPUS data saat ini dan menggantinya dengan data dari backup. Apakah Anda yakin 100%?');">
+                        <button type="submit" class="btn btn-danger btn-lg">
                             <i class="fas fa-radiation me-2"></i> Restore System Now
                         </button>
                     </div>
@@ -106,4 +106,176 @@
         </div>
     </div>
 </div>
+
+<!-- Progress Modal -->
+<div class="modal fade" id="progressModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="progressModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="progressModalLabel">Processing...</h5>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-3">
+            <h5 id="progress-message">Please wait...</h5>
+            <div class="spinner-border text-primary mb-2" role="status" id="progress-spinner">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div class="progress" style="height: 25px;">
+          <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const progressModal = new bootstrap.Modal(document.getElementById('progressModal'));
+    const progressBar = document.getElementById('progress-bar');
+    const progressMessage = document.getElementById('progress-message');
+    const modalTitle = document.getElementById('progressModalLabel');
+    const spinner = document.getElementById('progress-spinner');
+    
+    let pollInterval;
+    let csrfToken = "{{ csrf_token() }}";
+
+    function updateProgress(taskId, successCallback) {
+        pollInterval = setInterval(function() {
+            fetch(`/admin/task/status/${taskId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'not_found') {
+                        clearInterval(pollInterval);
+                        alert('Task not found!');
+                        progressModal.hide();
+                        return;
+                    }
+
+                    const percent = data.progress || 0;
+                    progressBar.style.width = percent + '%';
+                    progressBar.innerText = percent + '%';
+                    progressBar.setAttribute('aria-valuenow', percent);
+                    progressMessage.innerText = data.message || 'Processing...';
+
+                    if (data.status === 'completed') {
+                        clearInterval(pollInterval);
+                        setTimeout(() => {
+                            successCallback(data);
+                        }, 500);
+                    } else if (data.status === 'failed') {
+                        clearInterval(pollInterval);
+                        alert('Error: ' + data.message);
+                        progressModal.hide();
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    clearInterval(pollInterval);
+                    alert('Network error occurred.');
+                    progressModal.hide();
+                });
+        }, 1000);
+    }
+
+    // --- Backup Logic ---
+    document.getElementById('btn-backup-start').addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        if (!confirm('Start full system backup? This might take a few minutes.')) return;
+
+        // Reset UI
+        modalTitle.innerText = "Creating Backup...";
+        progressBar.style.width = '0%';
+        progressBar.innerText = '0%';
+        progressMessage.innerText = 'Initializing...';
+        progressBar.classList.remove('bg-success');
+        spinner.style.display = 'inline-block';
+        
+        progressModal.show();
+
+        // Start Backup
+        fetch("{{ url_for('admin.system_backup_start') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'started') {
+                updateProgress(data.task_id, (result) => {
+                    progressBar.classList.add('bg-success');
+                    progressMessage.innerText = 'Backup Completed! Downloading...';
+                    spinner.style.display = 'none';
+                    
+                    // Trigger download
+                    setTimeout(() => {
+                        window.location.href = `/admin/system/backup/download-file/${result.result.filename}`;
+                        setTimeout(() => progressModal.hide(), 2000);
+                    }, 1000);
+                });
+            } else {
+                alert('Failed to start backup: ' + data.message);
+                progressModal.hide();
+            }
+        })
+        .catch(err => {
+            alert('Error starting backup.');
+            progressModal.hide();
+        });
+    });
+
+    // --- Restore Logic ---
+    document.getElementById('form-restore-system').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!confirm('PERINGATAN KERAS: Tindakan ini akan MENGHAPUS data saat ini dan menggantinya dengan data dari backup. Apakah Anda yakin 100%?')) return;
+
+        const formData = new FormData(this);
+
+        // Reset UI
+        modalTitle.innerText = "Restoring System...";
+        progressBar.style.width = '0%';
+        progressBar.innerText = '0%';
+        progressMessage.innerText = 'Uploading backup file...';
+        progressBar.classList.remove('bg-success');
+        spinner.style.display = 'inline-block';
+        
+        progressModal.show();
+
+        // Start Restore (Upload first)
+        fetch("{{ url_for('admin.system_restore_start') }}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'started') {
+                updateProgress(data.task_id, (result) => {
+                    progressBar.classList.add('bg-success');
+                    progressMessage.innerText = 'Restore Completed! Reloading...';
+                    spinner.style.display = 'none';
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                });
+            } else {
+                alert('Failed to start restore: ' + data.message);
+                progressModal.hide();
+            }
+        })
+        .catch(err => {
+            alert('Error starting restore. Check console for details.');
+            console.error(err);
+            progressModal.hide();
+        });
+    });
+});
+</script>
 {% endblock %}
