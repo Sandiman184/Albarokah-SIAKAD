@@ -71,8 +71,9 @@ def append_to_google_sheet(data):
         return False
 
 @bp.context_processor
-@cache.cached(timeout=300, key_prefix='global_pengaturan')
+# @cache.cached(timeout=300, key_prefix='global_pengaturan')
 def inject_pengaturan():
+    # Cache temporarily disabled to debug sync issues
     pengaturan = Pengaturan.query.first()
     return dict(pengaturan=pengaturan)
 
