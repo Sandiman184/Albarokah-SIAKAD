@@ -32,154 +32,141 @@ def seed_data():
             db.session.add(pengaturan)
             print("Pengaturan default dibuat.")
             
+        # Helper function for upsert (Update or Insert)
+        def upsert_program(nama, defaults):
+            prog = Program.query.filter_by(nama=nama).first()
+            if prog:
+                # Update existing
+                for key, value in defaults.items():
+                    setattr(prog, key, value)
+            else:
+                # Create new
+                prog = Program(nama=nama, **defaults)
+                db.session.add(prog)
+            db.session.flush() # Ensure ID is available
+            return prog
+
         # Update Program Pendidikan
         print("Memperbarui data Program Pendidikan...")
         
         # 1. TKQ Al Barokah
-        tkq = Program.query.filter_by(nama='TKQ Al Barokah').first()
-        if not tkq:
-            tkq = Program(nama='TKQ Al Barokah', deskripsi='Taman Kanak-kanak Al Qur\'an (Usia 3-6 Tahun)', icon='fas fa-child', urutan=1)
-            db.session.add(tkq)
-            db.session.flush()
+        tkq = upsert_program('TKQ Al Barokah', {
+            'deskripsi': 'Taman Kanak-kanak Al Qur\'an (Usia 3-6 Tahun)',
+            'icon': 'fas fa-child',
+            'urutan': 1
+        })
         
         # TKQ Sub-programs
-        tkq_kelas1 = Program.query.filter_by(nama='Kelas 1 (TKQ)', parent_id=tkq.id).first()
-        if not tkq_kelas1:
-            db.session.add(Program(
-                nama='Kelas 1 (TKQ)', 
-                deskripsi='Pengenalan Huruf Hijaiyah Iqro 1-2. Jumlah: 32 Santri. 3 Guru (Syahadah YANBUA).',
-                icon='fas fa-star',
-                parent_id=tkq.id,
-                urutan=1
-            ))
+        upsert_program('Kelas 1 (TKQ)', {
+            'deskripsi': 'Pengenalan Huruf Hijaiyah Iqro 1-2. Jumlah: 32 Santri. 3 Guru (Syahadah YANBUA).',
+            'icon': 'fas fa-star',
+            'parent_id': tkq.id,
+            'urutan': 1
+        })
             
-        tkq_kelas2 = Program.query.filter_by(nama='Kelas 2 (TKQ)', parent_id=tkq.id).first()
-        if not tkq_kelas2:
-            db.session.add(Program(
-                nama='Kelas 2 (TKQ)', 
-                deskripsi='Memahami menulis menggabungkan Huruf Hijaiyah. Jumlah: 63 Santri. 4 Guru (Syahadah YANBUA).',
-                icon='fas fa-star',
-                parent_id=tkq.id,
-                urutan=2
-            ))
+        upsert_program('Kelas 2 (TKQ)', {
+            'deskripsi': 'Memahami menulis menggabungkan Huruf Hijaiyah. Jumlah: 63 Santri. 4 Guru (Syahadah YANBUA).',
+            'icon': 'fas fa-star',
+            'parent_id': tkq.id,
+            'urutan': 2
+        })
 
         # 2. TPQ Al Barokah
-        tpq = Program.query.filter_by(nama='TPQ Al Barokah').first()
-        if not tpq:
-            tpq = Program(nama='TPQ Al Barokah', deskripsi='Taman Pendidikan Al Qur\'an (No. Statistik: 411033040032)', icon='fas fa-quran', urutan=2)
-            db.session.add(tpq)
-            db.session.flush()
+        tpq = upsert_program('TPQ Al Barokah', {
+            'deskripsi': 'Taman Pendidikan Al Qur\'an (No. Statistik: 411033040032)',
+            'icon': 'fas fa-quran',
+            'urutan': 2
+        })
 
         # TPQ Sub-programs
-        tpq_kelas1 = Program.query.filter_by(nama='Kelas 1 (TPQ)', parent_id=tpq.id).first()
-        if not tpq_kelas1:
-            db.session.add(Program(
-                nama='Kelas 1 (TPQ)',
-                deskripsi='Jumlah: 13 Santri. 2 Guru (Syahadah YANBUA).',
-                icon='fas fa-book-open',
-                parent_id=tpq.id,
-                urutan=1
-            ))
+        upsert_program('Kelas 1 (TPQ)', {
+            'deskripsi': 'Jumlah: 13 Santri. 2 Guru (Syahadah YANBUA).',
+            'icon': 'fas fa-book-open',
+            'parent_id': tpq.id,
+            'urutan': 1
+        })
             
-        tpq_kelas2 = Program.query.filter_by(nama='Kelas 2 (TPQ)', parent_id=tpq.id).first()
-        if not tpq_kelas2:
-            db.session.add(Program(
-                nama='Kelas 2 (TPQ)',
-                deskripsi='Jumlah: 27 Santri. 2 Guru (Syahadah YANBUA).',
-                icon='fas fa-book-open',
-                parent_id=tpq.id,
-                urutan=2
-            ))
+        upsert_program('Kelas 2 (TPQ)', {
+            'deskripsi': 'Jumlah: 27 Santri. 2 Guru (Syahadah YANBUA).',
+            'icon': 'fas fa-book-open',
+            'parent_id': tpq.id,
+            'urutan': 2
+        })
             
-        tpq_kelas3 = Program.query.filter_by(nama='Kelas 3 (TPQ)', parent_id=tpq.id).first()
-        if not tpq_kelas3:
-            db.session.add(Program(
-                nama='Kelas 3 (TPQ)',
-                deskripsi='Jumlah: 23 Santri. 2 Guru (Syahadah YANBUA).',
-                icon='fas fa-book-open',
-                parent_id=tpq.id,
-                urutan=3
-            ))
+        upsert_program('Kelas 3 (TPQ)', {
+            'deskripsi': 'Jumlah: 23 Santri. 2 Guru (Syahadah YANBUA).',
+            'icon': 'fas fa-book-open',
+            'parent_id': tpq.id,
+            'urutan': 3
+        })
 
         # 3. Madrasah Diniyah Takmiliyah
-        mdt = Program.query.filter_by(nama='Madrasah Diniyah Takmiliyah Hidayatul Ulum Lilbarokah').first()
-        if not mdt:
-            mdt = Program(nama='Madrasah Diniyah Takmiliyah Hidayatul Ulum Lilbarokah', deskripsi='No. Statistik: 311233040223. Kurikulum Kemenag, FKDT & Kitab Kuning.', icon='fas fa-mosque', urutan=3)
-            db.session.add(mdt)
-            db.session.flush()
+        mdt = upsert_program('Madrasah Diniyah Takmiliyah Hidayatul Ulum Lilbarokah', {
+            'deskripsi': 'No. Statistik: 311233040223. Kurikulum Kemenag, FKDT & Kitab Kuning.',
+            'icon': 'fas fa-mosque',
+            'urutan': 3
+        })
             
         # MDT Sub-programs
         for i in range(1, 5):
             nama_kelas = f'Kelas {i} (MDT)'
-            if not Program.query.filter_by(nama=nama_kelas, parent_id=mdt.id).first():
-                santri_count = [27, 24, 36, 19][i-1]
-                db.session.add(Program(
-                    nama=nama_kelas,
-                    deskripsi=f'Jumlah: {santri_count} Santri. 2 Guru.',
-                    icon='fas fa-book',
-                    parent_id=mdt.id,
-                    urutan=i
-                ))
+            santri_count = [27, 24, 36, 19][i-1]
+            upsert_program(nama_kelas, {
+                'deskripsi': f'Jumlah: {santri_count} Santri. 2 Guru.',
+                'icon': 'fas fa-book',
+                'parent_id': mdt.id,
+                'urutan': i
+            })
 
         # 4. Pondok Pesantren Al Barokah
-        ponpes = Program.query.filter_by(nama='Pondok Pesantren Al Barokah').first()
-        if not ponpes:
-            ponpes = Program(nama='Pondok Pesantren Al Barokah', deskripsi='Pendidikan Kitab Kuning Berjenjang', icon='fas fa-school', urutan=4)
-            db.session.add(ponpes)
-            db.session.flush()
+        ponpes = upsert_program('Pondok Pesantren Al Barokah', {
+            'deskripsi': 'Pendidikan Kitab Kuning Berjenjang',
+            'icon': 'fas fa-school',
+            'urutan': 4
+        })
             
         # Ponpes Sub-programs
-        if not Program.query.filter_by(nama='Ibtida (Ula)', parent_id=ponpes.id).first():
-            db.session.add(Program(
-                nama='Ibtida (Ula)',
-                deskripsi='Jumlah: 36 Santri. Kurikulum: Safinatunnaja, Jurumiyah Mukhtasor Jiddan, Akidatul Awwam, Alala, Tukhfatul Athfal.',
-                icon='fas fa-layer-group',
-                parent_id=ponpes.id,
-                urutan=1
-            ))
+        upsert_program('Ibtida (Ula)', {
+            'deskripsi': 'Jumlah: 36 Santri. Kurikulum: Safinatunnaja, Jurumiyah Mukhtasor Jiddan, Akidatul Awwam, Alala, Tukhfatul Athfal.',
+            'icon': 'fas fa-layer-group',
+            'parent_id': ponpes.id,
+            'urutan': 1
+        })
             
-        if not Program.query.filter_by(nama='Tsanawi (Wushto)', parent_id=ponpes.id).first():
-            db.session.add(Program(
-                nama='Tsanawi (Wushto)',
-                deskripsi='Jumlah: 18 Santri. Kurikulum: Sulamunajat, Jurumiyah Asmawi, Imriti, Tijanudaruri, Ta\'limul Mutalalim, Matan Jazariyah.',
-                icon='fas fa-layer-group',
-                parent_id=ponpes.id,
-                urutan=2
-            ))
+        upsert_program('Tsanawi (Wushto)', {
+            'deskripsi': 'Jumlah: 18 Santri. Kurikulum: Sulamunajat, Jurumiyah Asmawi, Imriti, Tijanudaruri, Ta\'limul Mutalalim, Matan Jazariyah.',
+            'icon': 'fas fa-layer-group',
+            'parent_id': ponpes.id,
+            'urutan': 2
+        })
             
-        if not Program.query.filter_by(nama='Aliyah (Ulya)', parent_id=ponpes.id).first():
-            db.session.add(Program(
-                nama='Aliyah (Ulya)',
-                deskripsi='Jumlah: 10 Santri. Kurikulum: Taqrib, Jurumiyah Kafrawi, Imriti, Al Fiyah, Kifayatul Awwam, Kifayatul Adzkiya, Matan Jazariyah.',
-                icon='fas fa-layer-group',
-                parent_id=ponpes.id,
-                urutan=3
-            ))
+        upsert_program('Aliyah (Ulya)', {
+            'deskripsi': 'Jumlah: 10 Santri. Kurikulum: Taqrib, Jurumiyah Kafrawi, Imriti, Al Fiyah, Kifayatul Awwam, Kifayatul Adzkiya, Matan Jazariyah.',
+            'icon': 'fas fa-layer-group',
+            'parent_id': ponpes.id,
+            'urutan': 3
+        })
 
         # 5. Takhosus & Keunggulan
-        takhosus_prog = Program.query.filter_by(nama='Program Takhosus & Keunggulan').first()
-        if not takhosus_prog:
-            takhosus_prog = Program(nama='Program Takhosus & Keunggulan', deskripsi='Fokus Pembelajaran Pesantren', icon='fas fa-award', urutan=5)
-            db.session.add(takhosus_prog)
-            db.session.flush()
+        takhosus_prog = upsert_program('Program Takhosus & Keunggulan', {
+            'deskripsi': 'Fokus Pembelajaran Pesantren',
+            'icon': 'fas fa-award',
+            'urutan': 5
+        })
             
-        if not Program.query.filter_by(nama='Takhosus', parent_id=takhosus_prog.id).first():
-            db.session.add(Program(
-                nama='Takhosus',
-                deskripsi='Kitab Kuning (Alat, Fiqih, Tauhid).',
-                icon='fas fa-book-reader',
-                parent_id=takhosus_prog.id,
-                urutan=1
-            ))
+        upsert_program('Takhosus', {
+            'deskripsi': 'Kitab Kuning (Alat, Fiqih, Tauhid).',
+            'icon': 'fas fa-book-reader',
+            'parent_id': takhosus_prog.id,
+            'urutan': 1
+        })
             
-        if not Program.query.filter_by(nama='Keunggulan', parent_id=takhosus_prog.id).first():
-            db.session.add(Program(
-                nama='Keunggulan',
-                deskripsi='1. Tilawah (Quro)\n2. Tahfidz Qur\'an',
-                icon='fas fa-star',
-                parent_id=takhosus_prog.id,
-                urutan=2
-            ))
+        upsert_program('Keunggulan', {
+            'deskripsi': '1. Tilawah (Quro)\n2. Tahfidz Qur\'an',
+            'icon': 'fas fa-star',
+            'parent_id': takhosus_prog.id,
+            'urutan': 2
+        })
             
         # Riwayat Prestasi (Galeri)
         print("Memperbarui data Prestasi (Galeri)...")
