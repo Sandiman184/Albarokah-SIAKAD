@@ -35,6 +35,8 @@ sudo -u postgres psql -c "CREATE USER albarokah_user WITH PASSWORD 'alnet@2026';
 # Force update password to ensure it matches our config
 sudo -u postgres psql -c "ALTER USER albarokah_user WITH PASSWORD 'alnet@2026';"
 # Grant privileges
+# Make user SUPERUSER to allow terminating connections and dropping schemas freely
+sudo -u postgres psql -c "ALTER USER albarokah_user WITH SUPERUSER;" || true
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE siakad_db TO albarokah_user;" || true
 sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE web_profile_db TO albarokah_user;" || true
 # Grant schema usage (often needed for public schema)

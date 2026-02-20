@@ -124,23 +124,42 @@ class BackupService:
         if password:
             env['PGPASSWORD'] = password
             
+        # SQL command to terminate other connections first
+        kill_conns_sql = f"""
+        SELECT pg_terminate_backend(pid) 
+        FROM pg_stat_activity 
+        WHERE datname = '{database}' 
+          AND pid <> pg_backend_pid();
+        """
+        
         # SQL command to drop public schema and recreate it
         # This is the most effective way to clear everything
-        sql_cmd = "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO public;"
+        drop_schema_sql = "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO public;"
         
-        cmd = [
-            psql,
-            '-h', hostname,
-            '-p', str(port),
-            '-U', username,
-            '-d', database,
-            '-c', sql_cmd
-        ]
+        # Combined command
+        # Note: We need to execute these as separate commands or combined carefully
+        # psql -c executes one string.
         
+        # 1. Kill Connections
+        try:
+            print(f"Terminating active connections to {database}...")
+            # We use a separate connection to 'postgres' DB if possible to kill connections to target DB
+            # But here we connect to target DB itself.
+            # Terminating other backends is usually allowed for owner.
+            subprocess.run(
+                [psql, '-h', hostname, '-p', str(port), '-U', username, '-d', database, '-c', kill_conns_sql],
+                env=env, check=True, capture_output=True, text=True
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"Warning killing connections: {e.stderr}")
+        except Exception as e:
+            print(f"Warning killing connections: {e}")
+
+        # 2. Drop Schema
         try:
             print(f"Dropping all tables in {database}...")
             subprocess.run(
-                cmd, 
+                [psql, '-h', hostname, '-p', str(port), '-U', username, '-d', database, '-c', drop_schema_sql], 
                 env=env, 
                 check=True,
                 capture_output=True,

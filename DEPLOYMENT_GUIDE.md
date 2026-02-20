@@ -83,13 +83,22 @@ Jika setelah Restore data, file gambar lama masih muncul atau folder uploads tid
     2.  Jalankan `./sync_server.sh` lagi. Script ini akan memaksa perbaikan hak akses (`chown www-data`) pada folder uploads.
     3.  Lakukan proses **Restore Snapshot** ulang di Admin Panel.
 
-### Masalah: "Internal Server Error" setelah Restore
-*   Penyebab: Struktur database di backup tidak cocok dengan kode yang berjalan.
-*   Solusi: Pastikan Anda sudah melakukan **Langkah 1 (Sinkronisasi Kode)** sebelum melakukan Restore Data. Kode harus mendukung struktur data yang akan direstore.
+### Masalah: "Internal Server Error" atau Gagal Restore Database
+*   Penyebab: Ada koneksi aktif (misalnya dari user lain atau aplikasi) yang mencegah database dihapus/ditimpa.
+*   Solusi:
+    1.  Script `backup_service.py` terbaru sudah otomatis mencoba memutus koneksi lain. Pastikan Anda sudah update kode server.
+    2.  Jika masih gagal, gunakan **Opsi Nuklir (Hard Reset)**.
 
-### Masalah: Gagal Login setelah Restore
-*   Penyebab: Akun user juga ikut tertimpa oleh data dari backup.
-*   Solusi: Gunakan username/password yang sama dengan yang ada di sistem Lokal (sumber backup).
+### Opsi Nuklir: Hard Reset (Jika semua cara gagal)
+Jika fitur Restore via Web terus gagal atau data tetap kacau, gunakan script pamungkas ini di terminal server:
+
+```bash
+cd /var/www/Albarokah-SIAKAD
+chmod +x hard_reset_server.sh
+./hard_reset_server.sh
+```
+
+**PERINGATAN KERAS**: Script ini akan menghapus TOTAL database dan folder uploads di server, lalu me-restart service. Setelah script ini selesai, server akan dalam keadaan "kosong". Segera lakukan **Restore Snapshot** via Admin Panel setelahnya.
 
 ---
 
