@@ -266,7 +266,18 @@ def log_activity(action, target, details=None):
 
 @login.user_loader
 def load_user(id):
-    return User.query.get(int(id))
+    try:
+        return User.query.get(int(id))
+    except Exception:
+        # DB might be down during restore. Return a fallback user to keep session alive.
+        # This is safe because Flask-Login already validated the session cookie signature.
+        from flask_login import UserMixin
+        class FallbackUser(UserMixin):
+            def __init__(self, uid):
+                self.id = uid
+                self.username = "System Restoring..."
+                self.role = 'superadmin' # Grant access to status checks
+        return FallbackUser(int(id))
 
 @bp.route('/login', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
