@@ -11,13 +11,15 @@ class BackupService:
     @staticmethod
     def _get_postgres_bin(binary_name):
         """
-        Mencoba menemukan binary PostgreSQL (pg_dump/pg_restore/psql) di sistem Windows.
+        Mencoba menemukan binary PostgreSQL (pg_dump/pg_restore/psql).
+        Mendukung Windows dan Linux (via shutil.which).
         """
-        # Cek jika ada di PATH
-        if shutil.which(binary_name):
-            return binary_name
+        # 1. Cek jika ada di PATH (Linux usually falls here)
+        path = shutil.which(binary_name)
+        if path:
+            return path
             
-        # Cek lokasi umum instalasi PostgreSQL di Windows
+        # 2. Cek lokasi umum instalasi PostgreSQL di Windows
         common_paths = [
             r"C:\Program Files\PostgreSQL\17\bin",
             r"C:\Program Files\PostgreSQL\16\bin",
@@ -34,7 +36,9 @@ class BackupService:
             bin_path = os.path.join(path, binary_name + ".exe")
             if os.path.exists(bin_path):
                 return bin_path
-                
+        
+        # 3. Log warning if not found
+        print(f"Warning: {binary_name} not found in PATH or common locations.")
         return None
 
     @staticmethod
