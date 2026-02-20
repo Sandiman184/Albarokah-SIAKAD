@@ -22,6 +22,29 @@ sudo chmod -R 755 /var/www/Albarokah-SIAKAD
 # Khusus folder uploads butuh write access
 sudo chmod -R 775 /var/www/Albarokah-SIAKAD/web_profile/app/static/uploads
 
+# 2.5. Generate Production .env Files (Prevent local env override)
+echo "[2.5] Generating production .env files..."
+# SIAKAD .env
+cat <<EOF > siakad_app/.env
+SECRET_KEY=$(openssl rand -hex 32)
+DATABASE_URL=postgresql://albarokah_user:alnet%402026@localhost/siakad_db
+FLASK_APP=run.py
+FLASK_DEBUG=0
+EOF
+
+# Web Profile .env
+cat <<EOF > web_profile/.env
+SECRET_KEY=$(openssl rand -hex 32)
+DATABASE_URL=postgresql://albarokah_user:alnet%402026@localhost/web_profile_db
+FLASK_APP=run.py
+FLASK_DEBUG=0
+
+# Email Configuration (SMTP)
+MAIL_USERNAME=beritamasuk2020@gmail.com
+MAIL_PASSWORD=recm kbxv zcab lreq
+MAIL_DEFAULT_SENDER=beritamasuk2020@gmail.com
+EOF
+
 # 3. Clear Python Cache (Bytecode)
 echo "[3] Clearing Python cache..."
 find . -name "__pycache__" -type d -exec rm -rf {} +
