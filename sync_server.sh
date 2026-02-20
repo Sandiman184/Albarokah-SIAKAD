@@ -158,11 +158,18 @@ fi
 
 # 5.5. Update Permissions (Crucial for static files and service access)
 echo "[5.5] Fixing permissions..."
+# Get current directory
+PROJECT_DIR=$(pwd)
+echo "Setting permissions for $PROJECT_DIR"
+
 # Ensure www-data (Nginx/Gunicorn user) owns the files
-sudo chown -R www-data:www-data /var/www/Albarokah-SIAKAD
-sudo chmod -R 755 /var/www/Albarokah-SIAKAD
-# Khusus folder uploads butuh write access
-sudo chmod -R 775 /var/www/Albarokah-SIAKAD/web_profile/app/static/uploads
+sudo chown -R www-data:www-data "$PROJECT_DIR"
+sudo chmod -R 755 "$PROJECT_DIR"
+
+# Khusus folder uploads butuh write access (jika ada)
+if [ -d "$PROJECT_DIR/web_profile/app/static/uploads" ]; then
+    sudo chmod -R 775 "$PROJECT_DIR/web_profile/app/static/uploads"
+fi
 
 # 6. Restart All Services
 echo "[6] Restarting services..."

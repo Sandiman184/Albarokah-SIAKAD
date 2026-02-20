@@ -82,6 +82,7 @@ class BackupService:
             '-p', str(port),
             '-U', username,
             '-c', # Clean (Drop then Create)
+            '--if-exists', # Add IF EXISTS to DROP commands
             '-f', output_file,
             database
         ]
@@ -103,10 +104,63 @@ class BackupService:
             return False
 
     @staticmethod
+    def _drop_all_tables(db_uri):
+        """
+        Helper untuk menghapus semua tabel di database sebelum restore
+        agar benar-benar bersih (clean slate).
+        """
+        parsed = urlparse(db_uri)
+        hostname = parsed.hostname or 'localhost'
+        port = parsed.port or 5432
+        username = parsed.username
+        password = unquote(parsed.password) if parsed.password else None
+        database = parsed.path.lstrip('/')
+        
+        psql = BackupService._get_postgres_bin('psql')
+        if not psql:
+            return False
+            
+        env = os.environ.copy()
+        if password:
+            env['PGPASSWORD'] = password
+            
+        # SQL command to drop public schema and recreate it
+        # This is the most effective way to clear everything
+        sql_cmd = "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO public;"
+        
+        cmd = [
+            psql,
+            '-h', hostname,
+            '-p', str(port),
+            '-U', username,
+            '-d', database,
+            '-c', sql_cmd
+        ]
+        
+        try:
+            print(f"Dropping all tables in {database}...")
+            subprocess.run(
+                cmd, 
+                env=env, 
+                check=True,
+                capture_output=True,
+                text=True
+            )
+            return True
+        except subprocess.CalledProcessError as e:
+            print(f"Warning: Failed to drop schema for {database}: {e.stderr}")
+            # Fallback: Try to drop tables individually if schema drop fails?
+            # For now, we just proceed. The restore might still work for existing tables.
+            return False
+
+    @staticmethod
     def _restore_postgres_db(db_uri, input_file):
         """
         Helper untuk restore database PostgreSQL.
         """
+        # Step 0: Try to clear database first for clean restore
+        BackupService._drop_all_tables(db_uri)
+
         parsed = urlparse(db_uri)
         hostname = parsed.hostname or 'localhost'
         port = parsed.port or 5432
@@ -333,17 +387,35 @@ class BackupService:
             
             if upload_files:
                 print("Restoring Uploads...")
-                # Clean existing
+                # Clean existing by renaming first (atomic) then deleting
+                # This ensures the new folder is fresh and empty
                 if os.path.exists(web_uploads_dir):
+                    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                    trash_dir = f"{web_uploads_dir}_trash_{timestamp}"
                     try:
-                        shutil.rmtree(web_uploads_dir)
+                        # Try to move away existing folder
+                        shutil.move(web_uploads_dir, trash_dir)
+                        print(f"Moved existing uploads to {trash_dir}")
                     except Exception as e:
-                        print(f"Warning: Could not empty uploads dir: {e}")
+                        print(f"Warning: Could not move uploads dir: {e}")
+                        # If move fails, try direct delete
+                        try:
+                            shutil.rmtree(web_uploads_dir)
+                        except Exception as e2:
+                            print(f"Warning: Could not delete uploads dir: {e2}")
+
                 if not os.path.exists(web_uploads_dir):
                     os.makedirs(web_uploads_dir)
 
                 for file in upload_files:
                     zipf.extract(file, path=web_static_dir)
+                
+                # Try to clean up trash
+                if 'trash_dir' in locals() and os.path.exists(trash_dir):
+                    try:
+                        shutil.rmtree(trash_dir)
+                    except Exception as e:
+                        print(f"Warning: Could not delete trash dir {trash_dir}: {e}")
 
             # --- Restore SIAKAD ---
             if siakad_db_uri:
