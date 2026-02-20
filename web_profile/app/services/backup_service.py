@@ -86,11 +86,21 @@ class BackupService:
             database
         ]
         
-        # Redirect stderr to avoid polluting console, check_call will raise on error
-        with open(os.devnull, 'w') as devnull:
-            subprocess.check_call(cmd, env=env, stderr=devnull)
-            
-        return os.path.exists(output_file)
+        # Run command and capture output
+        try:
+            result = subprocess.run(
+                cmd, 
+                env=env, 
+                check=True,
+                capture_output=True,
+                text=True
+            )
+            return os.path.exists(output_file)
+        except subprocess.CalledProcessError as e:
+            print(f"Error dumping database {database}:")
+            print(f"STDOUT: {e.stdout}")
+            print(f"STDERR: {e.stderr}")
+            return False
 
     @staticmethod
     def _restore_postgres_db(db_uri, input_file):
@@ -122,9 +132,20 @@ class BackupService:
             '-f', input_file
         ]
         
-        # Redirect stderr/stdout
-        with open(os.devnull, 'w') as devnull:
-            subprocess.check_call(cmd, env=env, stdout=devnull, stderr=devnull)
+        # Run command and capture output
+        try:
+            result = subprocess.run(
+                cmd, 
+                env=env, 
+                check=True,
+                capture_output=True,
+                text=True
+            )
+        except subprocess.CalledProcessError as e:
+            print(f"Error restoring database {database}:")
+            print(f"STDOUT: {e.stdout}")
+            print(f"STDERR: {e.stderr}")
+            raise Exception(f"Restore failed: {e.stderr}")
 
     @staticmethod
     def _get_siakad_db_uri():
