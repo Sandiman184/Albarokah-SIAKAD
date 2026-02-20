@@ -19,8 +19,17 @@ class BackupService:
         if path:
             return path
             
-        # 2. Cek lokasi umum instalasi PostgreSQL di Windows
+        # 2. Cek lokasi umum instalasi PostgreSQL di Windows dan Linux
         common_paths = [
+            # Linux common paths
+            "/usr/bin",
+            "/usr/local/bin",
+            "/usr/lib/postgresql/16/bin",
+            "/usr/lib/postgresql/15/bin",
+            "/usr/lib/postgresql/14/bin",
+            "/usr/lib/postgresql/13/bin",
+            "/usr/lib/postgresql/12/bin",
+            # Windows paths
             r"C:\Program Files\PostgreSQL\17\bin",
             r"C:\Program Files\PostgreSQL\16\bin",
             r"C:\Program Files\PostgreSQL\15\bin",
@@ -33,9 +42,14 @@ class BackupService:
         ]
         
         for path in common_paths:
-            bin_path = os.path.join(path, binary_name + ".exe")
-            if os.path.exists(bin_path):
+            # Check for binary with or without .exe extension
+            bin_path = os.path.join(path, binary_name)
+            if os.path.exists(bin_path) and os.access(bin_path, os.X_OK):
                 return bin_path
+                
+            bin_path_exe = os.path.join(path, binary_name + ".exe")
+            if os.path.exists(bin_path_exe):
+                return bin_path_exe
         
         # 3. Log warning if not found
         print(f"Warning: {binary_name} not found in PATH or common locations.")

@@ -22,6 +22,16 @@ sudo chmod -R 755 /var/www/Albarokah-SIAKAD
 # Khusus folder uploads butuh write access
 sudo chmod -R 775 /var/www/Albarokah-SIAKAD/web_profile/app/static/uploads
 
+# 2.0.1 Install PostgreSQL Client Tools (Required for Backup/Restore)
+echo "[2.0.1] Installing PostgreSQL client tools..."
+if ! command -v psql &> /dev/null; then
+    echo "psql not found. Installing postgresql-client..."
+    sudo apt-get update
+    sudo apt-get install -y postgresql-client
+else
+    echo "psql is already installed."
+fi
+
 # 2.0 FORCE GLOBAL NGINX CONFIG UPDATE
 echo "[2.0] Patching global Nginx config..."
 # Check if client_max_body_size is already set in nginx.conf
