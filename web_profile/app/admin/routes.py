@@ -581,6 +581,10 @@ def restore():
                 count += 1 # Count settings update as 1 action
 
             db.session.commit()
+            
+            # Clear cache to ensure new settings/content are visible immediately
+            cache.clear()
+            
             log_activity('RESTORE', 'System', f'Restored/Added {count} items from backup')
             flash(f'Restore berhasil! {count} data ditambahkan/diperbarui.', 'success')
         except Exception as e:
@@ -629,6 +633,9 @@ def system_restore():
             
             # Perform restore
             BackupService.restore_system_snapshot(temp_path)
+            
+            # Clear cache
+            cache.clear()
             
             # Clean up
             if os.path.exists(temp_path):
