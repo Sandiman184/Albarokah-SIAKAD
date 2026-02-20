@@ -4,7 +4,7 @@ import shutil
 import datetime
 import subprocess
 import platform
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 from flask import current_app
 
 class BackupService:
@@ -64,7 +64,7 @@ class BackupService:
         hostname = parsed.hostname or 'localhost'
         port = parsed.port or 5432
         username = parsed.username
-        password = parsed.password
+        password = unquote(parsed.password) if parsed.password else None
         database = parsed.path.lstrip('/')
         
         pg_dump = BackupService._get_postgres_bin('pg_dump')
@@ -111,7 +111,7 @@ class BackupService:
         hostname = parsed.hostname or 'localhost'
         port = parsed.port or 5432
         username = parsed.username
-        password = parsed.password
+        password = unquote(parsed.password) if parsed.password else None
         database = parsed.path.lstrip('/')
         
         psql = BackupService._get_postgres_bin('psql')
