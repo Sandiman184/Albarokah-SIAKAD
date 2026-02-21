@@ -112,32 +112,19 @@ echo "[3] Clearing Python cache..."
 find . -name "__pycache__" -type d -exec rm -rf {} +
 find . -name "*.pyc" -delete
 
-# 4. Install/Update Dependencies
+# 4. Install/Update Dependencies (GLOBAL VENV)
 echo "[4] Updating dependencies..."
 
-# 4.1 SIAKAD Setup
-echo "[4.1] Setting up SIAKAD Environment..."
-if [ ! -d "siakad_app/.venv" ]; then
-    echo "Creating siakad_app/.venv..."
-    python3 -m venv siakad_app/.venv
-fi
-# Install requirements
-if [ -f "siakad_app/requirements.txt" ]; then
-    echo "Installing SIAKAD dependencies..."
-    siakad_app/.venv/bin/pip install -r siakad_app/requirements.txt
+echo "[4.1] Setting up Global Environment..."
+if [ ! -d "venv" ]; then
+    echo "Creating venv..."
+    python3 -m venv venv
 fi
 
-# 4.2 Web Profile Setup
-echo "[4.2] Setting up Web Profile Environment..."
-if [ ! -d "web_profile/.venv" ]; then
-    echo "Creating web_profile/.venv..."
-    python3 -m venv web_profile/.venv
-fi
 # Install requirements
-if [ -f "web_profile/requirements.txt" ]; then
-    echo "Installing Web Profile dependencies..."
-    web_profile/.venv/bin/pip install -r web_profile/requirements.txt
-fi
+echo "Installing dependencies..."
+venv/bin/pip install -r siakad_app/requirements.txt
+venv/bin/pip install -r web_profile/requirements.txt
 
 # 5. Database Migrations
 echo "[5] Running database migrations..."
@@ -147,7 +134,7 @@ if [ -d "siakad_app/migrations" ]; then
     echo "Migrating SIAKAD..."
     export FLASK_APP=siakad_app/run.py
     # Use the correct venv
-    siakad_app/.venv/bin/flask db upgrade -d siakad_app/migrations
+    venv/bin/flask db upgrade -d siakad_app/migrations
 fi
 
 # Web Profile Migrations
@@ -155,7 +142,7 @@ if [ -d "web_profile/migrations" ]; then
     echo "Migrating Web Profile..."
     export FLASK_APP=web_profile/run.py
     # Use the correct venv
-    web_profile/.venv/bin/flask db upgrade -d web_profile/migrations
+    venv/bin/flask db upgrade -d web_profile/migrations
 fi
 
 # 5.5. Update Permissions (Crucial for static files and service access)
