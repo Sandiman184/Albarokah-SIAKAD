@@ -47,16 +47,12 @@ Proyek ini menggunakan struktur folder terpisah untuk `siakad_app` dan `web_prof
     *   Sesuaikan `DATABASE_URL`, `MAIL_USERNAME`, `MAIL_PASSWORD`.
 
 ### 2. Deployment ke Server (VPS)
-Panduan lengkap deployment, update, dan sinkronisasi database/konten tersedia di file **`DEPLOYMENT_GUIDE.md`** (lokal only).
+Panduan lengkap deployment, update, dan sinkronisasi database/konten tersedia di file **`DEPLOYMENT_GUIDE.md`**.
 
-**Ringkasan Perintah Server:**
+**Cara Update Cepat (Server):**
 ```bash
-# Update Kode
-git pull origin main
-
-# Restart Aplikasi
-sudo systemctl restart web_profile
-sudo systemctl restart siakad
+cd /var/www/Albarokah-SIAKAD
+./sync_server.sh
 ```
 
 ## Struktur Project

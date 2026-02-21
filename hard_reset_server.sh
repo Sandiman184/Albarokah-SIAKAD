@@ -38,27 +38,31 @@ if [ -d "web_profile" ]; then
     
     # Method 1: Try db.create_all() first because migrations might be broken (missing activity_log creation)
     # This is safer for a hard reset as it uses the current code definition
-    .venv/bin/python3 -c "
-from run import app
-from app import db
-from app.models import User
+    ../venv/bin/python3 -c "
+    from run import app
+    from app import db
+    from app.models import User
 
-with app.app_context():
-    print('Creating all tables...')
-    db.create_all()
-    
-    # Create default superadmin if not exists
-    if not User.query.filter_by(username='admin').first():
-        u = User(username='admin', role='superadmin')
-        u.set_password('password123') # Default password
-        db.session.add(u)
-        db.session.commit()
-        print('Default superadmin created: admin / password123')
-"
+    with app.app_context():
+        print('Creating all tables...')
+        db.create_all()
+        
+        # Create default superadmin if not exists
+        # Check if table exists first to avoid errors
+        try:
+            if not User.query.filter_by(username='admin').first():
+                u = User(username='admin', role='superadmin')
+                u.set_password('password123') # Default password
+                db.session.add(u)
+                db.session.commit()
+                print('Default superadmin created: admin / password123')
+        except Exception as e:
+            print(f'Error creating user: {e}')
+    "
     
     # Stamp the DB as up-to-date so Flask-Migrate doesn't complain later
     export FLASK_APP=run.py
-    .venv/bin/flask db stamp head
+    ../venv/bin/flask db stamp head
     
     cd ..
 fi
@@ -69,27 +73,30 @@ if [ -d "siakad_app" ]; then
     cd siakad_app || exit
     
     # Use db.create_all() for stability
-    .venv/bin/python3 -c "
-from run import app
-from app import db
-from app.models.user import User
+    ../venv/bin/python3 -c "
+    from run import app
+    from app import db
+    from app.models.user import User
 
-with app.app_context():
-    print('Creating all tables...')
-    db.create_all()
-    
-    # Create default admin
-    if not User.query.filter_by(username='admin').first():
-        u = User(username='admin', role='admin')
-        u.set_password('admin123')
-        db.session.add(u)
-        db.session.commit()
-        print('Default SIAKAD admin created: admin / admin123')
-"
+    with app.app_context():
+        print('Creating all tables...')
+        db.create_all()
+        
+        # Create default admin
+        try:
+            if not User.query.filter_by(username='admin').first():
+                u = User(username='admin', role='admin')
+                u.set_password('admin123')
+                db.session.add(u)
+                db.session.commit()
+                print('Default SIAKAD admin created: admin / admin123')
+        except Exception as e:
+            print(f'Error creating user: {e}')
+    "
     
     # Stamp migrations
     export FLASK_APP=run.py
-    .venv/bin/flask db stamp head
+    ../venv/bin/flask db stamp head
     
     cd ..
 fi
