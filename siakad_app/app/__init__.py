@@ -40,13 +40,35 @@ def create_app(config_class=Config):
     # Configure Talisman (Security Headers)
     # Note: content_security_policy needs careful tuning for external scripts (like FontAwesome, Google Fonts, etc.)
     csp = {
-        'default-src': ["'self'", 'https://cdnjs.cloudflare.com', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'https://demos.creative-tim.com', 'https://kit.fontawesome.com', 'https://buttons.github.io', 'https://ui-avatars.com'],
-        'script-src': ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com', 'https://kit.fontawesome.com', 'https://demos.creative-tim.com', 'https://buttons.github.io'],
-        'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://demos.creative-tim.com', 'https://cdnjs.cloudflare.com'],
-        'img-src': ["'self'", 'data:', 'https://ui-avatars.com', 'https://demos.creative-tim.com']
+        'default-src': ["'self'", 'https://cdnjs.cloudflare.com', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com', 'https://cdn.jsdelivr.net', 'https://kit.fontawesome.com', 'https://loremflickr.com', 'https://source.unsplash.com', 'https://images.unsplash.com', 'https://placehold.co', 'https://picsum.photos', 'https://fastly.picsum.photos', 'https://ui-avatars.com', 'https://demos.creative-tim.com', 'https://buttons.github.io'],
+        'script-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://kit.fontawesome.com', 'https://demos.creative-tim.com', 'https://buttons.github.io', 'https://cdnjs.cloudflare.com'],
+        'style-src': ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdn.jsdelivr.net', 'https://demos.creative-tim.com', 'https://cdnjs.cloudflare.com'],
+        'img-src': ["'self'", 'data:', 'https://loremflickr.com', 'https://source.unsplash.com', 'https://images.unsplash.com', 'https://placehold.co', 'https://picsum.photos', 'https://fastly.picsum.photos', 'https://ui-avatars.com', 'https://demos.creative-tim.com'],
+        'font-src': ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com', 'https://demos.creative-tim.com'],
+        'frame-src': ["'self'", 'https://www.google.com', 'https://maps.google.com']
     }
-    # Disable force_https in dev/debug mode to avoid issues on localhost
-    talisman.init_app(app, content_security_policy=csp, force_https=not (app.debug or app.testing))
+    
+    # Relaxing security policies to allow external images (fix ORB/CORB issues) - Aligned with Web Profile
+    talisman.init_app(
+        app, 
+        content_security_policy=csp, 
+        force_https=not (app.debug or app.testing),
+        permissions_policy={}, 
+        x_content_type_options='nosniff',
+        referrer_policy='no-referrer-when-downgrade',
+        # Disable COEP/COOP to prevent ORB blocking external images
+        feature_policy=None,
+        content_security_policy_report_only=False,
+        strict_transport_security=False
+    )
+    
+    # Manually remove headers that trigger strict blocking if Talisman sets them
+    @app.after_request
+    def remove_strict_headers(response):
+        response.headers.pop('Cross-Origin-Embedder-Policy', None)
+        response.headers.pop('Cross-Origin-Opener-Policy', None)
+        response.headers.pop('Cross-Origin-Resource-Policy', None)
+        return response
 
     # Logging Configuration
     if not app.debug and not app.testing:

@@ -41,7 +41,8 @@ def log_audit(action, model_name=None):
                         action=action,
                         model_name=model_name,
                         details=json.dumps(details),
-                        ip_address=request.remote_addr
+                        ip_address=request.remote_addr,
+                        user_agent=request.user_agent.string if request.user_agent else None
                     )
                     db.session.add(log)
                     db.session.commit()

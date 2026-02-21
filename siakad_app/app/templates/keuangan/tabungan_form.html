@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-xl-6">
+        <div class="card mb-4">
+            <div class="card-header pb-0">
+                <h6>{{ title }}</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="form-group">
+                        {{ form.tanggal.label(class="form-control-label") }}
+                        {{ form.tanggal(class="form-control", type="date") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.santri_id.label(class="form-control-label") }}
+                        {{ form.santri_id(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.jenis.label(class="form-control-label") }}
+                        {{ form.jenis(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.jumlah.label(class="form-control-label") }}
+                        {{ form.jumlah(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.keterangan.label(class="form-control-label") }}
+                        {{ form.keterangan(class="form-control", rows="2") }}
+                    </div>
+                    <div class="mt-4">
+                        {{ form.submit(class="btn bg-gradient-primary") }}
+                        <a href="{{ url_for('keuangan.tabungan_list') }}" class="btn btn-light">Batal</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

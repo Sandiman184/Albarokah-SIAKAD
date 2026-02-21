@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                <h6>Transaksi Keuangan</h6>
+                {% if current_user.role in ['admin', 'ustadz'] %}
+                <a href="{{ url_for('keuangan.transaksi_add') }}" class="btn btn-sm bg-gradient-primary">Tambah Transaksi</a>
+                {% endif %}
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Tanggal</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Kategori</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Keterangan</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Santri</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Jumlah</th>
+                                <th class="text-secondary opacity-7"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tx in transaksi_list %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex px-2 py-1">
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <h6 class="mb-0 text-sm">{{ tx.tanggal.strftime('%d/%m/%Y') }}</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ tx.pos.nama }}</p>
+                                    <span class="badge badge-sm bg-gradient-{{ 'success' if tx.jenis == 'masuk' else 'danger' }}">{{ tx.jenis|upper }}</span>
+                                </td>
+                                <td>
+                                    <p class="text-xs text-secondary mb-0">{{ tx.keterangan or '-' }}</p>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ tx.santri.nama if tx.santri else 'Umum' }}</p>
+                                </td>
+                                <td class="align-middle text-center">
+                                    <span class="text-secondary text-xs font-weight-bold">Rp {{ "{:,.0f}".format(tx.jumlah) }}</span>
+                                </td>
+                                <td class="align-middle">
+                                    {% if tx.bukti_pembayaran %}
+                                    <a href="{{ url_for('static', filename='uploads/bukti_bayar/' + tx.bukti_pembayaran) }}" target="_blank" class="text-secondary font-weight-bold text-xs">
+                                        <i class="fas fa-file-alt text-info me-2"></i> Bukti
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">Belum ada transaksi</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

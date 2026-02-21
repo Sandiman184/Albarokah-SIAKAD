@@ -10,6 +10,7 @@ class AuditLog(db.Model):
     model_name = db.Column(db.String(50), nullable=True) # Santri, User, Nilai
     details = db.Column(db.Text, nullable=True) # JSON or text description of changes
     ip_address = db.Column(db.String(50), nullable=True)
+    user_agent = db.Column(db.String(255), nullable=True) # Added for parity with Web Profile
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship('User', backref='audit_logs')

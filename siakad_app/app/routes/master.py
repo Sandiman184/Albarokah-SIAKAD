@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+import datetime
 from flask_login import login_required, current_user
 from sqlalchemy.orm import joinedload
 from app import db
@@ -9,7 +10,115 @@ from app.forms.auth import UserForm, UserEditForm
 from app.decorators import admin_required
 from app.services.audit_service import log_audit
 
+from app.services.backup_service import BackupService
+import os
+from flask import send_file
+from werkzeug.utils import secure_filename
+
 bp = Blueprint('master', __name__, url_prefix='/master')
+
+# --- BACKUP & RESTORE ---
+@bp.route('/backup')
+@login_required
+@admin_required
+def backup_list():
+    # List available backups in the backup directory
+    backup_dir = os.path.join(current_app.root_path, '..', '..', 'backups')
+    backups = []
+    if os.path.exists(backup_dir):
+        for f in os.listdir(backup_dir):
+            if f.endswith('.zip'):
+                path = os.path.join(backup_dir, f)
+                size = os.path.getsize(path) / (1024 * 1024) # MB
+                backups.append({
+                    'filename': f,
+                    'size': f"{size:.2f} MB",
+                    'created_at': datetime.datetime.fromtimestamp(os.path.getctime(path)).strftime('%Y-%m-%d %H:%M:%S')
+                })
+    # Sort by filename desc (newest first)
+    backups.sort(key=lambda x: x['filename'], reverse=True)
+    return render_template('master/backup_list.html', title='Backup & Restore', backups=backups)
+
+@bp.route('/backup/create', methods=['POST'])
+@login_required
+@admin_required
+@log_audit('CREATE', 'Backup')
+def backup_create():
+    try:
+        # Create full system snapshot (Web Profile + SIAKAD)
+        # Note: This is a synchronous call, might timeout on large data. 
+        # Ideally should be async like in Web Profile, but for now we keep it simple.
+        zip_path = BackupService.create_system_snapshot()
+        flash('Backup sistem berhasil dibuat!', 'success')
+    except Exception as e:
+        flash(f'Gagal membuat backup: {str(e)}', 'danger')
+    return redirect(url_for('master.backup_list'))
+
+@bp.route('/backup/download/<filename>')
+@login_required
+@admin_required
+def backup_download(filename):
+    filename = secure_filename(filename)
+    backup_dir = os.path.join(current_app.root_path, '..', '..', 'backups')
+    file_path = os.path.join(backup_dir, filename)
+    
+    if os.path.exists(file_path):
+        return send_file(file_path, as_attachment=True, download_name=filename)
+    else:
+        flash('File backup tidak ditemukan.', 'danger')
+        return redirect(url_for('master.backup_list'))
+
+@bp.route('/backup/delete/<filename>', methods=['POST'])
+@login_required
+@admin_required
+@log_audit('DELETE', 'Backup')
+def backup_delete(filename):
+    filename = secure_filename(filename)
+    backup_dir = os.path.join(current_app.root_path, '..', '..', 'backups')
+    file_path = os.path.join(backup_dir, filename)
+    
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        flash('File backup berhasil dihapus.', 'success')
+    else:
+        flash('File backup tidak ditemukan.', 'danger')
+    return redirect(url_for('master.backup_list'))
+
+@bp.route('/backup/restore', methods=['POST'])
+@login_required
+@admin_required
+@log_audit('RESTORE', 'System')
+def backup_restore():
+    if 'file' not in request.files:
+        flash('Tidak ada file yang diunggah.', 'danger')
+        return redirect(url_for('master.backup_list'))
+        
+    file = request.files['file']
+    if file.filename == '':
+        flash('Tidak ada file yang dipilih.', 'danger')
+        return redirect(url_for('master.backup_list'))
+        
+    if file and file.filename.endswith('.zip'):
+        try:
+            # Save temp file
+            filename = secure_filename(file.filename)
+            temp_path = os.path.join(current_app.root_path, 'static', 'temp_restore.zip')
+            file.save(temp_path)
+            
+            # Perform restore
+            BackupService.restore_system_snapshot(temp_path)
+            
+            # Clean up
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+                
+            flash('Sistem berhasil direstore! Silakan login ulang jika diperlukan.', 'success')
+        except Exception as e:
+            flash(f'Gagal merestore sistem: {str(e)}', 'danger')
+    else:
+        flash('Format file harus .zip', 'danger')
+        
+    return redirect(url_for('master.backup_list'))
 
 # --- USER MANAGEMENT ---
 @bp.route('/users')
@@ -155,6 +264,7 @@ def kelas_list():
 @bp.route('/kelas/add', methods=['GET', 'POST'])
 @login_required
 @admin_required
+@log_audit('CREATE', 'Kelas')
 def kelas_add():
     form = KelasForm()
     # Populate wali kelas choices (Pengajar)
@@ -176,6 +286,7 @@ def kelas_add():
 @bp.route('/kelas/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
+@log_audit('UPDATE', 'Kelas')
 def kelas_edit(id):
     kelas = Kelas.query.get_or_404(id)
     form = KelasForm(obj=kelas)
@@ -210,6 +321,7 @@ def pengajar_list():
 @bp.route('/pengajar/add', methods=['GET', 'POST'])
 @login_required
 @admin_required
+@log_audit('CREATE', 'Pengajar')
 def pengajar_add():
     form = PengajarForm()
     if form.validate_on_submit():
@@ -227,6 +339,7 @@ def pengajar_add():
 @bp.route('/pengajar/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
+@log_audit('UPDATE', 'Pengajar')
 def pengajar_edit(id):
     pengajar = Pengajar.query.get_or_404(id)
     form = PengajarForm(obj=pengajar)
@@ -240,6 +353,7 @@ def pengajar_edit(id):
 @bp.route('/pengajar/delete/<int:id>', methods=['POST'])
 @login_required
 @admin_required
+@log_audit('DELETE', 'Pengajar')
 def pengajar_delete(id):
     pengajar = Pengajar.query.get_or_404(id)
     db.session.delete(pengajar)
@@ -287,6 +401,7 @@ def mapel_edit(id):
 @bp.route('/mapel/delete/<int:id>', methods=['POST'])
 @login_required
 @admin_required
+@log_audit('DELETE', 'MataPelajaran')
 def mapel_delete(id):
     mapel = MataPelajaran.query.get_or_404(id)
     db.session.delete(mapel)

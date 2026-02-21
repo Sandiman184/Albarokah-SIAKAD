@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 col-xl-6">
+        <div class="card mb-4">
+            <div class="card-header pb-0">
+                <h6>{{ title }}</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.hidden_tag() }}
+                    <h6 class="text-uppercase text-body text-xs font-weight-bolder">Data Lembaga</h6>
+                    <div class="form-group">
+                        {{ form.nama_lembaga.label(class="form-control-label") }}
+                        {{ form.nama_lembaga(class="form-control") }}
+                    </div>
+                    <div class="form-group">
+                        {{ form.alamat_lembaga.label(class="form-control-label") }}
+                        {{ form.alamat_lembaga(class="form-control", rows="3") }}
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.telepon_lembaga.label(class="form-control-label") }}
+                                {{ form.telepon_lembaga(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.email_lembaga.label(class="form-control-label") }}
+                                {{ form.email_lembaga(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form.logo.label(class="form-control-label") }}
+                        {{ form.logo(class="form-control") }}
+                        {% if config and config.logo_path %}
+                        <div class="mt-2">
+                            <img src="{{ url_for('static', filename='img/' + config.logo_path) }}" alt="Logo" height="50">
+                            <small class="d-block text-muted">Logo saat ini</small>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <hr class="horizontal dark my-3">
+                    <h6 class="text-uppercase text-body text-xs font-weight-bolder">Penandatangan Laporan</h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.kota_ttd.label(class="form-control-label") }}
+                                {{ form.kota_ttd(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.nama_ttd.label(class="form-control-label") }}
+                                {{ form.nama_ttd(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.jabatan_ttd.label(class="form-control-label") }}
+                                {{ form.jabatan_ttd(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.nip_ttd.label(class="form-control-label") }}
+                                {{ form.nip_ttd(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        {{ form.submit(class="btn bg-gradient-primary") }}
+                        <a href="{{ url_for('keuangan.laporan') }}" class="btn btn-light">Batal</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -103,6 +103,7 @@ def absensi_list():
 @bp.route('/absensi/add', methods=['GET', 'POST'])
 @login_required
 @role_required('admin', 'ustadz')
+@log_audit('CREATE', 'Absensi')
 def absensi_add():
     form = AbsensiForm()
     santris = Santri.query.options(joinedload(Santri.kelas)).all()
@@ -124,6 +125,7 @@ def absensi_add():
 @bp.route('/absensi/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @role_required('admin', 'ustadz')
+@log_audit('UPDATE', 'Absensi')
 def absensi_edit(id):
     absen = Absensi.query.get_or_404(id)
     form = AbsensiForm(obj=absen)
@@ -141,6 +143,7 @@ def absensi_edit(id):
 @bp.route('/absensi/delete/<int:id>', methods=['POST'])
 @login_required
 @role_required('admin', 'ustadz')
+@log_audit('DELETE', 'Absensi')
 def absensi_delete(id):
     absen = Absensi.query.get_or_404(id)
     db.session.delete(absen)
@@ -163,6 +166,7 @@ def tahfidz_list():
 @bp.route('/tahfidz/add', methods=['GET', 'POST'])
 @login_required
 @role_required('admin', 'ustadz')
+@log_audit('CREATE', 'Tahfidz')
 def tahfidz_add():
     form = TahfidzForm()
     santris = Santri.query.options(joinedload(Santri.kelas)).all()
@@ -187,6 +191,7 @@ def tahfidz_add():
 @bp.route('/tahfidz/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @role_required('admin', 'ustadz')
+@log_audit('UPDATE', 'Tahfidz')
 def tahfidz_edit(id):
     hafalan = Tahfidz.query.get_or_404(id)
     form = TahfidzForm(obj=hafalan)
@@ -204,6 +209,7 @@ def tahfidz_edit(id):
 @bp.route('/tahfidz/delete/<int:id>', methods=['POST'])
 @login_required
 @role_required('admin', 'ustadz')
+@log_audit('DELETE', 'Tahfidz')
 def tahfidz_delete(id):
     hafalan = Tahfidz.query.get_or_404(id)
     db.session.delete(hafalan)

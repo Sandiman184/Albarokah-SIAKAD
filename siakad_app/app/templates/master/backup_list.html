@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                <h6>Backup & Restore Sistem</h6>
+                <form action="{{ url_for('master.backup_create') }}" method="post" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn bg-gradient-primary btn-sm mb-0">
+                        <i class="fas fa-plus me-2"></i>Buat Backup Baru
+                    </button>
+                </form>
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+                
+                <!-- Restore Section -->
+                <div class="p-4 bg-gray-100 mb-4 mx-4 border-radius-lg">
+                    <h6 class="mb-3">Restore Backup</h6>
+                    <p class="text-sm text-muted mb-3">Unggah file backup (.zip) untuk mengembalikan kondisi sistem (Database & File) ke titik tersebut. Perhatian: Data saat ini akan ditimpa!</p>
+                    <form action="{{ url_for('master.backup_restore') }}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="input-group">
+                            <input type="file" class="form-control" name="file" accept=".zip" required>
+                            <button class="btn bg-gradient-warning mb-0" type="submit" onclick="return confirm('Apakah Anda yakin ingin merestore sistem? Data saat ini akan HILANG permanen!')">
+                                <i class="fas fa-history me-2"></i>Restore Sekarang
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="table-responsive p-0 px-4">
+                    <h6 class="mb-3">Riwayat Backup</h6>
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Nama File</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Ukuran</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tanggal Dibuat</th>
+                                <th class="text-secondary opacity-7"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for backup in backups %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex px-2 py-1">
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <h6 class="mb-0 text-sm">{{ backup.filename }}</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ backup.size }}</p>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ backup.created_at }}</p>
+                                </td>
+                                <td class="align-middle text-end">
+                                    <a href="{{ url_for('master.backup_download', filename=backup.filename) }}" class="btn btn-link text-dark px-3 mb-0">
+                                        <i class="fas fa-download text-dark me-2" aria-hidden="true"></i>Download
+                                    </a>
+                                    <form action="{{ url_for('master.backup_delete', filename=backup.filename) }}" method="post" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-link text-danger text-gradient px-3 mb-0" onclick="return confirm('Yakin ingin menghapus backup ini?')">
+                                            <i class="far fa-trash-alt me-2"></i>Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4">
+                                    <p class="text-sm text-muted mb-0">Belum ada file backup tersedia.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

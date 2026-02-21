@@ -20,9 +20,15 @@ class Config:
     SESSION_COOKIE_SAMESITE = 'Lax'
     # SESSION_COOKIE_SECURE = True  # Uncomment saat deploy HTTPS
     
+    # Session Management
+    PERMANENT_SESSION_LIFETIME = 1800 # 30 minutes in seconds
+    
     # Caching Configuration
-    CACHE_TYPE = os.environ.get('CACHE_TYPE') or 'SimpleCache' # Use RedisCache in production
+    # Use FileSystemCache to share cache between Gunicorn workers and persist across restarts
+    CACHE_TYPE = os.environ.get('CACHE_TYPE') or 'FileSystemCache'
+    CACHE_DIR = os.path.join(basedir, 'cache')
     CACHE_DEFAULT_TIMEOUT = 300
+    CACHE_THRESHOLD = 1000
     
     # Compression Configuration
     COMPRESS_ALGORITHM = 'gzip'

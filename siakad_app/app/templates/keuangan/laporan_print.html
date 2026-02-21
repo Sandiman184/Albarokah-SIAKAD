@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; margin: 0; padding: 20px; }
+        .kop-surat { text-align: center; margin-bottom: 20px; border-bottom: 3px double #000; padding-bottom: 10px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .logo { width: 80px; height: auto; position: absolute; left: 0; top: 0; }
+        .lembaga-info { width: 100%; }
+        .nama-lembaga { font-size: 16pt; font-weight: bold; text-transform: uppercase; margin: 0; }
+        .alamat-lembaga { font-size: 11pt; margin: 5px 0; }
+        .kontak-lembaga { font-size: 10pt; font-style: italic; }
+        
+        h2 { text-align: center; text-transform: uppercase; margin: 20px 0 10px; font-size: 14pt; }
+        .periode { text-align: center; margin-bottom: 20px; font-weight: bold; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { border: 1px solid #000; padding: 6px 8px; font-size: 11pt; }
+        th { background-color: #f0f0f0; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-bold { font-weight: bold; }
+        
+        .ttd-container { display: flex; justify-content: flex-end; margin-top: 40px; }
+        .ttd-box { width: 250px; text-align: center; }
+        .ttd-date { margin-bottom: 10px; }
+        .ttd-space { height: 80px; }
+        .ttd-name { font-weight: bold; text-decoration: underline; }
+        
+        @media print {
+            body { padding: 0; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body onload="window.print()">
+
+    <div class="kop-surat">
+        {% if config and config.logo_path %}
+        <img src="{{ url_for('static', filename='img/' + config.logo_path) }}" class="logo" alt="Logo">
+        {% endif %}
+        <div class="lembaga-info">
+            <h1 class="nama-lembaga">{{ config.nama_lembaga if config else 'PONDOK PESANTREN AL-BAROKAH' }}</h1>
+            <p class="alamat-lembaga">{{ config.alamat_lembaga if config else 'Alamat Belum Dikonfigurasi' }}</p>
+            <p class="kontak-lembaga">Telp: {{ config.telepon_lembaga if config else '-' }} | Email: {{ config.email_lembaga if config else '-' }}</p>
+        </div>
+    </div>
+
+    <h2>Laporan Keuangan</h2>
+    <p class="periode">Periode: {{ data.periode }}</p>
+
+    <!-- Ringkasan -->
+    <div style="margin-bottom: 20px; border: 1px solid #000; padding: 10px; width: 50%; margin-left: auto; margin-right: auto;">
+        <table style="border: none; margin: 0;">
+            <tr style="border: none;">
+                <td style="border: none;">Total Pemasukan</td>
+                <td style="border: none;">:</td>
+                <td style="border: none;" class="text-right">Rp {{ "{:,.0f}".format(data.total_masuk) }}</td>
+            </tr>
+            <tr style="border: none;">
+                <td style="border: none;">Total Pengeluaran</td>
+                <td style="border: none;">:</td>
+                <td style="border: none;" class="text-right">Rp {{ "{:,.0f}".format(data.total_keluar) }}</td>
+            </tr>
+            <tr style="border: none; font-weight: bold; border-top: 1px solid #ccc;">
+                <td style="border: none;">Saldo Akhir</td>
+                <td style="border: none;">:</td>
+                <td style="border: none;" class="text-right">Rp {{ "{:,.0f}".format(data.saldo) }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Detail Transaksi -->
+    <table>
+        <thead>
+            <tr>
+                <th width="5%" class="text-center">No</th>
+                <th width="12%" class="text-center">Tanggal</th>
+                <th width="20%">Kategori</th>
+                <th>Keterangan</th>
+                <th width="15%" class="text-center">Masuk (Rp)</th>
+                <th width="15%" class="text-center">Keluar (Rp)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tx in data.transaksi %}
+            <tr>
+                <td class="text-center">{{ loop.index }}</td>
+                <td class="text-center">{{ tx.tanggal.strftime('%d/%m/%Y') }}</td>
+                <td>{{ tx.pos.nama }}</td>
+                <td>{{ tx.keterangan }}</td>
+                <td class="text-right">
+                    {% if tx.jenis == 'masuk' %}
+                    {{ "{:,.0f}".format(tx.jumlah) }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td class="text-right">
+                    {% if tx.jenis == 'keluar' %}
+                    {{ "{:,.0f}".format(tx.jumlah) }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center">Tidak ada transaksi</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="4" class="text-center text-bold">TOTAL</td>
+                <td class="text-right text-bold">{{ "{:,.0f}".format(data.total_masuk) }}</td>
+                <td class="text-right text-bold">{{ "{:,.0f}".format(data.total_keluar) }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <div class="ttd-container">
+        <div class="ttd-box">
+            <div class="ttd-date">
+                {{ config.kota_ttd if config else 'Bogor' }}, {{ now.strftime('%d %B %Y') }}
+            </div>
+            <div class="ttd-jabatan">
+                {{ config.jabatan_ttd if config else 'Bendahara' }}
+            </div>
+            <div class="ttd-space"></div>
+            <div class="ttd-name">
+                {{ config.nama_ttd if config else '(..........................)' }}
+            </div>
+            {% if config and config.nip_ttd %}
+            <div class="ttd-nip">
+                NIP/NIY. {{ config.nip_ttd }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+</body>
+</html>

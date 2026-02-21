@@ -20,7 +20,6 @@ class Santri(db.Model):
     nilai = db.relationship('Nilai', backref='santri', lazy='dynamic')
     tahfidz = db.relationship('Tahfidz', backref='santri', lazy='dynamic')
     absensi = db.relationship('Absensi', backref='santri', lazy='dynamic')
-    keuangan = db.relationship('Keuangan', backref='santri', lazy='dynamic')
     raport = db.relationship('Raport', backref='santri', lazy='dynamic')
 
 class Pengajar(db.Model):
