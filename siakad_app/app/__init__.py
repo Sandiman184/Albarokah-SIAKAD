@@ -76,6 +76,14 @@ def create_app(config_class=Config):
         response.headers.pop('Cross-Origin-Resource-Policy', None)
         return response
 
+    # Template Filters
+    @app.template_filter('utc_to_wib')
+    def utc_to_wib_filter(value):
+        from datetime import timedelta
+        if value:
+            return value + timedelta(hours=7)
+        return value
+
     # Logging Configuration
     if not app.debug and not app.testing:
         import logging

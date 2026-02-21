@@ -41,7 +41,7 @@
                   <span class="text-secondary text-xs font-weight-bold">{{ log.ip_address }}</span>
                 </td>
                 <td class="align-middle text-center">
-                  <span class="text-secondary text-xs font-weight-bold">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                  <span class="text-secondary text-xs font-weight-bold">{{ (log.timestamp | utc_to_wib).strftime('%Y-%m-%d %H:%M:%S') }}</span>
                 </td>
                 <td class="align-middle">
                   <button type="button" class="btn btn-link text-secondary mb-0" data-bs-toggle="modal" data-bs-target="#detailModal{{ log.id }}">

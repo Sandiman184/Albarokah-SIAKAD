@@ -3,6 +3,7 @@ from flask_login import login_user, logout_user, current_user
 from app import db, limiter
 from app.models.user import User
 from app.forms.auth import LoginForm
+from app.services.audit_service import record_audit
 
 bp = Blueprint('auth', __name__)
 
@@ -20,6 +21,10 @@ def login():
             return redirect(url_for('auth.login'))
         
         login_user(user, remember=form.remember_me.data)
+        
+        # Log Login Activity
+        record_audit('LOGIN', 'User', {'message': 'User logged in successfully'}, user_id=user.id)
+        
         next_page = request.args.get('next')
         if not next_page or not next_page.startswith('/'):
             next_page = url_for('dashboard.index')
@@ -29,5 +34,9 @@ def login():
 
 @bp.route('/logout')
 def logout():
+    # Log Logout Activity
+    if current_user.is_authenticated:
+        record_audit('LOGOUT', 'User', {'message': 'User logged out'})
+        
     logout_user()
     return redirect(url_for('auth.login'))
