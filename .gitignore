@@ -35,7 +35,7 @@ pip-delete-this-directory.txt
 # Secret Documentation
 *.md
 !README.md
-!PANDUAN_DEPLOYMENT.md
+!DEPLOYMENT_GUIDE.md
 
 # Sensitive Credentials
 google-credentials.json
