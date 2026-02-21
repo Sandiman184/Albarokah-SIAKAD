@@ -9,7 +9,7 @@ from app.models.akademik import Santri, Pengajar, Kelas, MataPelajaran
 @bp.route('/')
 @bp.route('/dashboard')
 @login_required
-@cache.cached(timeout=60, key_prefix='dashboard_stats_global')
+# @cache.cached(timeout=60, key_prefix='dashboard_stats_global') -- Disable cache to prevent role leakage and delay
 def index():
     total_santri = Santri.query.count()
     total_pengajar = Pengajar.query.count()
