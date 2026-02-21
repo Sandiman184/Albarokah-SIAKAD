@@ -1,109 +1,170 @@
-# Panduan Deployment dan Sinkronisasi Albarokah
+# Panduan Deployment dan Sinkronisasi SIAKAD Al-Barokah
 
-Dokumen ini menjelaskan prosedur teknis untuk deployment server dan sinkronisasi data antara lingkungan Lokal (Development) dan Server (Production).
+Dokumen ini berisi panduan teknis lengkap untuk melakukan sinkronisasi kode, database, dan konten antara environment lokal (Development) dan server production.
 
-## 1. Arsitektur Sinkronisasi
-
-Sistem ini memiliki dua jenis sinkronisasi yang terpisah namun saling melengkapi:
-
-1.  **Sinkronisasi Kode (Code Sync)**
-    *   **Apa yang disinkronkan?**: File Python (`.py`), Template HTML (`.html`), CSS/JS Statis (`static/css`, `static/js`), Konfigurasi.
-    *   **Mekanisme**: Melalui **Git** (GitHub).
-    *   **Arah**: Lokal -> GitHub -> Server.
-    *   **Alat**: Script `sync_server.sh`.
-
-2.  **Sinkronisasi Data (Data Sync)**
-    *   **Apa yang disinkronkan?**: Database (Isi berita, santri, nilai, pengaturan), File Media yang diupload (`static/uploads/*`).
-    *   **Mekanisme**: Melalui **Fitur Backup & Restore** di Admin Panel Web Profile.
-    *   **Arah**: Lokal (Download Backup) -> Server (Upload Restore).
-    *   **Alat**: Menu Admin > Backup & Restore > Full System Snapshot.
+**Path Server Production:** `/var/www/albarokah`
+**User System:** `albarokah` (atau user deployment yang relevan)
+**Service Name:** `albarokah-siakad` & `albarokah-web`
 
 ---
 
-## 2. Prosedur Sinkronisasi Total (Lokal ke Server)
+## 1. Persiapan Awal
 
-Untuk memastikan Server **100% Identik** dengan Lokal, ikuti urutan langkah berikut:
-
-### Langkah 1: Sinkronisasi Kode (Update Aplikasi)
-Lakukan ini jika Anda mengubah kode program, tampilan (HTML/CSS), atau menambah fitur baru.
-
-1.  **Di Komputer Lokal**:
-    *   Simpan semua perubahan kode.
-    *   Commit dan Push ke GitHub:
-        ```bash
-        git add .
-        git commit -m "Update fitur X dan perbaikan Y"
-        git push origin main
-        ```
-
-2.  **Di Server (Melalui Terminal/SSH)**:
-    *   Login ke server.
-    *   Jalankan script sinkronisasi otomatis:
-        ```bash
-        cd /path/to/Albarokah
-        ./sync_server.sh
-        ```
-    *   **Apa yang dilakukan script ini?**
-        *   Mengambil kode terbaru dari GitHub (`git pull`).
-        *   **Reset Hard**: Menghapus perubahan "liar" di server agar sama persis dengan GitHub.
-        *   **Fix Permissions**: Memperbaiki hak akses file agar bisa dibaca/tulis oleh sistem (`www-data`).
-        *   Install dependencies baru (`pip install`).
-        *   Jalankan migrasi database (`flask db upgrade`).
-        *   Restart service aplikasi.
-
-### Langkah 2: Sinkronisasi Data (Update Konten)
-Lakukan ini jika Anda ingin konten di server (berita, galeri, data santri) sama persis dengan data di komputer lokal Anda.
-
-1.  **Di Web Lokal (http://localhost:8001/admin)**:
-    *   Masuk ke menu **Pengaturan** -> **Backup & Restore**.
-    *   Pada bagian "Full System Snapshot", klik **Download Snapshot**.
-    *   Tunggu proses selesai dan simpan file `.zip` yang dihasilkan.
-
-2.  **Di Web Server (http://domain-anda.com/admin)**:
-    *   Masuk ke menu **Pengaturan** -> **Backup & Restore**.
-    *   Pada bagian "Restore Snapshot", pilih file `.zip` yang tadi didownload.
-    *   Klik **Restore System Now**.
-    *   Konfirmasi peringatan keamanan.
-
-### 3. Verifikasi
-Setelah kedua langkah di atas selesai:
-1.  Buka website server.
-2.  Pastikan tampilan dan menu sesuai dengan update kode terakhir.
-3.  Pastikan berita, gambar, dan data sesuai dengan data lokal.
-
----
-
-## 3. Troubleshooting (Pemecahan Masalah)
-
-### Masalah: "Konten Tertinggal" (File lama masih muncul)
-Jika setelah Restore data, file gambar lama masih muncul atau folder uploads tidak bersih:
-*   Penyebab: Masalah hak akses (permissions) sehingga sistem gagal menghapus file lama sebelum menimpa dengan yang baru.
-*   Solusi:
-    1.  Login ke terminal server.
-    2.  Jalankan `./sync_server.sh` lagi. Script ini akan memaksa perbaikan hak akses (`chown www-data`) pada folder uploads.
-    3.  Lakukan proses **Restore Snapshot** ulang di Admin Panel.
-
-### Masalah: "Internal Server Error" atau Gagal Restore Database
-*   Penyebab: Ada koneksi aktif (misalnya dari user lain atau aplikasi) yang mencegah database dihapus/ditimpa.
-*   Solusi:
-    1.  Script `backup_service.py` terbaru sudah otomatis mencoba memutus koneksi lain. Pastikan Anda sudah update kode server.
-    2.  Jika masih gagal, gunakan **Opsi Nuklir (Hard Reset)**.
-
-### Opsi Nuklir: Hard Reset (Jika semua cara gagal)
-Jika fitur Restore via Web terus gagal atau data tetap kacau, gunakan script pamungkas ini di terminal server:
+Pastikan Anda memiliki akses SSH ke server dan sudah setup remote git.
 
 ```bash
-cd /var/www/Albarokah-SIAKAD
-chmod +x hard_reset_server.sh
-./hard_reset_server.sh
+# Cek remote repository
+git remote -v
+# Output harus mengarah ke repo GitHub project
+# origin  https://github.com/username/albarokah.git (fetch)
+# origin  https://github.com/username/albarokah.git (push)
 ```
-
-**PERINGATAN KERAS**: Script ini akan menghapus TOTAL database dan folder uploads di server, lalu me-restart service. Setelah script ini selesai, server akan dalam keadaan "kosong". Segera lakukan **Restore Snapshot** via Admin Panel setelahnya.
 
 ---
 
-## 4. Struktur Folder Penting
+## 2. Sinkronisasi Kode (Git)
 
-*   `/var/www/Albarokah-SIAKAD`: Root folder aplikasi.
-*   `web_profile/app/static/uploads`: Tempat penyimpanan file media (gambar berita, galeri). Folder ini akan **dibersihkan total** saat proses Restore Snapshot.
-*   `instance/`: Folder tempat database SQLite (jika tidak pakai PostgreSQL).
+Lakukan ini setiap kali ada perubahan fitur atau perbaikan bug.
+
+### Di Lokal (Developer PC):
+```bash
+# 1. Pastikan branch main clean
+git status
+
+# 2. Add dan Commit perubahan
+git add .
+git commit -m "Deskripsi update: Fix footer, add finance module, etc"
+
+# 3. Push ke GitHub
+git push origin main
+```
+
+### Di Server Production (SSH):
+```bash
+# 1. Login ke server
+ssh user@ip-server
+
+# 2. Masuk ke direktori project
+cd /var/www/albarokah
+
+# 3. Pull perubahan terbaru
+git pull origin main
+
+# 4. (Opsional) Jika ada perubahan dependencies python
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+---
+
+## 3. Sinkronisasi Database (Schema Migration)
+
+**PENTING:** Jangan pernah menimpa file database SQLite (`app.db`) di server jika menggunakan SQLite, atau men-drop tabel PostgreSQL sembarangan. Gunakan **Migration**.
+
+### Kasus A: Ada Perubahan Struktur Tabel (Misal: Tambah Kolom/Tabel Baru)
+
+Setelah `git pull` di server, jalankan perintah berikut:
+
+```bash
+# Di Server (/var/www/albarokah)
+source venv/bin/activate
+
+# Masuk ke folder aplikasi SIAKAD
+cd siakad_app
+export FLASK_APP=run.py
+
+# Jalankan migrasi
+flask db upgrade
+
+# Masuk ke folder Web Profile (jika ada perubahan di sana)
+cd ../web_profile
+export FLASK_APP=run.py
+flask db upgrade
+```
+
+### Kasus B: Reset Data / Seeding Ulang (HATI-HATI: MENGHAPUS DATA LAMA)
+Hanya lakukan ini jika Anda yakin ingin me-reset data server dengan data dummy baru.
+
+```bash
+# Di Server (siakad_app)
+python seed_siakad_full.py
+```
+
+---
+
+## 4. Sinkronisasi Konten Statis (Uploads)
+
+Folder `static/uploads` biasanya di-ignore oleh Git agar tidak memenuhi repo dan menjaga privasi data user. Anda perlu menyinkronkannya secara manual jika ada file baru dari lokal yang harus ada di server (misal: gambar default baru).
+
+### Mengirim File dari Lokal ke Server (SCP):
+
+```bash
+# Contoh: Mengirim logo baru atau gambar aset
+# Jalankan dari terminal lokal (Git Bash / PowerShell)
+
+# Path Lokal: d:\Project\Albarokah\Albarokah\siakad_app\app\static\img\
+# Path Server: /var/www/albarokah/siakad_app/app/static/img/
+
+scp d:\Project\Albarokah\Albarokah\siakad_app\app\static\img\hero-bg.jpg user@ip-server:/var/www/albarokah/siakad_app/app/static/img/
+```
+
+### Mengambil Data Upload User dari Server ke Lokal (Backup):
+
+```bash
+# Jalankan dari terminal lokal
+scp -r user@ip-server:/var/www/albarokah/siakad_app/app/static/uploads d:\Project\Albarokah\backup_uploads\
+```
+
+---
+
+## 5. Restart Service Aplikasi
+
+Setiap kali ada perubahan kode Python (`.py`) atau template HTML, Gunicorn harus di-restart agar perubahan efektif.
+
+```bash
+# Di Server
+sudo systemctl restart albarokah-siakad
+sudo systemctl restart albarokah-web
+
+# Cek status untuk memastikan tidak ada error
+sudo systemctl status albarokah-siakad
+```
+
+---
+
+## 6. Troubleshooting Umum
+
+### Permission Error (Permission denied)
+Jika terjadi error saat upload file atau `git pull` karena masalah permission:
+
+```bash
+# Di Server
+# Ubah owner folder ke user saat ini (misal: www-data atau albarokah)
+sudo chown -R www-data:www-data /var/www/albarokah
+sudo chmod -R 775 /var/www/albarokah
+```
+
+### Error 500 Internal Server Error
+Cek logs aplikasi untuk detail error:
+
+```bash
+# Cek log Gunicorn/Service
+journalctl -u albarokah-siakad -f
+
+# Atau cek log Nginx
+tail -f /var/log/nginx/error.log
+```
+
+---
+
+## Ringkasan Perintah Deployment (Cheat Sheet)
+
+```bash
+cd /var/www/albarokah
+git pull origin main
+source venv/bin/activate
+pip install -r requirements.txt
+cd siakad_app && flask db upgrade
+cd ../web_profile && flask db upgrade
+sudo systemctl restart albarokah-siakad albarokah-web
+```
