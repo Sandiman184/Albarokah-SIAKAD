@@ -79,14 +79,15 @@ maxretry = 2
 EOL
 
 # 4. Tambahkan filter nginx-badbots (Custom Filter)
-if [ ! -f /etc/fail2ban/filter.d/nginx-badbots.conf ]; then
-    echo "[3] Menambahkan filter custom..."
-    cat > /etc/fail2ban/filter.d/nginx-badbots.conf <<EOL
+echo "[3] Memperbarui filter custom nginx-badbots..."
+# Force overwrite filter config to fix previous error
+cat > /etc/fail2ban/filter.d/nginx-badbots.conf <<EOL
 [Definition]
-failregex = ^<HOST> -.*"(GET|POST|HEAD).*HTTP.*"(?:%(badbots)s|%(badbots)s)
+# Regex sederhana untuk menangkap user agent mencurigakan umum
+# Menangkap: sqlmap, nikto, wpscan, python-requests (jika abuse), dll
+failregex = ^<HOST> -.*"(GET|POST|HEAD).*HTTP.*".*"(?:sqlmap|nikto|wpscan|python-requests|curl|wget|libwww-perl|openvas|nessus|nmap).*"$
 ignoreregex =
 EOL
-fi
 
 # 5. Restart Service
 echo "[4] Restarting Fail2Ban Service..."
