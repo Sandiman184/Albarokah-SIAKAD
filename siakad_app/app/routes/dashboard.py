@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template
 from flask_login import login_required, current_user
-from app import cache
+from app import cache, db
 
 bp = Blueprint('dashboard', __name__)
 
@@ -8,6 +8,7 @@ from app.models.akademik import Santri, Pengajar, Kelas, MataPelajaran
 from app.models.audit import AuditLog
 from app.models.keuangan import TransaksiKeuangan
 from datetime import datetime, date
+from sqlalchemy import func
 
 @bp.route('/')
 @bp.route('/dashboard')
@@ -27,7 +28,6 @@ def index():
     first_of_month = date(today.year, today.month, 1)
     
     # Optimize: Use SQL SUM instead of fetching all objects
-    from sqlalchemy import func
     income_month = db.session.query(func.sum(TransaksiKeuangan.jumlah)).filter(
         TransaksiKeuangan.tanggal >= first_of_month, 
         TransaksiKeuangan.jenis == 'masuk'
