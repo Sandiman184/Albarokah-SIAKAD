@@ -42,3 +42,4 @@ web_profile/test_email.py
 *.json
 !package.json
 !tsconfig.json
+setup_fail2ban.sh
