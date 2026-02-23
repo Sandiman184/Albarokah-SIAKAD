@@ -35,11 +35,19 @@ class KonfigurasiLaporanForm(FlaskForm):
     telepon_lembaga = StringField('Telepon')
     email_lembaga = StringField('Email')
     logo = FileField('Logo Lembaga', validators=[Optional(), FileAllowed(['jpg', 'png', 'jpeg'], 'Images only!')])
+    logo_cover = FileField('Logo Cover', validators=[Optional(), FileAllowed(['jpg', 'png', 'jpeg'], 'Images only!')])
     
     kota_ttd = StringField('Kota (Tempat TTD)', validators=[DataRequired()])
-    nama_ttd = StringField('Nama Penandatangan', validators=[DataRequired()])
-    jabatan_ttd = StringField('Jabatan Penandatangan', validators=[DataRequired()])
-    nip_ttd = StringField('NIP/NIY (Optional)')
+    
+    # Bendahara
+    nama_ttd = StringField('Nama Bendahara/Pembuat', validators=[DataRequired()])
+    jabatan_ttd = StringField('Jabatan Pembuat', validators=[DataRequired()])
+    nip_ttd = StringField('NIP/NIY Bendahara (Optional)')
+    
+    # Pimpinan
+    pimpinan_ponpes_nama = StringField('Nama Pimpinan Ponpes')
+    pimpinan_ponpes_nip = StringField('NIP/NIY Pimpinan')
+    
     submit = SubmitField('Simpan Konfigurasi')
 
 class LaporanKeuanganForm(FlaskForm):

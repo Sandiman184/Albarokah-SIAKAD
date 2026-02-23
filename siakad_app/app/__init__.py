@@ -84,6 +84,18 @@ def create_app(config_class=Config):
             return value + timedelta(hours=7)
         return value
 
+    # Context Processor for Global Config
+    @app.context_processor
+    def inject_config():
+        from app.models.konfigurasi import Konfigurasi
+        # Try to get config from cache first to avoid DB hit on every request
+        # But for now, simple query is fine
+        try:
+            config = Konfigurasi.query.first()
+            return dict(global_config=config)
+        except Exception:
+            return dict(global_config=None)
+
     # Logging Configuration
     if not app.debug and not app.testing:
         import logging

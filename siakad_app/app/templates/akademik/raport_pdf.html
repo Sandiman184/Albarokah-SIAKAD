@@ -2,181 +2,686 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="description" content="Laporan Hasil Belajar Santri Pondok Pesantren Albarokah">
-    <meta name="keywords" content="raport, santri, albarokah, pesantren, nilai">
     <title>Raport Santri</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
-            color: #333;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #000;
-            padding-bottom: 10px;
-        }
-        .header h2, .header h3 {
-            margin: 5px 0;
-        }
-        .info-table {
+        @page { size: A4; margin: 2cm; }
+        body { font-family: Arial, sans-serif; font-size: 12pt; line-height: 1.5; }
+        .page-break { page-break-after: always; }
+        .page-break-before { page-break-before: always; }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .font-bold { font-weight: bold; }
+        .uppercase { text-transform: uppercase; }
+        
+        /* Cover Styles */
+        .cover-container {
             width: 100%;
-            margin-bottom: 20px;
-        }
-        .info-table td {
-            padding: 5px;
-        }
-        .content-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-        .content-table th, .content-table td {
-            border: 1px solid #000;
-            padding: 8px;
-            text-align: left;
-        }
-        .content-table th {
-            background-color: #f2f2f2;
+            height: 100%;
             text-align: center;
+            padding-top: 10px;
+            position: relative;
         }
-        .section-title {
-            font-weight: bold;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
+        .logo-kemenag { width: 140px; margin-bottom: 5px; display: block; margin-left: auto; margin-right: auto; }
+        .logo-madrasah { width: 180px; margin: 10px auto; display: block; }
+        .cover-title { font-size: 20pt; margin: 5px 0; font-weight: bold; }
+        .cover-subtitle { font-size: 14pt; margin-bottom: 20px; }
+        .student-box {
+            border: 2px solid #000;
+            padding: 10px 30px;
+            margin: 20px auto;
+            width: 60%;
+            display: block;
         }
-        .footer {
-            margin-top: 50px;
-            width: 100%;
-        }
-        .footer-col {
-            width: 33%;
-            float: left;
-            text-align: center;
-        }
-        .signature-space {
-            height: 80px;
-        }
-        /* Helper classes to replace inline styles */
-        .text-center {
-            text-align: center;
-        }
-        .w-50 {
-            width: 50%;
-        }
-        .notes-box {
-            border: 1px solid #000;
-            padding: 10px;
-            min-height: 50px;
-        }
+        
+        /* Table Styles */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .info-table td { padding: 5px; vertical-align: top; }
+        .content-table th, .content-table td { border: 1px solid #000; padding: 5px; font-size: 11pt; }
+        .content-table th { background-color: #f0f0f0; text-align: center; }
+        
+        /* Width utilities */
         .w-5 { width: 5%; }
-        .w-30 { width: 30%; }
         .w-10 { width: 10%; }
-        .w-35 { width: 35%; }
         .w-15 { width: 15%; }
+        .w-20 { width: 20%; }
+        .w-25 { width: 25%; }
+        .w-30 { width: 30%; }
+        .w-35 { width: 35%; }
+        .w-40 { width: 40%; }
+        .w-50 { width: 50%; }
+
+        .signature-section {
+            margin-top: 30px;
+            page-break-inside: avoid;
+            width: 100%;
+        }
+        .footer-table { width: 100%; border: none; margin-top: 20px; page-break-inside: avoid; }
+        .footer-table td { border: none; text-align: center; vertical-align: top; padding: 0; }
+        .signature-space { height: 80px; }
+        
+        .recommendation-box {
+            margin-top: 20px; 
+            margin-bottom: 10px;
+            font-style: italic; 
+            font-size: 10pt;
+        }
+        
+        .footer-cover {
+            margin-top: 30px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Named Page for Nilai Raport */
+        @page nilai_raport {
+            @bottom-right {
+                content: counter(page);
+                font-size: 11pt;
+            }
+        }
+        .nilai-page {
+            page: nilai_raport;
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h2>PONDOK PESANTREN ALBAROKAH</h2>
-        <h3>LAPORAN HASIL BELAJAR SANTRI</h3>
+    
+    <!-- PAGE 1: COVER -->
+    {% if data.pdf_type in ['full', 'cover'] %}
+    <div class="cover-container page-break">
+        <!-- Logo Kemenag -->
+        {% if data.logo_kemenag_path %}
+        <img src="{{ data.logo_kemenag_path }}" class="logo-kemenag" alt="Logo Kemenag" onerror="this.style.display='none'">
+        {% else %}
+        <div style="height: 140px;"></div>
+        {% endif %}
+
+        <div style="font-size: 14pt; margin-bottom: 5px; text-transform: uppercase;">KEMENTERIAN AGAMA REPUBLIK INDONESIA</div>
+
+        <div style="font-size: 18pt; font-weight: bold; margin-bottom: 2px;">LAPORAN</div>
+        <div style="font-size: 18pt; font-weight: bold; margin-bottom: 5px;">HASIL PENCAPAIAN KOMPETENSI PESERTA DIDIK</div>
+        
+        <div class="cover-title">
+            {% if data.template_type == 'LPQ' %}
+            LEMBAGA PENDIDIKAN QUR'AN (LPQ)
+            {% else %}
+            MADRASAH DINIYAH TAKMILIYAH (MDT)
+            {% endif %}
+        </div>
+        
+        <!-- Alamat Lembaga -->
+        <div style="font-size: 11pt; margin-bottom: 10px; text-transform: uppercase;">
+             {{ data.config.alamat_lembaga if data.config and data.config.alamat_lembaga else 'Alamat Belum Dikonfigurasi' }}
+        </div>
+        
+        <!-- Logo Madrasah -->
+        {% if data.logo_lembaga_path %}
+        <img src="{{ data.logo_lembaga_path }}" class="logo-madrasah" alt="Logo Madrasah" onerror="this.style.display='none'">
+        {% else %}
+        <div style="height: 180px;"></div>
+        {% endif %}
+        
+        <div style="margin: 5px 0; font-size: 26pt; font-weight: bold; line-height: 1.2;">
+            TAMAN PENDIDIKAN AL-QUR'AN<br>
+            {{ data.config.nama_lembaga if data.config else 'NAMA LEMBAGA' }}
+        </div>
+
+        <div class="student-box">
+            <div style="font-size: 12pt;">Nama Peserta Didik</div>
+            <div style="font-size: 20pt; font-weight: bold; margin: 5px 0;">{{ data.santri.nama }}</div>
+            <div style="font-size: 12pt; border-top: 1px solid #000; padding-top: 5px; width: 80%; margin: 5px auto 0;">NIS / NISN</div>
+            <div style="font-size: 16pt; font-weight: bold;">{{ data.santri.nis }}</div>
+        </div>
+
+        <div class="footer-cover">
+            <div style="font-weight: bold; border-top: 1px solid #000; padding-top: 10px; width: 80%; margin: 0 auto; display: inline-block;">
+                KANTOR KEMENTERIAN AGAMA KABUPATEN BANJARNEGARA<br>
+                PROVINSI JAWA TENGAH
+            </div>
+        </div>
     </div>
+    {% endif %}
 
-    <table class="info-table">
-        <tr>
-            <td class="w-15">Nama</td>
-            <td class="w-35">: {{ data.santri.nama }}</td>
-            <td class="w-15">Kelas</td>
-            <td class="w-35">: {{ data.santri.kelas.nama_kelas if data.santri.kelas else '-' }}</td>
-        </tr>
-        <tr>
-            <td>NIS</td>
-            <td>: {{ data.santri.nis }}</td>
-            <td>Semester</td>
-            <td>: {{ data.semester }}</td>
-        </tr>
-        <tr>
-            <td>Tahun Ajaran</td>
-            <td>: {{ data.semester.split(' ')[1] if ' ' in data.semester else '-' }}</td>
-            <td></td>
-            <td></td>
-        </tr>
-    </table>
-
-    <div class="section-title">A. Nilai Akademik</div>
-    <table class="content-table">
-        <thead>
+    <!-- PAGE 2: IDENTITAS -->
+    {% if data.pdf_type in ['full', 'identitas'] %}
+    <div class="page-break">
+        <h2 class="text-center" style="text-decoration: underline; margin-bottom: 15px;">IDENTITAS PESERTA DIDIK</h2>
+        
+        <table class="info-table" style="width: 100%; margin: 0 auto; font-size: 12pt;">
             <tr>
-                <th class="w-5">No</th>
-                <th class="w-30">Mata Pelajaran</th>
-                <th class="w-10">KKM</th>
-                <th class="w-10">Nilai</th>
-                <th class="w-10">Predikat</th>
-                <th class="w-35">Deskripsi</th>
+                <td class="w-5" style="padding: 2px;">1.</td>
+                <td class="w-35" style="padding: 2px;">Nama Lengkap Peserta Didik</td>
+                <td class="w-5" style="padding: 2px;">:</td>
+                <td class="font-bold" style="padding: 2px;">{{ data.santri.nama }}</td>
             </tr>
-        </thead>
-        <tbody>
-            {% for n in data.nilai %}
             <tr>
-                <td class="text-center">{{ loop.index }}</td>
-                <td>{{ n.mapel }}</td>
-                <td class="text-center">{{ n.kkm }}</td>
-                <td class="text-center">{{ n.nilai_akhir }}</td>
-                <td class="text-center">{{ n.predikat }}</td>
-                <td>{{ n.deskripsi }}</td>
+                <td style="padding: 2px;">2.</td>
+                <td style="padding: 2px;">Nomor Induk Santri (NIS)</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.nis }}</td>
             </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <div class="section-title">B. Ketidakhadiran</div>
-    <table class="content-table w-50">
-        <tr>
-            <td class="w-50">Sakit</td>
-            <td class="w-50 text-center">{{ data.absensi.Sakit }} hari</td>
-        </tr>
-        <tr>
-            <td>Izin</td>
-            <td class="text-center">{{ data.absensi.Izin }} hari</td>
-        </tr>
-        <tr>
-            <td>Tanpa Keterangan</td>
-            <td class="text-center">{{ data.absensi.Alpha }} hari</td>
-        </tr>
-    </table>
-
-    <div class="section-title">C. Catatan Wali Kelas</div>
-    <div class="notes-box">
-        {{ data.catatan }}
+            <tr>
+                <td style="padding: 2px;">3.</td>
+                <td style="padding: 2px;">Tempat, Tanggal Lahir</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.tempat_lahir or '..................' }}, {{ data.santri.tanggal_lahir.strftime('%d %B %Y') }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;">4.</td>
+                <td style="padding: 2px;">Jenis Kelamin</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ 'Laki-laki' if data.santri.jenis_kelamin == 'L' else 'Perempuan' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;">5.</td>
+                <td style="padding: 2px;">Anak ke-</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.anak_ke or '-' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;">6.</td>
+                <td style="padding: 2px;">Status dalam Keluarga</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.status_keluarga or 'Anak Kandung' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;">7.</td>
+                <td style="padding: 2px;">Alamat Peserta Didik</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.alamat or '-' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;">8.</td>
+                <td style="padding: 2px;">Diterima di Madrasah</td>
+                <td style="padding: 2px;"></td>
+                <td style="padding: 2px;"></td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;"></td>
+                <td style="padding-left: 20px; padding-top: 2px; padding-bottom: 2px;">a. Di Kelas</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.kelas.nama_kelas if data.santri.kelas else '1 (Satu)' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;"></td>
+                <td style="padding-left: 20px; padding-top: 2px; padding-bottom: 2px;">b. Pada Tanggal</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.tanggal_masuk.strftime('%d %B %Y') if data.santri.tanggal_masuk else '-' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;">9.</td>
+                <td style="padding: 2px;">Nama Orang Tua</td>
+                <td style="padding: 2px;"></td>
+                <td style="padding: 2px;"></td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;"></td>
+                <td style="padding-left: 20px; padding-top: 2px; padding-bottom: 2px;">a. Ayah</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.nama_ayah or '-' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;"></td>
+                <td style="padding-left: 20px; padding-top: 2px; padding-bottom: 2px;">b. Ibu</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.nama_ibu or '-' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;">10.</td>
+                <td style="padding: 2px;">Pekerjaan Orang Tua</td>
+                <td style="padding: 2px;"></td>
+                <td style="padding: 2px;"></td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;"></td>
+                <td style="padding-left: 20px; padding-top: 2px; padding-bottom: 2px;">a. Ayah</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.pekerjaan_ayah or '-' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;"></td>
+                <td style="padding-left: 20px; padding-top: 2px; padding-bottom: 2px;">b. Ibu</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.pekerjaan_ibu or '-' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;">11.</td>
+                <td style="padding: 2px;">Alamat Orang Tua</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.alamat_orang_tua or data.santri.alamat or '-' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;">12.</td>
+                <td style="padding: 2px;">Wali Santri</td>
+                <td style="padding: 2px;"></td>
+                <td style="padding: 2px;"></td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;"></td>
+                <td style="padding-left: 20px; padding-top: 2px; padding-bottom: 2px;">a. Nama</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.nama_wali or '-' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;"></td>
+                <td style="padding-left: 20px; padding-top: 2px; padding-bottom: 2px;">b. Pekerjaan</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.pekerjaan_wali or '-' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;"></td>
+                <td style="padding-left: 20px; padding-top: 2px; padding-bottom: 2px;">c. Hubungan dengan Santri</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.hubungan_wali or '-' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 2px;"></td>
+                <td style="padding-left: 20px; padding-top: 2px; padding-bottom: 2px;">d. Alamat</td>
+                <td style="padding: 2px;">:</td>
+                <td style="padding: 2px;">{{ data.santri.alamat_wali or '-' }}</td>
+            </tr>
+        </table>
+        
+        <table style="width: 100%; border: none; margin-top: 20px; page-break-inside: avoid;">
+            <tr>
+                <td style="width: 40%; vertical-align: top; text-align: center; border: none;">
+                    <div style="width: 3cm; height: 4cm; border: 1px solid #000; margin: 0 auto;">
+                        {% if data.foto_santri_path %}
+                        <img src="{{ data.foto_santri_path }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% elif data.santri.foto %}
+                        <img src="{{ url_for('static', filename='img/uploads/santri/' + data.santri.foto, _external=True) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">FOTO 3 X 4</div>
+                        {% endif %}
+                    </div>
+                </td>
+                <td style="width: 60%; vertical-align: top; text-align: center; border: none;">
+                    {{ data.config.kota_ttd if data.config.kota_ttd else (data.config.alamat_lembaga.split(',')[1] if data.config and ',' in data.config.alamat_lembaga else 'Karangjati') }}, {{ data.tanggal_cetak }} <br>
+                     
+                     {% if data.template_type == 'LPQ' %}
+                     Kepala {{ data.config.nama_lpq if data.config.nama_lpq else "Taman Pendidikan Al-Qur'an" }}
+                     {% else %}
+                     Kepala {{ data.config.nama_mdta if data.config.nama_mdta else "Madrasah Diniyah Takmiliyah" }}
+                     {% endif %}
+                     
+                     <div class="signature-space" style="height: 60px;"></div>
+                     
+                     {% if data.template_type == 'LPQ' %}
+                     <b><u>{{ data.config.kepala_lpq if data.config.kepala_lpq else '( ............................. )' }}</u></b><br>
+                     {% if data.config.nip_lpq %}NIU. {{ data.config.nip_lpq }}{% endif %}
+                     {% else %}
+                     <b><u>{{ data.config.kepala_mdta if data.config.kepala_mdta else '( ............................. )' }}</u></b><br>
+                     {% if data.config.nip_mdta %}NIU. {{ data.config.nip_mdta }}{% endif %}
+                     {% endif %}
+                </td>
+            </tr>
+        </table>
     </div>
+    {% endif %}
 
-    <div class="section-title">D. Keputusan</div>
-    <div class="notes-box">
-        Berdasarkan hasil pencapaian kompetensi, peserta didik dinyatakan: <br>
-        <strong>{{ data.status_kenaikan }}</strong>
-    </div>
+    <!-- PAGE 3: NILAI RAPORT -->
+    {% if data.pdf_type in ['full', 'nilai'] %}
+    <div class="page-break-before nilai-page">
+        <div class="header text-center" style="margin-bottom: 20px;">
+            {% if data.template_type == 'MDT' %}
+            <!-- Header Resmi MDT -->
+            <div style="border-bottom: 3px double black; padding-bottom: 10px; margin-bottom: 20px;">
+                <table style="width: 100%; border: none; margin: 0; padding: 0;">
+                    <tr>
+                        <!-- Logo Kiri (Lembaga/Madrasah) -->
+                        <td style="width: 15%; text-align: left; vertical-align: middle; padding: 0;">
+                            {% if data.logo_lembaga_path %}
+                            <img src="{{ data.logo_lembaga_path }}" style="width: 2.5cm; height: auto; display: block;" onerror="this.style.display='none'">
+                            {% endif %}
+                        </td>
+                        
+                        <!-- Teks Tengah -->
+                        <td style="width: 70%; text-align: center; vertical-align: middle;">
+                            <h4 style="margin: 0; font-size: 14pt; font-weight: bold; text-transform: uppercase; line-height: 1.2;">KEMENTERIAN AGAMA REPUBLIK INDONESIA</h4>
+                            <h4 style="margin: 5px 0; font-size: 14pt; font-weight: bold; text-transform: uppercase; line-height: 1.2;">LAPORAN HASIL PENCAPAIAN KOMPETENSI PESERTA DIDIK</h4>
+                            <h3 style="margin: 5px 0; font-size: 16pt; font-weight: bold; text-transform: uppercase; line-height: 1.2;">{{ data.config.nama_lembaga|upper if data.config else 'MADRASAH DINIYAH TAKMILIYAH (MDT)' }}</h3>
+                            <div style="font-size: 11pt; margin-top: 5px; text-transform: uppercase; line-height: 1.2;">
+                                {{ data.config.alamat_lembaga if data.config else 'ALAMAT LEMBAGA' }}
+                            </div>
+                        </td>
+                        
+                        <!-- Spacer Kanan (Untuk Keseimbangan) -->
+                        <td style="width: 15%; text-align: right; vertical-align: middle; padding: 0;">
+                            <!-- Empty spacer to balance layout -->
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <h3 style="margin-top: 20px;">LAPORAN HASIL BELAJAR SANTRI SEMESTER {{ 'II (GENAP)' if 'Genap' in data.semester else 'I (GANJIL)' }}</h3>
+            <h4 style="margin: 5px 0;">TAHUN PELAJARAN {{ data.semester.split(' ')[1] if ' ' in data.semester else '20..../20....' }}</h4>
+            {% else %}
+            <!-- Header LPQ/Default -->
+            <h3>HASIL BELAJAR SANTRI</h3>
+            <h4>
+                {% if data.template_type == 'LPQ' %}
+                LEMBAGA PENDIDIKAN AL-QUR'AN (LPQ)
+                {% else %}
+                MADRASAH DINIYAH TAKMILIYAH (MDT)
+                {% endif %}
+            </h4>
+            {% endif %}
+        </div>
 
-    <div class="footer">
-        <div class="footer-col">
-            <br>
-            Orang Tua/Wali
-            <div class="signature-space"></div>
-            ( ............................. )
+        <table class="info-table" style="margin-bottom: 20px;">
+            <tr>
+                <td class="w-15">Nama</td>
+                <td class="w-35">: {{ data.santri.nama }}</td>
+                <td class="w-15">Kelas</td>
+                <td class="w-35">: {{ data.santri.kelas.nama_kelas if data.santri.kelas else '-' }}</td>
+            </tr>
+            <tr>
+                <td>NIS</td>
+                <td>: {{ data.santri.nis }}</td>
+                <td>Semester</td>
+                <td>: {{ data.semester }}</td>
+            </tr>
+        </table>
+
+        <table class="content-table">
+            <thead>
+                <tr>
+                    <th class="w-5" rowspan="2">No</th>
+                    <th class="w-30" rowspan="2">Mata Pelajaran</th>
+                    <th class="w-5" rowspan="2">KKM</th>
+                    <th class="w-20" colspan="2">Nilai</th>
+                    <th class="w-40" rowspan="2">Deskripsi Kemajuan Belajar</th>
+                </tr>
+                <tr>
+                    <th class="w-5">Angka</th>
+                    <th class="w-15">Huruf</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if data.kelompok_a %}
+                    <!-- Kelompok A -->
+                    <tr>
+                        <td colspan="6" class="font-bold" style="background-color: #eee;">A. MATA PELAJARAN POKOK</td>
+                    </tr>
+                    {% for n in data.kelompok_a %}
+                    <tr>
+                        <td class="text-center">{{ loop.index }}</td>
+                        <td>{{ n.mapel }}</td>
+                        <td class="text-center">{{ n.kkm|int }}</td>
+                        <td class="text-center">{{ n.nilai_akhir|int }}</td>
+                        <td class="text-center" style="font-size: 10pt; font-style: italic;">{{ n.nilai_huruf }}</td>
+                        <td style="font-size: 10pt;">{{ n.deskripsi }}</td>
+                    </tr>
+                    {% endfor %}
+                    
+                    <!-- Kelompok B -->
+                    {% if data.kelompok_b %}
+                    <tr>
+                        <td colspan="6" class="font-bold" style="background-color: #eee;">B. MUATAN LOKAL</td>
+                    </tr>
+                    {% for n in data.kelompok_b %}
+                    <tr>
+                        <td class="text-center">{{ loop.index }}</td>
+                        <td>{{ n.mapel }}</td>
+                        <td class="text-center">{{ n.kkm|int }}</td>
+                        <td class="text-center">{{ n.nilai_akhir|int }}</td>
+                        <td class="text-center" style="font-size: 10pt; font-style: italic;">{{ n.nilai_huruf }}</td>
+                        <td style="font-size: 10pt;">{{ n.deskripsi }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+
+                {% else %}
+                    <!-- Fallback for no grouping -->
+                    {% for n in data.nilai %}
+                    <tr>
+                        <td class="text-center">{{ loop.index }}</td>
+                        <td>{{ n.mapel }}</td>
+                        <td class="text-center">{{ n.kkm|int }}</td>
+                        <td class="text-center">{{ n.nilai_akhir|int }}</td>
+                        <td class="text-center" style="font-size: 10pt; font-style: italic;">{{ n.nilai_huruf }}</td>
+                        <td style="font-size: 10pt;">{{ n.deskripsi }}</td>
+                    </tr>
+                    {% endfor %}
+                {% endif %}
+            </tbody>
+        </table>
+
+        <!-- Peringkat (MDTA Only) -->
+        {% if data.template_type == 'MDT' and data.rank != '-' %}
+        <div style="margin-top: 10px;">
+            <b>Peringkat Kelas:</b> Ke-{{ data.rank }} dari {{ data.total_students }} Santri
         </div>
-        <div class="footer-col">
-            <br>
-            Wali Kelas
-            <div class="signature-space"></div>
-            ( ............................. )
+        {% endif %}
+
+        <!-- Absensi / Ketidakhadiran -->
+        <div style="margin-top: 20px;">
+            <b>B. Ketidakhadiran</b>
+            <table class="content-table" style="width: 50%; margin-top: 5px;">
+                <tr>
+                    <td class="w-50">Sakit</td>
+                    <td class="text-center">{{ data.absensi.Sakit }} hari</td>
+                </tr>
+                <tr>
+                    <td>Izin</td>
+                    <td class="text-center">{{ data.absensi.Izin }} hari</td>
+                </tr>
+                <tr>
+                    <td>Tanpa Keterangan</td>
+                    <td class="text-center">{{ data.absensi.Alpha }} hari</td>
+                </tr>
+            </table>
         </div>
-        <div class="footer-col">
-            Yogyakarta, {{ data.tanggal_cetak }} <br> 
-            Kepala Sekolah
-            <div class="signature-space"></div>
-            ( ............................. )
+
+        <!-- Aspek Perilaku / Kepribadian -->
+        <div style="margin-top: 20px;">
+            <b>C. Aspek Kepribadian</b>
+            <table class="content-table" style="width: 60%; margin-top: 5px;">
+                <thead>
+                    <tr>
+                        <th class="w-10 text-center">No</th>
+                        <th class="w-50">Aspek Yang Dinilai</th>
+                        <th class="w-40 text-center">Nilai</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center">1</td>
+                        <td>Akhlak</td>
+                        <td class="text-center">{{ data.raport_data.sikap_akhlak or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center">2</td>
+                        <td>Kerajinan</td>
+                        <td class="text-center">{{ data.raport_data.sikap_kerajinan or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center">3</td>
+                        <td>Kedisiplinan</td>
+                        <td class="text-center">{{ data.raport_data.sikap_kedisiplinan or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-center">4</td>
+                        <td>Kebersihan</td>
+                        <td class="text-center">{{ data.raport_data.sikap_kebersihan or '-' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Catatan Wali Kelas -->
+        <div style="margin-top: 20px;">
+            <b>D. Catatan Wali Kelas</b>
+            <div style="border: 1px solid #000; padding: 10px; min-height: 50px; margin-top: 5px;">
+                {{ data.catatan }}
+            </div>
+        </div>
+
+        <!-- Keputusan (Only for Genap typically, but shown here) -->
+        {% if 'Genap' in data.semester %}
+        <div style="margin-top: 20px;">
+            <b>E. Keputusan</b>
+            <div style="border: 1px solid #000; padding: 10px; margin-top: 5px;">
+                Berdasarkan hasil pencapaian kompetensi, peserta didik dinyatakan: <br>
+                <strong>{{ data.status_kenaikan }}</strong>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Signatures -->
+        <div class="signature-section">
+            <div class="recommendation-box text-center">
+                <small>Orang tua/Wali diharapkan memantau perkembangan belajar santri di rumah.</small>
+            </div>
+
+            <table class="footer-table">
+                <tr>
+                    <td class="w-35" style="text-align: center; vertical-align: top;">
+                        <br>
+                        Mengetahui,<br>
+                        Orang Tua/Wali
+                        <div class="signature-space" style="height: 60px;"></div>
+                        <b>( ............................. )</b>
+                    </td>
+                    <td class="w-30" style="text-align: center; vertical-align: top;">
+                        <br>
+                        <br>
+                        Wali Kelas
+                        <div class="signature-space" style="height: 60px;"></div>
+                        <b>( ............................. )</b>
+                    </td>
+                    <td class="w-35" style="text-align: center; vertical-align: top;">
+                        <div style="white-space: nowrap;">
+                            {{ data.config.kota_ttd if data.config.kota_ttd else (data.config.alamat_lembaga.split(',')[1] if data.config and ',' in data.config.alamat_lembaga else 'Karangjati') }}, {{ data.tanggal_cetak }}
+                        </div>
+                        
+                        {% if data.template_type == 'LPQ' %}
+                        Kepala {{ data.config.nama_lpq if data.config.nama_lpq else 'LPQ' }}
+                        {% else %}
+                        Kepala {{ data.config.nama_mdta if data.config.nama_mdta else 'MDT' }}
+                        {% endif %}
+                        
+                        <div class="signature-space" style="height: 60px;"></div>
+                        
+                        {% if data.template_type == 'LPQ' %}
+                        <span style="font-weight: bold; text-decoration: underline;">{{ data.config.kepala_lpq if data.config.kepala_lpq else '( ............................. )' }}</span><br>
+                        {% if data.config.nip_lpq %}NIP. {{ data.config.nip_lpq }}{% endif %}
+                        {% else %}
+                        <span style="font-weight: bold; text-decoration: underline;">{{ data.config.kepala_mdta if data.config.kepala_mdta else '( ............................. )' }}</span><br>
+                        {% if data.config.nip_mdta %}NIP. {{ data.config.nip_mdta }}{% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
+    {% endif %}
+
+    <!-- PAGE 4: LAPORAN PENGEMBANGAN (LPQ ONLY) -->
+    {% if data.template_type == 'LPQ' and data.pdf_type in ['full', 'nilai'] %}
+    <div class="page-break-before">
+        <div class="header text-center" style="margin-bottom: 20px;">
+            <h3>LAPORAN PENILAIAN HASIL BELAJAR SANTRI</h3>
+            <h4>SEMESTER {{ 'II (GENAP)' if 'Genap' in data.semester else 'I (GANJIL)' }}</h4>
+            <h4>TAMAN PENDIDIKAN QUR'AN AL BAROKAH</h4>
+            <h5>TAHUN PELAJARAN {{ data.semester.split(' ')[1] if ' ' in data.semester else '20..../20....' }}</h5>
+        </div>
+
+        <table class="info-table" style="margin-bottom: 20px; width: 100%; border: 1px solid #000; border-collapse: collapse;">
+             <tr>
+                 <td style="border: 1px solid #000; padding: 5px; font-weight: bold; background-color: #f0f0f0;">NAMA SANTRI</td>
+                 <td style="border: 1px solid #000; padding: 5px; font-weight: bold; background-color: #f0f0f0;">L/P</td>
+                 <td style="border: 1px solid #000; padding: 5px; font-weight: bold; background-color: #f0f0f0;">NIS / NISN</td>
+                 <td style="border: 1px solid #000; padding: 5px; font-weight: bold; background-color: #f0f0f0;">KELAS</td>
+             </tr>
+             <tr>
+                 <td style="border: 1px solid #000; padding: 5px;">{{ data.santri.nama }}</td>
+                 <td style="border: 1px solid #000; padding: 5px; text-align: center;">{{ data.santri.jenis_kelamin }}</td>
+                 <td style="border: 1px solid #000; padding: 5px;">{{ data.santri.nis }}</td>
+                 <td style="border: 1px solid #000; padding: 5px;">{{ data.santri.kelas.nama_kelas if data.santri.kelas else '-' }}</td>
+             </tr>
+        </table>
+
+        <!-- 1. MORAL & AGAMA -->
+        <div style="margin-bottom: 15px; border: 1px solid #000; padding: 10px;">
+            <div style="font-weight: bold; margin-bottom: 5px; text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
+                PERKEMBANGAN NILAI MORAL DAN AGAMA
+            </div>
+            <div style="font-size: 11pt; text-align: justify; min-height: 60px;">
+                {{ data.raport_data.deskripsi_moral or "Ananda berkembang Sangat Baik..." }}
+            </div>
+        </div>
+
+        <!-- 2. KOGNITIF -->
+        <div style="margin-bottom: 15px; border: 1px solid #000; padding: 10px;">
+            <div style="font-weight: bold; margin-bottom: 5px; text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
+                PERKEMBANGAN KOGNITIF (KEMAMPUAN BERFIKIR / MEMAHAMI)
+            </div>
+            <div style="font-size: 11pt; text-align: justify; min-height: 60px;">
+                {{ data.raport_data.deskripsi_kognitif or "Ananda Berkembang Sangat Baik..." }}
+            </div>
+        </div>
+
+        <!-- 3. SOSIAL EMOSIONAL -->
+        <div style="margin-bottom: 15px; border: 1px solid #000; padding: 10px;">
+            <div style="font-weight: bold; margin-bottom: 5px; text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
+                PERKEMBANGAN SOSIAL EMOSIONAL
+            </div>
+            <div style="font-size: 11pt; text-align: justify; min-height: 60px;">
+                {{ data.raport_data.deskripsi_sosial or "Ananda Berkembang Sangat Baik..." }}
+            </div>
+        </div>
+
+        <!-- 4. BAHASA -->
+        <div style="margin-bottom: 15px; border: 1px solid #000; padding: 10px;">
+            <div style="font-weight: bold; margin-bottom: 5px; text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
+                PERKEMBANGAN BAHASA / BICARA
+            </div>
+            <div style="font-size: 11pt; text-align: justify; min-height: 60px;">
+                {{ data.raport_data.deskripsi_bahasa or "Ananda Berkembang Sangat Baik..." }}
+            </div>
+        </div>
+
+        <!-- 5. SENI -->
+        <div style="margin-bottom: 15px; border: 1px solid #000; padding: 10px;">
+            <div style="font-weight: bold; margin-bottom: 5px; text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
+                PERKEMBANGAN SENI DAN KETERAMPILAN
+            </div>
+            <div style="font-size: 11pt; text-align: justify; min-height: 60px;">
+                {{ data.raport_data.deskripsi_seni or "Ananda Berkembang Sesuai Harapan..." }}
+            </div>
+        </div>
+
+        <!-- 6. PENGEMBANGAN DIRI -->
+        <div style="margin-bottom: 15px; border: 1px solid #000; padding: 10px;">
+            <div style="font-weight: bold; margin-bottom: 5px; text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 5px;">
+                PENGEMBANGAN DIRI
+            </div>
+            <div style="font-size: 11pt; text-align: justify; min-height: 60px;">
+                {{ data.raport_data.deskripsi_diri or "TERUS SEMANGAT DAN TINGKATKAN PRESTASIMU !!!" }}
+            </div>
+        </div>
+
+        <!-- Signatures Page 4 -->
+        <table class="footer-table">
+            <tr>
+                <td class="w-40">
+                    <br>
+                    Kepala {{ data.config.nama_lpq if data.config.nama_lpq else "Taman Pendidikan Al-Qur'an" }} <br>
+                    <div class="signature-space"></div>
+                    <b>{{ data.config.kepala_lpq if data.config.kepala_lpq else '( ............................. )' }}</b><br>
+                    {% if data.config.nip_lpq %}NIU. {{ data.config.nip_lpq }}{% endif %}
+                </td>
+                <td class="w-20"></td>
+                <td class="w-40">
+                    <br>
+                    Wali Kelas<br>
+                    <div class="signature-space"></div>
+                    ( ............................. )
+                </td>
+            </tr>
+        </table>
+    </div>
+    {% endif %}
+
 </body>
 </html>

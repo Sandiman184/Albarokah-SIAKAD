@@ -64,7 +64,7 @@ class TabunganSantri(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id')) # Who processed it
     saldo_akhir = db.Column(db.Numeric(15, 2)) # Running balance snapshot
     
-    santri = db.relationship('Santri', backref='tabungan')
+    santri = db.relationship('Santri', backref=db.backref('tabungan', cascade='all, delete-orphan'))
     user = db.relationship('User', backref='tabungan_procesor')
 
     def __repr__(self):
@@ -79,12 +79,19 @@ class KonfigurasiLaporan(db.Model):
     telepon_lembaga = db.Column(db.String(50), default='(0251) 825xxxx')
     email_lembaga = db.Column(db.String(100), default='info@albarokah.ponpes.id')
     logo_path = db.Column(db.String(255)) # Path to logo image
+    logo_cover_path = db.Column(db.String(255)) # Path to cover logo image
     
     # Tanda Tangan
     kota_ttd = db.Column(db.String(50), default='Bogor')
+    
+    # Bendahara / Pembuat Laporan
     nama_ttd = db.Column(db.String(100), default='H. Abdullah')
     jabatan_ttd = db.Column(db.String(100), default='Bendahara Yayasan')
-    nip_ttd = db.Column(db.String(50)) # Optional
+    nip_ttd = db.Column(db.String(50)) 
+    
+    # Pimpinan Ponpes (Mengetahui)
+    pimpinan_ponpes_nama = db.Column(db.String(100))
+    pimpinan_ponpes_nip = db.Column(db.String(50))
     
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

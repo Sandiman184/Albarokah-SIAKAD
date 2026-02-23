@@ -8,8 +8,8 @@
                 <h6>Laporan Keuangan</h6>
                 <div>
                     {% if current_user.role == 'admin' %}
-                    <a href="{{ url_for('keuangan.konfigurasi') }}" class="btn btn-sm btn-outline-primary me-2">
-                        <i class="fas fa-cog"></i> Konfigurasi Kop
+                    <a href="{{ url_for('master.konfigurasi') }}" class="btn btn-sm btn-outline-primary me-2">
+                        <i class="fas fa-cog"></i> Konfigurasi Kop & TTD
                     </a>
                     {% endif %}
                 </div>
@@ -53,7 +53,7 @@
                                     </div>
                                     <div class="col-4 text-end">
                                         <div class="icon icon-shape bg-gradient-success shadow text-center border-radius-md">
-                                            <i class="ni ni-money-coins text-lg opacity-10" aria-hidden="true"></i>
+                                            <i class="fas fa-coins text-lg opacity-10" aria-hidden="true"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -74,7 +74,7 @@
                                     </div>
                                     <div class="col-4 text-end">
                                         <div class="icon icon-shape bg-gradient-danger shadow text-center border-radius-md">
-                                            <i class="ni ni-cart text-lg opacity-10" aria-hidden="true"></i>
+                                            <i class="fas fa-shopping-cart text-lg opacity-10" aria-hidden="true"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -95,7 +95,7 @@
                                     </div>
                                     <div class="col-4 text-end">
                                         <div class="icon icon-shape bg-gradient-info shadow text-center border-radius-md">
-                                            <i class="ni ni-chart-bar-32 text-lg opacity-10" aria-hidden="true"></i>
+                                            <i class="fas fa-wallet text-lg opacity-10" aria-hidden="true"></i>
                                         </div>
                                     </div>
                                 </div>

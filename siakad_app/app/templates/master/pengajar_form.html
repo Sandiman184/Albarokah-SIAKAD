@@ -10,26 +10,89 @@
             <div class="card-body">
                 <form method="post">
                     {{ form.hidden_tag() }}
-                    <div class="form-group">
-                        {{ form.nama.label(class="form-control-label") }}
-                        {{ form.nama(class="form-control", placeholder="Nama Lengkap") }}
-                        {% for error in form.nama.errors %}
-                        <span class="text-danger text-xs">{{ error }}</span>
-                        {% endfor %}
+                    <h6 class="text-uppercase text-body text-xs font-weight-bolder mb-3">Identitas Utama</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.nama.label(class="form-control-label") }}
+                                {{ form.nama(class="form-control", placeholder="Nama Lengkap") }}
+                                {% for error in form.nama.errors %}
+                                <span class="text-danger text-xs">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.jenis_kelamin.label(class="form-control-label") }}
+                                {{ form.jenis_kelamin(class="form-control") }}
+                            </div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        {{ form.no_hp.label(class="form-control-label") }}
-                        {{ form.no_hp(class="form-control", placeholder="08...") }}
-                        {% for error in form.no_hp.errors %}
-                        <span class="text-danger text-xs">{{ error }}</span>
-                        {% endfor %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.nip.label(class="form-control-label") }}
+                                {{ form.nip(class="form-control", placeholder="NIP / NIY") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.nuptk.label(class="form-control-label") }}
+                                {{ form.nuptk(class="form-control", placeholder="NUPTK") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.tempat_lahir.label(class="form-control-label") }}
+                                {{ form.tempat_lahir(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.tanggal_lahir.label(class="form-control-label") }}
+                                {{ form.tanggal_lahir(class="form-control", type="date") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="text-uppercase text-body text-xs font-weight-bolder mt-4 mb-3">Kontak & Kepegawaian</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.no_hp.label(class="form-control-label") }}
+                                {{ form.no_hp(class="form-control", placeholder="08xxxxxxxx") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.email.label(class="form-control-label") }}
+                                {{ form.email(class="form-control", placeholder="email@example.com") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.pendidikan_terakhir.label(class="form-control-label") }}
+                                {{ form.pendidikan_terakhir(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.status_kepegawaian.label(class="form-control-label") }}
+                                {{ form.status_kepegawaian(class="form-control") }}
+                            </div>
+                        </div>
                     </div>
                     <div class="form-group">
                         {{ form.alamat.label(class="form-control-label") }}
                         {{ form.alamat(class="form-control", rows="3") }}
                     </div>
-                    <div class="text-end">
-                        <a href="{{ url_for('master.pengajar_list') }}" class="btn btn-secondary">Batal</a>
+                    
+                    <div class="text-end mt-4">
+                        <a href="{{ url_for('master.pengajar_list') }}" class="btn btn-secondary">Kembali</a>
                         {{ form.submit(class="btn bg-gradient-primary") }}
                     </div>
                 </form>

@@ -1,12 +1,14 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, make_response
+from flask import Blueprint, render_template, redirect, url_for, flash, request, make_response, current_app
 from flask_login import login_required, current_user
+import os
 from sqlalchemy.orm import joinedload
 from app import db
-from app.models.akademik import Santri, MataPelajaran, Nilai, Absensi, Tahfidz, Raport
-from app.forms.akademik import NilaiForm, AbsensiForm, TahfidzForm, RaportForm
+from app.models.akademik import Santri, MataPelajaran, Nilai, Absensi, Tahfidz, Raport, Kelas
+from app.forms.akademik import NilaiForm, AbsensiForm, TahfidzForm, RaportForm, AbsensiMassalForm
 from app.decorators import role_required
 from app.services.raport import RaportService
 from app.services.audit_service import log_audit
+from datetime import datetime
 try:
     from weasyprint import HTML
 except OSError:
@@ -45,9 +47,11 @@ def nilai_add():
             mapel_id=form.mapel_id.data,
             semester=form.semester.data,
             nilai_harian=form.nilai_harian.data,
+            nilai_kehadiran=form.nilai_kehadiran.data,
             nilai_uts=form.nilai_uts.data,
             nilai_uas=form.nilai_uas.data,
-            nilai_praktik=form.nilai_praktik.data
+            nilai_praktik=form.nilai_praktik.data,
+            deskripsi=form.deskripsi.data
         )
         db.session.add(nilai)
         db.session.commit()
@@ -71,6 +75,7 @@ def nilai_edit(id):
     
     if form.validate_on_submit():
         form.populate_obj(nilai)
+        # Ensure deskripsi is saved (populate_obj should handle it if field names match)
         db.session.commit()
         flash('Nilai berhasil diperbarui', 'success')
         return redirect(url_for('akademik.nilai_list'))
@@ -97,8 +102,74 @@ def absensi_list():
         santri_ids = [s.id for s in santris]
         absensis = Absensi.query.filter(Absensi.santri_id.in_(santri_ids)).options(joinedload(Absensi.santri).joinedload(Santri.kelas)).order_by(Absensi.tanggal.desc()).all()
     else:
-        absensis = Absensi.query.options(joinedload(Absensi.santri).joinedload(Santri.kelas)).order_by(Absensi.tanggal.desc()).all()
+        absensis = Absensi.query.options(joinedload(Absensi.santri).joinedload(Santri.kelas)).order_by(Absensi.tanggal.desc()).limit(100).all()
     return render_template('akademik/absensi_list.html', title='Data Absensi', absensis=absensis)
+
+@bp.route('/absensi/massal', methods=['GET', 'POST'])
+@login_required
+@role_required('admin', 'ustadz')
+@log_audit('BULK_UPDATE', 'Absensi')
+def absensi_massal():
+    form = AbsensiMassalForm()
+    # Populate kelas choices
+    kelases = Kelas.query.order_by(Kelas.nama_kelas).all()
+    form.kelas_id.choices = [(k.id, f"{k.nama_kelas} ({k.jenjang or '-'})") for k in kelases]
+    
+    students = []
+    existing_data = {}
+    selected_kelas = None
+    selected_date = None
+    
+    # Check if we are filtering (GET with args) or submitting (POST)
+    if request.method == 'GET' and request.args.get('kelas_id') and request.args.get('tanggal'):
+        try:
+            form.kelas_id.data = int(request.args.get('kelas_id'))
+            form.tanggal.data = datetime.strptime(request.args.get('tanggal'), '%Y-%m-%d').date()
+        except ValueError:
+            pass
+            
+    if (request.method == 'GET' and form.kelas_id.data and form.tanggal.data) or \
+       (request.method == 'POST' and form.validate_on_submit() and 'btn_filter' in request.form):
+        
+        selected_kelas = Kelas.query.get(form.kelas_id.data)
+        selected_date = form.tanggal.data
+        
+        # Get students
+        students = Santri.query.filter_by(kelas_id=selected_kelas.id, status='aktif').order_by(Santri.nama).all()
+        
+        # Get existing attendance
+        existing = Absensi.query.filter_by(tanggal=selected_date).filter(Absensi.santri_id.in_([s.id for s in students])).all()
+        existing_data = {e.santri_id: e.status for e in existing}
+
+    # Handle Save (POST)
+    if request.method == 'POST' and 'btn_save' in request.form:
+        kelas_id = request.form.get('kelas_id')
+        tanggal_str = request.form.get('tanggal')
+        tanggal = datetime.strptime(tanggal_str, '%Y-%m-%d').date()
+        
+        # Re-fetch students to be safe
+        students = Santri.query.filter_by(kelas_id=kelas_id, status='aktif').all()
+        
+        count_saved = 0
+        for student in students:
+            status_key = f"status_{student.id}"
+            status_val = request.form.get(status_key)
+            
+            if status_val:
+                # Check if exists
+                absen = Absensi.query.filter_by(santri_id=student.id, tanggal=tanggal).first()
+                if absen:
+                    absen.status = status_val
+                else:
+                    absen = Absensi(santri_id=student.id, tanggal=tanggal, status=status_val)
+                    db.session.add(absen)
+                count_saved += 1
+        
+        db.session.commit()
+        flash(f'Absensi berhasil disimpan untuk {count_saved} santri.', 'success')
+        return redirect(url_for('akademik.absensi_list'))
+
+    return render_template('akademik/absensi_massal.html', title='Input Absensi Massal', form=form, students=students, existing_data=existing_data, selected_kelas=selected_kelas, selected_date=selected_date)
 
 @bp.route('/absensi/add', methods=['GET', 'POST'])
 @login_required
@@ -245,16 +316,81 @@ def raport_generate():
             flash('Fitur PDF belum tersedia di server ini (Missing GTK libraries).', 'warning')
             return render_template('akademik/raport_detail.html', title='Detail Raport', data=data)
 
-        # For immediate download, we still need to wait, but this structure allows future async expansion.
-        # In a full async implementation, we would return a "Processing" status and poll for completion.
-        # For now, we keep it synchronous but refactored, or we could save to file and serve static.
+        # Handle split generation
+        pdf_type = request.args.get('type', 'full') # full, cover, identitas, nilai
+        
+        # Filter content in template using 'pdf_type'
+        data['pdf_type'] = pdf_type
+        
+        # Prepare absolute paths for WeasyPrint (fix image loading)
+        if data.get('config'):
+            upload_folder = os.path.join(current_app.root_path, 'static', 'img', 'uploads')
+            
+            # Helper to resolve path (handle both filename only and relative path)
+            def resolve_path(path_str):
+                if not path_str:
+                    return None
+                
+                # Normalize path separators
+                path_str = path_str.replace('\\', '/')
+                
+                full_path = None
+                
+                # If path contains 'static', assumes it's relative path from static or root
+                if 'static' in path_str or 'img' in path_str:
+                    # 1. Try full match from root (e.g., 'app/static/img/uploads/logo.png')
+                    # Go up one level from 'app' if path starts with 'app'
+                    candidate = os.path.join(current_app.root_path, '..', path_str)
+                    if os.path.exists(candidate):
+                        full_path = candidate
+                    else:
+                        # Try from root directly
+                        candidate = os.path.join(current_app.root_path, path_str.replace('app/', '', 1) if path_str.startswith('app/') else path_str)
+                        if os.path.exists(candidate):
+                            full_path = candidate
+                        else:
+                            # 2. Try basename in uploads folder
+                            basename = os.path.basename(path_str)
+                            candidate = os.path.join(upload_folder, basename)
+                            if os.path.exists(candidate):
+                                full_path = candidate
+                            else:
+                                # 3. Try relative to static folder
+                                if path_str.startswith('img/'):
+                                     candidate = os.path.join(current_app.root_path, 'static', path_str)
+                                     if os.path.exists(candidate):
+                                        full_path = candidate
+
+                else:
+                    # Assumes it's just filename in uploads folder
+                    candidate = os.path.join(upload_folder, path_str)
+                    if os.path.exists(candidate):
+                        full_path = candidate
+                
+                if full_path:
+                    # Convert to file URI
+                    from pathlib import Path
+                    return Path(full_path).absolute().as_uri()
+                
+                return None
+
+            if data['config'].logo_kemenag:
+                data['logo_kemenag_path'] = resolve_path(data['config'].logo_kemenag)
+            
+            if data['config'].logo_lembaga:
+                data['logo_lembaga_path'] = resolve_path(data['config'].logo_lembaga)
+                
+            # Also santri photo
+            if data['santri'].foto:
+                data['foto_santri_path'] = os.path.join(current_app.root_path, 'static', 'img', 'uploads', 'santri', data['santri'].foto).replace('\\', '/')
         
         html = render_template('akademik/raport_pdf.html', data=data)
         pdf = HTML(string=html).write_pdf()
         
         response = make_response(pdf)
         response.headers['Content-Type'] = 'application/pdf'
-        response.headers['Content-Disposition'] = f'inline; filename=Raport_{data["santri"].nama}_{semester}.pdf'
+        filename_suffix = f"_{pdf_type.capitalize()}" if pdf_type != 'full' else ""
+        response.headers['Content-Disposition'] = f'inline; filename=Raport_{data["santri"].nama}_{semester}{filename_suffix}.pdf'
         return response
         
     return render_template('akademik/raport_detail.html', title='Detail Raport', data=data)
@@ -282,6 +418,29 @@ def raport_input():
             form.status_kenaikan.data = raport.status_kenaikan
             form.tanggal_bagi.data = raport.tanggal_bagi
             
+            # Load Sikap
+            form.sikap_akhlak.data = raport.sikap_akhlak
+            form.sikap_kerajinan.data = raport.sikap_kerajinan
+            form.sikap_kedisiplinan.data = raport.sikap_kedisiplinan
+            form.sikap_kebersihan.data = raport.sikap_kebersihan
+            
+            # Load Deskripsi (LPQ)
+            form.deskripsi_moral.data = raport.deskripsi_moral
+            form.deskripsi_kognitif.data = raport.deskripsi_kognitif
+            form.deskripsi_sosial.data = raport.deskripsi_sosial
+            form.deskripsi_bahasa.data = raport.deskripsi_bahasa
+            form.deskripsi_seni.data = raport.deskripsi_seni
+            form.deskripsi_diri.data = raport.deskripsi_diri
+            
+            # Load Absensi Snapshot
+            form.sakit.data = raport.sakit
+            form.izin.data = raport.izin
+            form.alpha.data = raport.alpha
+            
+            # Load Rank
+            form.rank.data = raport.rank
+            form.total_students.data = raport.total_students
+            
     if form.validate_on_submit():
         raport = Raport.query.filter_by(santri_id=form.santri_id.data, semester=form.semester.data).first()
         if not raport:
@@ -294,6 +453,30 @@ def raport_input():
         raport.catatan_wali_kelas = form.catatan_wali_kelas.data
         raport.status_kenaikan = form.status_kenaikan.data
         raport.tanggal_bagi = form.tanggal_bagi.data
+        
+        # Save Sikap
+        raport.sikap_akhlak = form.sikap_akhlak.data
+        raport.sikap_kerajinan = form.sikap_kerajinan.data
+        raport.sikap_kedisiplinan = form.sikap_kedisiplinan.data
+        raport.sikap_kebersihan = form.sikap_kebersihan.data
+        
+        # Save Deskripsi (LPQ)
+        raport.deskripsi_moral = form.deskripsi_moral.data
+        raport.deskripsi_kognitif = form.deskripsi_kognitif.data
+        raport.deskripsi_sosial = form.deskripsi_sosial.data
+        raport.deskripsi_bahasa = form.deskripsi_bahasa.data
+        raport.deskripsi_seni = form.deskripsi_seni.data
+        raport.deskripsi_diri = form.deskripsi_diri.data
+        
+        # Save Absensi Snapshot
+        raport.sakit = form.sakit.data
+        raport.izin = form.izin.data
+        raport.alpha = form.alpha.data
+        
+        # Save Rank
+        if form.rank.data:
+            raport.rank = form.rank.data
+            raport.total_students = form.total_students.data
         
         db.session.commit()
         flash('Data Raport berhasil disimpan', 'success')

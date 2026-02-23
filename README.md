@@ -7,30 +7,51 @@ Project ini adalah solusi terintegrasi untuk manajemen akademik pesantren dan po
 ## Fitur Utama
 
 ### SIAKAD App (Sistem Akademik)
-*   **Role Management**: Admin, Ustadz, Wali Santri, Santri.
-*   **Akademik**: Input Nilai, Absensi, Hafalan Tahfidz, E-Raport (PDF).
-*   **Keuangan**: Pembayaran SPP, Tabungan, Laporan Keuangan.
+*   **Role Management**: Admin, Ustadz (Pengajar), Wali Kelas, Wali Santri.
+*   **Akademik**: 
+    *   Manajemen Data Santri, Pengajar, Kelas, Mata Pelajaran.
+    *   Input Nilai Akademik & Non-Akademik (Hafalan Tahfidz, Ibadah).
+    *   Absensi Harian & Rekapitulasi.
+    *   **E-Raport**: Generate PDF Raport Otomatis (Format MDT & LPQ) dengan Tanda Tangan Digital.
+*   **Keuangan**: 
+    *   Manajemen Pos Keuangan (SPP, Gedung, Donasi, dll).
+    *   Pencatatan Pemasukan & Pengeluaran.
+    *   Tabungan Santri.
+    *   Laporan Keuangan Bulanan/Tahunan.
 *   **Keamanan**: Enkripsi Password, CSRF Protection, Rate Limiting.
 
 ### Web Profile (Portal Publik)
-*   **Informasi Publik**: Profil Pesantren, Berita, Agenda, Galeri.
-*   **PPDB Online**: Formulir pendaftaran santri baru (Terintegrasi Google Sheets).
-*   **Kontak**: Formulir hubungi kami (Notifikasi via Email SMTP & WhatsApp).
-*   **SEO & Performance**: Caching (Flask-Caching), Kompresi Aset.
+*   **Informasi Publik**: Profil Pesantren, Sejarah, Struktur Organisasi, Berita, Agenda, Galeri Foto.
+*   **PPDB Online**: Formulir pendaftaran santri baru yang terintegrasi.
+*   **Kontak**: Formulir hubungi kami.
+*   **Panel Admin**: CMS untuk mengelola konten berita, galeri, dan pimpinan.
 
 ## Persyaratan Sistem
 
-*   **Server**: Ubuntu 20.04/22.04/24.04 LTS
+*   **Server**: Ubuntu 20.04/22.04 LTS
 *   **Bahasa**: Python 3.10+
 *   **Database**: PostgreSQL
-*   **Web Server**: Nginx + Gunicorn
-*   **Lainnya**: Supervisor (Process Control)
+*   **Web Server**: Nginx (Reverse Proxy) + Gunicorn
+*   **PDF Engine**: WeasyPrint (Membutuhkan GTK+ libraries)
 
 ## Instalasi & Deployment
 
 Proyek ini menggunakan struktur folder terpisah untuk `siakad_app` dan `web_profile`.
 
 ### 1. Setup Lokal (Development)
+
+**PENTING: Gunakan Database Lokal!**
+Jangan pernah menghubungkan aplikasi lokal ke database produksi server. Gunakan database terpisah di komputer Anda.
+
+**Cara Cepat (Windows):**
+1.  Pastikan PostgreSQL sudah terinstall.
+2.  Jalankan script otomatis:
+    ```bash
+    setup_local_db.bat
+    ```
+    Script ini akan membuat user database, melakukan migrasi, dan mengisi data awal.
+
+**Cara Manual:**
 1.  **Clone Repository**
 2.  **Buat Virtual Environment**
     ```bash
@@ -43,11 +64,12 @@ Proyek ini menggunakan struktur folder terpisah untuk `siakad_app` dan `web_prof
     pip install -r siakad_app/requirements.txt
     ```
 4.  **Konfigurasi Environment (.env)**
-    *   Copy `.env.example` menjadi `.env` di masing-masing folder.
-    *   Sesuaikan `DATABASE_URL`, `MAIL_USERNAME`, `MAIL_PASSWORD`.
+    *   Copy `.env.example` menjadi `.env` di folder `siakad_app` DAN `web_profile`.
+    *   **Edit .env**: Pastikan `DATABASE_URL` mengarah ke localhost (misal: `postgresql://albarokah_user:alnet%402026@localhost/siakad_db`).
+    *   Jangan gunakan kredensial server di sini!
 
 ### 2. Deployment ke Server (VPS)
-Panduan lengkap deployment, update, dan sinkronisasi database/konten tersedia di file **`DEPLOYMENT_GUIDE.md`**.
+Gunakan script `sync_server.sh` untuk melakukan update otomatis di server production.
 
 **Cara Update Cepat (Server):**
 ```bash
@@ -58,64 +80,40 @@ cd /var/www/Albarokah-SIAKAD
 ## Struktur Project
 ```
 Albarokah/
-├── siakad_app/       # Aplikasi Sistem Akademik
-├── web_profile/      # Website Profil & PPDB
+├── siakad_app/       # Aplikasi Sistem Akademik (Flask)
+│   ├── app/
+│   │   ├── models/      # Database Models (Akademik, Keuangan, User)
+│   │   ├── routes/      # Controller/Views
+│   │   ├── templates/   # HTML Templates (Jinja2)
+│   │   ├── services/    # Business Logic (Raport, PDF, Backup)
+│   │   └── static/      # CSS, JS, Images
+├── web_profile/      # Website Profil & PPDB (Flask)
+│   ├── app/
+│   │   ├── admin/       # Panel Admin CMS
+│   │   ├── templates/
+│   │   └── static/
 ├── deployment/       # Konfigurasi Nginx & Systemd
-├── DEPLOYMENT_GUIDE.md # Panduan Teknis Server (Git Ignored)
-└── README.md         # Dokumentasi Umum
+├── README.md         # Dokumentasi Umum
+└── sync_server.sh    # Script Sinkronisasi Server
 ```
 
-## Akun Demo
+## Akun Demo (Default Seed)
 
 | Role | Username | Password |
 | :--- | :--- | :--- |
 | **SIAKAD Admin** | admin | admin123 |
-| **SIAKAD Guru** | ustadz1 | ustadz123 |
-| **SIAKAD Wali** | wali1 | wali123 |
-| **Web Profile Admin** | admin | password123 |
+| **SIAKAD Guru** | ustadz | ustadz123 |
+| **SIAKAD Wali** | wali | wali123 |
 
 ## Catatan Penting
 *   **Generate PDF**: Memerlukan library GTK+ terinstall di sistem operasi (untuk WeasyPrint).
-*   **Database**: Default menggunakan SQLite untuk kemudahan setup. Untuk production, disarankan PostgreSQL.
-*   **Upload Gambar**: Web Profile mendukung upload gambar lokal (disimpan di `web_profile/app/static/uploads`) atau penggunaan URL eksternal (Picsum/Unsplash).
-
-## Struktur Folder
-
-```
-Albarokah/
-├── siakad_app/          # Aplikasi SIAKAD (Internal)
-│   ├── app/
-│   │   ├── models/      # Database Models
-│   │   ├── routes/      # Controller/Views
-│   │   ├── templates/   # HTML Templates
-│   │   └── static/      # CSS, JS, Images
-│   └── ...
-├── web_profile/         # Website Profil (Publik)
-│   ├── app/
-│   │   ├── admin/       # Panel Admin Web Profile
-│   │   ├── templates/
-│   │   └── static/
-│   │       └── uploads/ # Folder Upload Gambar
-│   └── ...
-└── deployment/          # Konfigurasi Nginx & Systemd (Siap Deploy)
-```
+*   **Database**: Menggunakan PostgreSQL untuk integritas data yang lebih baik.
+*   **Upload Gambar**: Web Profile mendukung upload gambar lokal (disimpan di `web_profile/app/static/uploads`).
 
 ## Troubleshooting
 
-1.  **Gambar tidak muncul (ORB/CORB Error)**:
-    *   Pastikan `Flask-Talisman` dikonfigurasi dengan benar untuk mengizinkan domain gambar eksternal (seperti `picsum.photos`).
-    *   Cek console browser untuk detail error CSP.
+1.  **Error PDF Generation**:
+    *   Pastikan GTK+ Runtime sudah terinstall dan ada di PATH environment variable (Windows) atau `libpango` (Linux).
 
-2.  **Error PDF Generation**:
-    *   Pastikan GTK+ Runtime sudah terinstall dan ada di PATH environment variable.
-| Admin | `admin` | `password123` |
-| Ustadz | `ustadz` | `password123` |
-| Wali Santri | `wali` | `password123` |
-
-## Catatan Keamanan (Production)
-
-Saat deploy ke production, pastikan untuk:
-1.  Mengganti `SECRET_KEY` dengan string acak yang kuat.
-2.  Mengaktifkan HTTPS (SSL) agar fitur `Secure Cookie` dan `HSTS` berfungsi.
-3.  Menggunakan web server production seperti Gunicorn + Nginx.
-4.  Menyesuaikan `Content-Security-Policy` di `app/__init__.py` jika menggunakan domain/CDN lain.
+2.  **Database Connection**:
+    *   Pastikan service PostgreSQL berjalan dan credentials di `.env` sudah benar.

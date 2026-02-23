@@ -6,9 +6,18 @@
     <div class="card mb-4">
       <div class="card-header pb-0 d-flex justify-content-between">
         <h6>Raport Akademik</h6>
-        <a href="{{ url_for('akademik.raport_generate', santri_id=data.santri.id, semester=data.semester, format='pdf') }}" class="btn bg-gradient-success btn-sm mb-0">
-          <i class="fa fa-download me-2"></i>Download PDF
-        </a>
+        <div>
+          <a href="{{ url_for('akademik.raport_list') }}" class="btn btn-secondary btn-sm mb-0 me-2">Kembali</a>
+          <button type="button" class="btn bg-gradient-success btn-sm mb-0 dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fa fa-download me-2"></i>Download PDF
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" target="_blank" href="{{ url_for('akademik.raport_generate', santri_id=data.santri.id, semester=data.semester, format='pdf', type='full') }}">Full (Semua Halaman)</a></li>
+            <li><a class="dropdown-item" target="_blank" href="{{ url_for('akademik.raport_generate', santri_id=data.santri.id, semester=data.semester, format='pdf', type='cover') }}">Cover Only</a></li>
+            <li><a class="dropdown-item" target="_blank" href="{{ url_for('akademik.raport_generate', santri_id=data.santri.id, semester=data.semester, format='pdf', type='identitas') }}">Identitas Only</a></li>
+            <li><a class="dropdown-item" target="_blank" href="{{ url_for('akademik.raport_generate', santri_id=data.santri.id, semester=data.semester, format='pdf', type='nilai') }}">Nilai Only</a></li>
+          </ul>
+        </div>
       </div>
       <div class="card-body px-4 pt-4 pb-2">
         
@@ -54,7 +63,7 @@
                   <span class="text-secondary text-xs font-weight-bold">{{ n.nilai_akhir }}</span>
                 </td>
                 <td class="align-middle text-center text-sm">
-                  <span class="badge badge-sm bg-gradient-{{ 'success' if n.predikat in ['A', 'B'] else 'warning' }}">{{ n.predikat }}</span>
+                  <span class="badge badge-sm bg-gradient-{{ 'success' if 'Baik' in n.predikat or 'BS' in n.predikat or 'A' in n.predikat or 'B' in n.predikat else 'warning' }}">{{ n.predikat }}</span>
                 </td>
                 <td class="align-middle text-sm">
                   <span class="text-secondary text-xs">{{ n.deskripsi }}</span>

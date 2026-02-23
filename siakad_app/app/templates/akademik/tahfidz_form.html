@@ -46,9 +46,9 @@
                         {{ form.tanggal_setor.label(class="form-control-label") }}
                         {{ form.tanggal_setor(class="form-control", type="date") }}
                     </div>
-                    <div class="text-end">
-                        <a href="{{ url_for('akademik.tahfidz_list') }}" class="btn btn-secondary">Batal</a>
+                    <div class="mt-4">
                         {{ form.submit(class="btn bg-gradient-primary") }}
+                        <a href="{{ url_for('akademik.tahfidz_list') }}" class="btn btn-secondary">Kembali</a>
                     </div>
                 </form>
             </div>

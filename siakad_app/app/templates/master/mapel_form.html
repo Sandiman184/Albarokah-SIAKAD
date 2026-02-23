@@ -21,8 +21,15 @@
                         {{ form.jenjang.label(class="form-control-label") }}
                         {{ form.jenjang(class="form-control") }}
                     </div>
+                    <div class="form-group">
+                        {{ form.kkm.label(class="form-control-label") }}
+                        {{ form.kkm(class="form-control", placeholder="70.0") }}
+                        {% for error in form.kkm.errors %}
+                        <span class="text-danger text-xs">{{ error }}</span>
+                        {% endfor %}
+                    </div>
                     <div class="text-end">
-                        <a href="{{ url_for('master.mapel_list') }}" class="btn btn-secondary">Batal</a>
+                        <a href="{{ url_for('master.mapel_list') }}" class="btn btn-secondary">Kembali</a>
                         {{ form.submit(class="btn bg-gradient-primary") }}
                     </div>
                 </form>

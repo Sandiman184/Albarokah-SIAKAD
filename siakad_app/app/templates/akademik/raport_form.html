@@ -36,9 +36,48 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-end">
-                        <a href="{{ url_for('akademik.raport_list') }}" class="btn btn-secondary">Batal</a>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.sakit.label(class="form-control-label") }}
+                                {{ form.sakit(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.izin.label(class="form-control-label") }}
+                                {{ form.izin(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.alpha.label(class="form-control-label") }}
+                                {{ form.alpha(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="text-uppercase text-body text-xs font-weight-bolder mt-4">Ranking (Opsional)</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.rank.label(class="form-control-label") }}
+                                {{ form.rank(class="form-control") }}
+                                <small class="text-muted">Biarkan kosong untuk menghitung otomatis.</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.total_students.label(class="form-control-label") }}
+                                {{ form.total_students(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
                         {{ form.submit(class="btn bg-gradient-primary") }}
+                        <a href="{{ url_for('akademik.raport_list') }}" class="btn btn-secondary">Kembali</a>
                     </div>
                 </form>
             </div>

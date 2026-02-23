@@ -5,9 +5,9 @@
     <title>{{ title }}</title>
     <style>
         body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; margin: 0; padding: 20px; }
-        .kop-surat { text-align: center; margin-bottom: 20px; border-bottom: 3px double #000; padding-bottom: 10px; display: flex; align-items: center; justify-content: center; position: relative; }
-        .logo { width: 80px; height: auto; position: absolute; left: 0; top: 0; }
-        .lembaga-info { width: 100%; }
+        .kop-surat { text-align: center; margin-bottom: 20px; border-bottom: 3px double #000; padding-bottom: 10px; display: flex; align-items: center; justify-content: center; position: relative; min-height: 100px; }
+        .logo { max-width: 80px; width: auto; height: auto; object-fit: contain; position: absolute; left: 0; top: 0; }
+        .lembaga-info { width: 100%; padding: 0 90px; }
         .nama-lembaga { font-size: 16pt; font-weight: bold; text-transform: uppercase; margin: 0; }
         .alamat-lembaga { font-size: 11pt; margin: 5px 0; }
         .kontak-lembaga { font-size: 10pt; font-style: italic; }
@@ -22,7 +22,7 @@
         .text-right { text-align: right; }
         .text-bold { font-weight: bold; }
         
-        .ttd-container { display: flex; justify-content: flex-end; margin-top: 40px; }
+        .ttd-container { display: flex; justify-content: space-between; margin-top: 40px; padding: 0 50px; }
         .ttd-box { width: 250px; text-align: center; }
         .ttd-date { margin-bottom: 10px; }
         .ttd-space { height: 80px; }
@@ -31,14 +31,76 @@
         @media print {
             body { padding: 0; }
             .no-print { display: none; }
+            .page-break { page-break-after: always; }
+        }
+        
+        .cover-page {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .cover-logo {
+            max-width: 200px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            margin-bottom: 30px;
+        }
+        .cover-title {
+            font-size: 24pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .cover-subtitle {
+            font-size: 18pt;
+            margin-bottom: 50px;
+        }
+        .cover-info {
+            font-size: 14pt;
+            margin-top: 50px;
         }
     </style>
 </head>
 <body onload="window.print()">
 
+    {% if config %}
+    <div class="cover-page">
+        {% if config.logo_cover_path %}
+        <img src="{{ url_for('static', filename=config.logo_cover_path) }}" class="cover-logo" alt="Logo Cover">
+        {% elif config.logo_path %}
+        <img src="{{ url_for('static', filename=config.logo_path) }}" class="cover-logo" alt="Logo Cover">
+        {% else %}
+        <div style="height: 100px;"></div>
+        {% endif %}
+
+        <div class="cover-title">LAPORAN KEUANGAN</div>
+        <div class="cover-subtitle">{{ config.nama_lembaga }}</div>
+        
+        <div class="cover-info">
+            <p>PERIODE:</p>
+            <p style="font-weight: bold;">{{ data.periode }}</p>
+        </div>
+        
+        <div style="margin-top: 100px;">
+            <p>{{ config.kota_ttd }}, {{ now.strftime('%d %B %Y') }}</p>
+        </div>
+
+        <div style="margin-top: 50px;">
+            <p>Disusun Oleh:</p>
+            <p style="font-weight: bold; text-decoration: underline;">{{ config.nama_ttd }}</p>
+            <p>{{ config.jabatan_ttd }}</p>
+        </div>
+    </div>
+    <div class="page-break"></div>
+    {% endif %}
+
     <div class="kop-surat">
         {% if config and config.logo_path %}
-        <img src="{{ url_for('static', filename='img/' + config.logo_path) }}" class="logo" alt="Logo">
+        <img src="{{ url_for('static', filename=config.logo_path) }}" class="logo" alt="Logo">
         {% endif %}
         <div class="lembaga-info">
             <h1 class="nama-lembaga">{{ config.nama_lembaga if config else 'PONDOK PESANTREN AL-BAROKAH' }}</h1>
@@ -121,6 +183,26 @@
     </table>
 
     <div class="ttd-container">
+        <!-- Pimpinan (Mengetahui) -->
+        <div class="ttd-box">
+            <div class="ttd-date">
+                Mengetahui,
+            </div>
+            <div class="ttd-jabatan">
+                Pimpinan Pondok Pesantren
+            </div>
+            <div class="ttd-space"></div>
+            <div class="ttd-name">
+                {{ config.pimpinan_ponpes_nama if config and config.pimpinan_ponpes_nama else '(..........................)' }}
+            </div>
+            {% if config and config.pimpinan_ponpes_nip %}
+            <div class="ttd-nip">
+                NIY. {{ config.pimpinan_ponpes_nip }}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Bendahara (Pembuat) -->
         <div class="ttd-box">
             <div class="ttd-date">
                 {{ config.kota_ttd if config else 'Bogor' }}, {{ now.strftime('%d %B %Y') }}

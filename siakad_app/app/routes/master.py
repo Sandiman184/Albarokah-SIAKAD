@@ -4,8 +4,9 @@ from flask_login import login_required, current_user
 from sqlalchemy.orm import joinedload
 from app import db
 from app.models.akademik import Santri, Pengajar, Kelas, MataPelajaran
+from app.models.konfigurasi import Konfigurasi
 from app.models.user import User
-from app.forms.master import SantriForm, PengajarForm, KelasForm, MapelForm
+from app.forms.master import SantriForm, PengajarForm, KelasForm, MapelForm, KonfigurasiForm
 from app.forms.auth import UserForm, UserEditForm
 from app.decorators import admin_required
 from app.services.audit_service import log_audit
@@ -14,8 +15,90 @@ from app.services.backup_service import BackupService
 import os
 from flask import send_file
 from werkzeug.utils import secure_filename
+from app.utils import save_picture
 
 bp = Blueprint('master', __name__, url_prefix='/master')
+
+from app.models.keuangan import KonfigurasiLaporan
+
+@bp.route('/konfigurasi', methods=['GET', 'POST'])
+@login_required
+@admin_required
+@log_audit('UPDATE', 'Konfigurasi')
+def konfigurasi():
+    config = Konfigurasi.query.first()
+    config_keuangan = KonfigurasiLaporan.query.first()
+    
+    # Initialize form with data from both configs
+    form = KonfigurasiForm(obj=config)
+    
+    # Pre-fill Keuangan fields if available
+    if request.method == 'GET' and config_keuangan:
+        form.kota_ttd.data = config_keuangan.kota_ttd
+        form.nama_ttd.data = config_keuangan.nama_ttd
+        form.jabatan_ttd.data = config_keuangan.jabatan_ttd
+        form.nip_ttd.data = config_keuangan.nip_ttd
+        form.pimpinan_ponpes_nama.data = config_keuangan.pimpinan_ponpes_nama
+        form.pimpinan_ponpes_nip.data = config_keuangan.pimpinan_ponpes_nip
+    
+    if form.validate_on_submit():
+        # Preserve old logo paths to prevent overwriting with None/Empty FileStorage
+        old_logo_kemenag = config.logo_kemenag if config else None
+        old_logo_lembaga = config.logo_lembaga if config else None
+
+        if not config:
+            config = Konfigurasi()
+            db.session.add(config)
+        
+        if not config_keuangan:
+            config_keuangan = KonfigurasiLaporan()
+            db.session.add(config_keuangan)
+            
+        form.populate_obj(config)
+        
+        # Save Keuangan Fields
+        config_keuangan.nama_lembaga = form.nama_lembaga.data
+        config_keuangan.alamat_lembaga = form.alamat_lembaga.data
+        config_keuangan.kota_ttd = form.kota_ttd.data
+        config_keuangan.nama_ttd = form.nama_ttd.data
+        config_keuangan.jabatan_ttd = form.jabatan_ttd.data
+        config_keuangan.nip_ttd = form.nip_ttd.data
+        config_keuangan.pimpinan_ponpes_nama = form.pimpinan_ponpes_nama.data
+        config_keuangan.pimpinan_ponpes_nip = form.pimpinan_ponpes_nip.data
+        
+        # Handle file uploads
+        upload_folder = os.path.join(current_app.root_path, 'static', 'img', 'uploads')
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder)
+            
+        if form.logo_kemenag.data and getattr(form.logo_kemenag.data, 'filename', None):
+            config.logo_kemenag = save_picture(form.logo_kemenag.data, folder='')
+        else:
+            # Restore old value if no new file uploaded
+            config.logo_kemenag = old_logo_kemenag
+            
+        if form.logo_lembaga.data and getattr(form.logo_lembaga.data, 'filename', None):
+            fn = save_picture(form.logo_lembaga.data, folder='')
+            config.logo_lembaga = fn
+            # Also update Keuangan logo (using same file for consistency)
+            config_keuangan.logo_path = f"img/uploads/{fn}"
+        else:
+            # Restore old value if no new file uploaded
+            config.logo_lembaga = old_logo_lembaga
+            # Ensure Keuangan has path if Master has it
+            if old_logo_lembaga:
+                config_keuangan.logo_path = f"img/uploads/{old_logo_lembaga}"
+            
+        db.session.commit()
+        flash('Konfigurasi berhasil disimpan', 'success')
+        return redirect(url_for('master.konfigurasi'))
+        
+    if form.errors:
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f"Error pada {getattr(form, field).label.text}: {error}", 'danger')
+
+    return render_template('master/konfigurasi_form.html', title='Konfigurasi Sistem', form=form, config=config)
 
 # --- BACKUP & RESTORE ---
 @bp.route('/backup')
@@ -191,11 +274,13 @@ def user_delete(id):
     flash('User berhasil dihapus', 'success')
     return redirect(url_for('master.user_list'))
 
+# --- SANTRI ---
 @bp.route('/santri')
 @login_required
 @admin_required
 def santri_list():
-    santris = Santri.query.options(joinedload(Santri.kelas)).all()
+    page = request.args.get('page', 1, type=int)
+    santris = Santri.query.options(joinedload(Santri.kelas)).paginate(page=page, per_page=20, error_out=False)
     return render_template('master/santri_list.html', title='Data Santri', santris=santris)
 
 @bp.route('/santri/add', methods=['GET', 'POST'])
@@ -213,8 +298,21 @@ def santri_add():
             nis=form.nis.data,
             nama=form.nama.data,
             jenis_kelamin=form.jenis_kelamin.data,
+            tempat_lahir=form.tempat_lahir.data,
             tanggal_lahir=form.tanggal_lahir.data,
             alamat=form.alamat.data,
+            nama_ayah=form.nama_ayah.data,
+            nama_ibu=form.nama_ibu.data,
+            pekerjaan_ayah=form.pekerjaan_ayah.data,
+            pekerjaan_ibu=form.pekerjaan_ibu.data,
+            alamat_orang_tua=form.alamat_orang_tua.data,
+            nama_wali=form.nama_wali.data,
+            pekerjaan_wali=form.pekerjaan_wali.data,
+            alamat_wali=form.alamat_wali.data,
+            hubungan_wali=form.hubungan_wali.data,
+            agama=form.agama.data,
+            pendidikan_sebelumnya=form.pendidikan_sebelumnya.data,
+            tanggal_masuk=form.tanggal_masuk.data,
             jenjang=form.jenjang.data,
             status=form.status.data,
             kelas_id=form.kelas_id.data
@@ -237,7 +335,27 @@ def santri_edit(id):
     form.kelas_id.choices = [(k.id, k.nama_kelas) for k in kelas_list]
     
     if form.validate_on_submit():
-        form.populate_obj(santri)
+        santri.nis = form.nis.data
+        santri.nama = form.nama.data
+        santri.jenis_kelamin = form.jenis_kelamin.data
+        santri.tempat_lahir = form.tempat_lahir.data
+        santri.tanggal_lahir = form.tanggal_lahir.data
+        santri.alamat = form.alamat.data
+        santri.nama_ayah = form.nama_ayah.data
+        santri.nama_ibu = form.nama_ibu.data
+        santri.pekerjaan_ayah = form.pekerjaan_ayah.data
+        santri.pekerjaan_ibu = form.pekerjaan_ibu.data
+        santri.alamat_orang_tua = form.alamat_orang_tua.data
+        santri.nama_wali = form.nama_wali.data
+        santri.pekerjaan_wali = form.pekerjaan_wali.data
+        santri.alamat_wali = form.alamat_wali.data
+        santri.hubungan_wali = form.hubungan_wali.data
+        santri.agama = form.agama.data
+        santri.pendidikan_sebelumnya = form.pendidikan_sebelumnya.data
+        santri.tanggal_masuk = form.tanggal_masuk.data
+        santri.jenjang = form.jenjang.data
+        santri.status = form.status.data
+        santri.kelas_id = form.kelas_id.data
         db.session.commit()
         flash('Data Santri berhasil diperbarui', 'success')
         return redirect(url_for('master.santri_list'))
@@ -327,8 +445,16 @@ def pengajar_add():
     if form.validate_on_submit():
         pengajar = Pengajar(
             nama=form.nama.data,
+            nip=form.nip.data,
+            nuptk=form.nuptk.data,
+            jenis_kelamin=form.jenis_kelamin.data,
+            tempat_lahir=form.tempat_lahir.data,
+            tanggal_lahir=form.tanggal_lahir.data,
             no_hp=form.no_hp.data,
-            alamat=form.alamat.data
+            email=form.email.data,
+            alamat=form.alamat.data,
+            pendidikan_terakhir=form.pendidikan_terakhir.data,
+            status_kepegawaian=form.status_kepegawaian.data
         )
         db.session.add(pengajar)
         db.session.commit()
@@ -344,7 +470,17 @@ def pengajar_edit(id):
     pengajar = Pengajar.query.get_or_404(id)
     form = PengajarForm(obj=pengajar)
     if form.validate_on_submit():
-        form.populate_obj(pengajar)
+        pengajar.nama = form.nama.data
+        pengajar.nip = form.nip.data
+        pengajar.nuptk = form.nuptk.data
+        pengajar.jenis_kelamin = form.jenis_kelamin.data
+        pengajar.tempat_lahir = form.tempat_lahir.data
+        pengajar.tanggal_lahir = form.tanggal_lahir.data
+        pengajar.no_hp = form.no_hp.data
+        pengajar.email = form.email.data
+        pengajar.alamat = form.alamat.data
+        pengajar.pendidikan_terakhir = form.pendidikan_terakhir.data
+        pengajar.status_kepegawaian = form.status_kepegawaian.data
         db.session.commit()
         flash('Data Pengajar berhasil diperbarui', 'success')
         return redirect(url_for('master.pengajar_list'))
@@ -377,7 +513,8 @@ def mapel_add():
     if form.validate_on_submit():
         mapel = MataPelajaran(
             nama_mapel=form.nama_mapel.data,
-            jenjang=form.jenjang.data
+            jenjang=form.jenjang.data,
+            kkm=float(form.kkm.data) if form.kkm.data else 70.0
         )
         db.session.add(mapel)
         db.session.commit()
@@ -388,11 +525,13 @@ def mapel_add():
 @bp.route('/mapel/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
+@log_audit('UPDATE', 'MataPelajaran')
 def mapel_edit(id):
     mapel = MataPelajaran.query.get_or_404(id)
     form = MapelForm(obj=mapel)
     if form.validate_on_submit():
         form.populate_obj(mapel)
+        mapel.kkm = float(form.kkm.data) if form.kkm.data else 70.0
         db.session.commit()
         flash('Mata Pelajaran berhasil diperbarui', 'success')
         return redirect(url_for('master.mapel_list'))

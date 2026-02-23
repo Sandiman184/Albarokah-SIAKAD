@@ -8,7 +8,7 @@
                 <h6>{{ title }}</h6>
             </div>
             <div class="card-body">
-                <form method="post">
+                <form method="post" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
                     <div class="row">
                         <div class="col-md-6">
@@ -37,6 +37,14 @@
                                 {{ form.jenis_kelamin(class="form-control") }}
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.tempat_lahir.label(class="form-control-label") }}
+                                {{ form.tempat_lahir(class="form-control") }}
+                            </div>
+                        </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 {{ form.tanggal_lahir.label(class="form-control-label") }}
@@ -44,6 +52,112 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.nama_ayah.label(class="form-control-label") }}
+                                {{ form.nama_ayah(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.pekerjaan_ayah.label(class="form-control-label") }}
+                                {{ form.pekerjaan_ayah(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.nama_ibu.label(class="form-control-label") }}
+                                {{ form.nama_ibu(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.pekerjaan_ibu.label(class="form-control-label") }}
+                                {{ form.pekerjaan_ibu(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {{ form.alamat_orang_tua.label(class="form-control-label") }}
+                        {{ form.alamat_orang_tua(class="form-control", rows="2") }}
+                    </div>
+                    
+                    <h6 class="text-uppercase text-body text-xs font-weight-bolder mt-4 mb-3">Data Wali (Jika Ada)</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.nama_wali.label(class="form-control-label") }}
+                                {{ form.nama_wali(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.pekerjaan_wali.label(class="form-control-label") }}
+                                {{ form.pekerjaan_wali(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.hubungan_wali.label(class="form-control-label") }}
+                                {{ form.hubungan_wali(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                             <div class="form-group">
+                                {{ form.alamat_wali.label(class="form-control-label") }}
+                                {{ form.alamat_wali(class="form-control", rows="2") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="text-uppercase text-body text-xs font-weight-bolder mt-4 mb-3">Data Tambahan</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.agama.label(class="form-control-label") }}
+                                {{ form.agama(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.pendidikan_sebelumnya.label(class="form-control-label") }}
+                                {{ form.pendidikan_sebelumnya(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.tanggal_masuk.label(class="form-control-label") }}
+                                {{ form.tanggal_masuk(class="form-control", type="date") }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.anak_ke.label(class="form-control-label") }}
+                                {{ form.anak_ke(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.jumlah_saudara.label(class="form-control-label") }}
+                                {{ form.jumlah_saudara(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.no_hp_wali.label(class="form-control-label") }}
+                                {{ form.no_hp_wali(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
@@ -66,8 +180,17 @@
                         {{ form.alamat.label(class="form-control-label") }}
                         {{ form.alamat(class="form-control", rows="3") }}
                     </div>
-                    <div class="text-end">
-                        <a href="{{ url_for('master.santri_list') }}" class="btn btn-secondary">Batal</a>
+                    <div class="form-group">
+                        {{ form.foto.label(class="form-control-label") }}
+                        {{ form.foto(class="form-control") }}
+                        {% if form.foto.errors %}
+                            {% for error in form.foto.errors %}
+                                <span class="text-danger">{{ error }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div class="mt-4 text-end">
+                        <a href="{{ url_for('master.santri_list') }}" class="btn btn-secondary">Kembali</a>
                         {{ form.submit(class="btn bg-gradient-primary") }}
                     </div>
                 </form>

@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <h6>{{ title }}</h6>
+                </div>
+                <div class="card-body px-4 pt-0 pb-2">
+                    <form method="POST" enctype="multipart/form-data">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.nama_lembaga.label(class="form-control-label") }}
+                                    {{ form.nama_lembaga(class="form-control", placeholder="Nama Yayasan / Lembaga Utama") }}
+                                    {% for error in form.nama_lembaga.errors %}
+                                    <span class="text-danger">{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.tanggal_raport_default.label(class="form-control-label") }}
+                                    {{ form.tanggal_raport_default(class="form-control") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            {{ form.alamat_lembaga.label(class="form-control-label") }}
+                            {{ form.alamat_lembaga(class="form-control", rows=3) }}
+                        </div>
+
+                        <!-- LOGOS -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.logo_kemenag.label(class="form-control-label") }}
+                                    {{ form.logo_kemenag(class="form-control") }}
+                                    {% if config and config.logo_kemenag %}
+                                    <div class="mt-2">
+                                        <small>Logo saat ini:</small><br>
+                                        <img src="{{ url_for('static', filename='img/uploads/' + config.logo_kemenag) }}" height="50" onerror="this.src='https://placehold.co/100x100?text=Logo+Kemenag'">
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.logo_lembaga.label(class="form-control-label") }}
+                                    {{ form.logo_lembaga(class="form-control") }}
+                                    {% if config and config.logo_lembaga %}
+                                    <div class="mt-2">
+                                        <small>Logo saat ini:</small><br>
+                                        <img src="{{ url_for('static', filename='img/uploads/' + config.logo_lembaga) }}" height="50" onerror="this.src='https://placehold.co/100x100?text=Logo+Lembaga'">
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="nav-wrapper position-relative end-0">
+                            <ul class="nav nav-pills nav-fill p-1" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link mb-0 px-0 py-1 active" data-bs-toggle="tab" href="#lpq" role="tab" aria-controls="lpq" aria-selected="true">
+                                    <i class="fas fa-quran text-sm me-2"></i> LPQ / TPQ
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link mb-0 px-0 py-1" data-bs-toggle="tab" href="#mdta" role="tab" aria-controls="mdta" aria-selected="false">
+                                    <i class="fas fa-mosque text-sm me-2"></i> MDTA
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link mb-0 px-0 py-1" data-bs-toggle="tab" href="#keuangan" role="tab" aria-controls="keuangan" aria-selected="false">
+                                    <i class="fas fa-wallet text-sm me-2"></i> Keuangan & Laporan
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="tab-content mt-3">
+                            <!-- LPQ TAB -->
+                            <div class="tab-pane fade show active" id="lpq" role="tabpanel">
+                                <div class="card card-plain border">
+                                    <div class="card-body">
+                                        <h6 class="mb-3 text-uppercase text-xs font-weight-bolder">Konfigurasi Akademik LPQ (TPQ/TKA/TQA)</h6>
+                                        <div class="form-group">
+                                            {{ form.nama_lpq.label(class="form-control-label") }}
+                                            {{ form.nama_lpq(class="form-control") }}
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    {{ form.kepala_lpq.label(class="form-control-label") }}
+                                                    {{ form.kepala_lpq(class="form-control") }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    {{ form.nip_lpq.label(class="form-control-label") }}
+                                                    {{ form.nip_lpq(class="form-control") }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- MDTA TAB -->
+                            <div class="tab-pane fade" id="mdta" role="tabpanel">
+                                <div class="card card-plain border">
+                                    <div class="card-body">
+                                        <h6 class="mb-3 text-uppercase text-xs font-weight-bolder">Konfigurasi Akademik MDTA (Madrasah Diniyah)</h6>
+                                        <div class="form-group">
+                                            {{ form.nama_mdta.label(class="form-control-label") }}
+                                            {{ form.nama_mdta(class="form-control") }}
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    {{ form.kepala_mdta.label(class="form-control-label") }}
+                                                    {{ form.kepala_mdta(class="form-control") }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    {{ form.nip_mdta.label(class="form-control-label") }}
+                                                    {{ form.nip_mdta(class="form-control") }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- KEUANGAN TAB -->
+                            <div class="tab-pane fade" id="keuangan" role="tabpanel">
+                                <div class="card card-plain border">
+                                    <div class="card-body">
+                                        <h6 class="mb-3 text-uppercase text-xs font-weight-bolder">Konfigurasi Laporan Keuangan (Kop & Tanda Tangan)</h6>
+                                        
+                                        <div class="form-group">
+                                            {{ form.kota_ttd.label(class="form-control-label") }}
+                                            {{ form.kota_ttd(class="form-control", placeholder="Contoh: Bogor") }}
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6 class="text-xs font-weight-bold mb-2 mt-2">Pihak 1: Bendahara / Pembuat Laporan</h6>
+                                                <div class="form-group">
+                                                    {{ form.nama_ttd.label(class="form-control-label") }}
+                                                    {{ form.nama_ttd(class="form-control") }}
+                                                </div>
+                                                <div class="form-group">
+                                                    {{ form.jabatan_ttd.label(class="form-control-label") }}
+                                                    {{ form.jabatan_ttd(class="form-control") }}
+                                                </div>
+                                                <div class="form-group">
+                                                    {{ form.nip_ttd.label(class="form-control-label") }}
+                                                    {{ form.nip_ttd(class="form-control") }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6 class="text-xs font-weight-bold mb-2 mt-2">Pihak 2: Pimpinan Ponpes (Mengetahui)</h6>
+                                                <div class="form-group">
+                                                    {{ form.pimpinan_ponpes_nama.label(class="form-control-label") }}
+                                                    {{ form.pimpinan_ponpes_nama(class="form-control") }}
+                                                </div>
+                                                <div class="form-group">
+                                                    <label class="form-control-label">Jabatan</label>
+                                                    <input type="text" class="form-control" value="Pimpinan Pondok Pesantren" disabled>
+                                                </div>
+                                                <div class="form-group">
+                                                    {{ form.pimpinan_ponpes_nip.label(class="form-control-label") }}
+                                                    {{ form.pimpinan_ponpes_nip(class="form-control") }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="alert alert-light text-xs mt-2">
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            <strong>Catatan:</strong> Logo pada laporan keuangan akan otomatis mengikuti <strong>Logo Lembaga</strong> yang diupload di bagian atas.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Hidden Deprecated Fields (Optional, or just remove them from UI) -->
+                        <div class="d-none">
+                            {{ form.kepala_sekolah(class="form-control") }}
+                            {{ form.nip_kepala(class="form-control") }}
+                        </div>
+
+                        <div class="form-group mt-4">
+                            {{ form.submit(class="btn bg-gradient-primary") }}
+                            <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">Kembali</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

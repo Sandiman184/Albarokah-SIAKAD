@@ -8,6 +8,7 @@ from app.forms.keuangan import PembayaranForm, PosKeuanganForm, TransaksiKeuanga
 from app.decorators import role_required
 from datetime import datetime
 from werkzeug.utils import secure_filename
+import os
 from app.services.audit_service import log_audit
 
 bp = Blueprint('keuangan', __name__, url_prefix='/keuangan')
@@ -15,18 +16,14 @@ bp = Blueprint('keuangan', __name__, url_prefix='/keuangan')
 @bp.route('/')
 @login_required
 def index():
+    page = request.args.get('page', 1, type=int)
     # Admin/Ustadz can see all, Wali Santri only sees their child's data
     if current_user.role == 'wali_santri':
-        # Assuming there is a relationship or logic to filter by wali_santri
-        # For now, let's assume filtering by santri related to user if applicable, 
-        # but based on models, User doesn't directly link to Santri except via 'wali_user_id' in Santri model
-        # Let's check Santri model again.
-        # Santri has wali_user_id.
         santris = Santri.query.filter_by(wali_user_id=current_user.id).all()
         santri_ids = [s.id for s in santris]
-        pembayaran_list = Keuangan.query.filter(Keuangan.santri_id.in_(santri_ids)).options(joinedload(Keuangan.santri)).order_by(Keuangan.tanggal_bayar.desc()).all()
+        pembayaran_list = Keuangan.query.filter(Keuangan.santri_id.in_(santri_ids)).options(joinedload(Keuangan.santri)).order_by(Keuangan.tanggal_bayar.desc()).paginate(page=page, per_page=20, error_out=False)
     else:
-        pembayaran_list = Keuangan.query.options(joinedload(Keuangan.santri)).order_by(Keuangan.tanggal_bayar.desc()).all()
+        pembayaran_list = Keuangan.query.options(joinedload(Keuangan.santri)).order_by(Keuangan.tanggal_bayar.desc()).paginate(page=page, per_page=20, error_out=False)
         
     return render_template('keuangan/pembayaran_list.html', title='Data Keuangan', pembayaran_list=pembayaran_list)
 
@@ -71,6 +68,7 @@ def add():
 @bp.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 @role_required('admin', 'ustadz')
+@log_audit('UPDATE', 'Keuangan')
 def edit(id):
     pembayaran = Keuangan.query.get_or_404(id)
     form = PembayaranForm(obj=pembayaran)
@@ -155,15 +153,17 @@ def kategori_delete(id):
 @bp.route('/transaksi')
 @login_required
 def transaksi_list():
+    page = request.args.get('page', 1, type=int)
     transaksi_list = TransaksiKeuangan.query.options(
         joinedload(TransaksiKeuangan.pos),
         joinedload(TransaksiKeuangan.santri)
-    ).order_by(TransaksiKeuangan.tanggal.desc()).all()
+    ).order_by(TransaksiKeuangan.tanggal.desc()).paginate(page=page, per_page=20, error_out=False)
     return render_template('keuangan/transaksi_list.html', title='Transaksi Keuangan', transaksi_list=transaksi_list)
 
 @bp.route('/transaksi/add', methods=['GET', 'POST'])
 @login_required
 @role_required('admin', 'ustadz')
+@log_audit('CREATE', 'TransaksiKeuangan')
 def transaksi_add():
     form = TransaksiKeuanganForm()
     form.pos_id.choices = [(p.id, f"{p.nama} ({p.tipe})") for p in PosKeuangan.query.all()]
@@ -202,6 +202,78 @@ def transaksi_add():
         
     return render_template('keuangan/transaksi_form.html', title='Tambah Transaksi', form=form)
 
+@bp.route('/transaksi/edit/<int:id>', methods=['GET', 'POST'])
+@login_required
+@role_required('admin', 'ustadz')
+@log_audit('UPDATE', 'TransaksiKeuangan')
+def transaksi_edit(id):
+    transaksi = TransaksiKeuangan.query.get_or_404(id)
+    form = TransaksiKeuanganForm(obj=transaksi)
+    
+    # Populate choices
+    form.pos_id.choices = [(p.id, f"{p.nama} ({p.tipe})") for p in PosKeuangan.query.all()]
+    santris = Santri.query.all()
+    form.santri_id.choices = [(0, '- Umum -')] + [(s.id, f"{s.nama}") for s in santris]
+    
+    if form.validate_on_submit():
+        filename = transaksi.bukti_pembayaran
+        if form.bukti_pembayaran.data:
+            file = form.bukti_pembayaran.data
+            filename = secure_filename(file.filename)
+            upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'bukti_bayar')
+            if not os.path.exists(upload_dir):
+                os.makedirs(upload_dir)
+            file.save(os.path.join(upload_dir, filename))
+            
+        santri_id = form.santri_id.data if form.santri_id.data != 0 else None
+        
+        # Manually update fields as populate_obj might miss some custom logic if needed, 
+        # but here it's fine. However, let's stick to populate_obj for consistency or manual update if we want to be safe with file.
+        # form.populate_obj(transaksi) # This would overwrite bukti_pembayaran with FileStorage object if not careful? 
+        # Actually FileField data is FileStorage. We should handle it carefully.
+        
+        transaksi.pos_id = form.pos_id.data
+        transaksi.santri_id = santri_id
+        transaksi.jumlah = form.jumlah.data
+        transaksi.jenis = form.jenis.data
+        transaksi.tanggal = form.tanggal.data
+        transaksi.keterangan = form.keterangan.data
+        transaksi.metode_pembayaran = form.metode_pembayaran.data
+        if filename:
+            transaksi.bukti_pembayaran = filename
+        
+        transaksi.user_id = current_user.id # Update user who edited? Or keep original? Usually update.
+        
+        db.session.commit()
+        flash('Transaksi berhasil diperbarui', 'success')
+        return redirect(url_for('keuangan.transaksi_list'))
+    
+    # Set santri_id properly for the form if it's None (Umum)
+    if transaksi.santri_id is None:
+        form.santri_id.data = 0
+        
+    return render_template('keuangan/transaksi_form.html', title='Edit Transaksi', form=form)
+
+@bp.route('/transaksi/delete/<int:id>', methods=['POST'])
+@login_required
+@role_required('admin')
+@log_audit('DELETE', 'TransaksiKeuangan')
+def transaksi_delete(id):
+    transaksi = TransaksiKeuangan.query.get_or_404(id)
+    # Optional: Delete proof file if exists
+    if transaksi.bukti_pembayaran:
+        try:
+            file_path = os.path.join(current_app.root_path, 'static', 'uploads', 'bukti_bayar', transaksi.bukti_pembayaran)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        except Exception as e:
+            print(f"Error deleting file: {e}")
+            
+    db.session.delete(transaksi)
+    db.session.commit()
+    flash('Transaksi berhasil dihapus', 'success')
+    return redirect(url_for('keuangan.transaksi_list'))
+
 # --- TABUNGAN SANTRI ---
 @bp.route('/tabungan')
 @login_required
@@ -212,6 +284,7 @@ def tabungan_list():
 @bp.route('/tabungan/add', methods=['GET', 'POST'])
 @login_required
 @role_required('admin', 'ustadz')
+@log_audit('CREATE', 'TabunganSantri')
 def tabungan_add():
     form = TabunganForm()
     santris = Santri.query.all()
@@ -333,8 +406,18 @@ def konfigurasi():
             ext = os.path.splitext(filename)[1]
             new_filename = f"logo_lembaga{ext}"
             file.save(os.path.join(upload_dir, new_filename))
-            config.logo_path = new_filename
+            # Store path relative to static folder
+            config.logo_path = f"img/{new_filename}"
             
+        if form.logo_cover.data:
+            file = form.logo_cover.data
+            filename = secure_filename(file.filename)
+            upload_dir = os.path.join(current_app.root_path, 'static', 'img', 'uploads')
+            ext = os.path.splitext(filename)[1]
+            new_filename = f"logo_cover_keuangan{ext}"
+            file.save(os.path.join(upload_dir, new_filename))
+            config.logo_cover_path = f"img/uploads/{new_filename}"
+
         db.session.commit()
         flash('Konfigurasi laporan berhasil disimpan', 'success')
         return redirect(url_for('keuangan.konfigurasi'))

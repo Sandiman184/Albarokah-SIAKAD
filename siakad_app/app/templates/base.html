@@ -9,7 +9,7 @@
   <link rel="apple-touch-icon" sizes="76x76" href="{{ url_for('static', filename='img/favicon.png') }}">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
   <title>
-    {{ title }} - SIAKAD Albarokah
+    {{ title }} - {{ global_config.nama_lembaga if global_config else 'SIAKAD Albarokah' }}
   </title>
   <!--     Fonts     -->
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Nunito:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -21,7 +21,7 @@
   <link href="{{ url_for('static', filename='vendor/fontawesome/css/all.min.css') }}" rel="stylesheet" />
   <!-- CSS Files -->
   <link id="pagestyle" href="{{ url_for('static', filename='css/soft-ui-dashboard.css') }}" rel="stylesheet" />
-  <link href="{{ url_for('static', filename='css/custom.css', v=1.1) }}" rel="stylesheet" />
+  <link href="{{ url_for('static', filename='css/custom.css', v=1.2) }}" rel="stylesheet" />
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
@@ -30,15 +30,19 @@
     <div class="sidenav-header d-flex justify-content-center align-items-center">
       <i class="fas fa-times p-3 cursor-pointer text-white opacity-5 position-absolute end-0 top-0 d-none d-xl-none" aria-hidden="true" id="iconSidenav"></i>
       <a class="navbar-brand m-0 text-center" href="{{ url_for('dashboard.index') }}">
+        {% if global_config and global_config.logo_lembaga %}
+        <img src="{{ url_for('static', filename='img/uploads/' + global_config.logo_lembaga) }}" alt="Logo" width="40" class="me-2" style="max-height: 40px; object-fit: contain;">
+        {% else %}
         <img src="{{ url_for('static', filename='img/favicon.png') }}" alt="Logo" width="40" class="me-2" style="max-height: 40px;">
-        <span class="d-block navbar-brand-text">AL-BAROKAH</span>
+        {% endif %}
+        <span class="d-inline-block navbar-brand-text">Al-Barokah</span>
       </a>
     </div>
     <hr class="horizontal light mt-0">
     <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main" style="height: calc(100vh - 100px) !important;">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'dashboard' in request.endpoint }}" href="{{ url_for('dashboard.index') }}">
+          <a class="nav-link {{ 'active' if 'dashboard' in (request.endpoint or '') }}" href="{{ url_for('dashboard.index') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-tachometer-alt text-lg"></i>
             </div>
@@ -51,7 +55,7 @@
           <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Master Data</h6>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'santri' in request.endpoint }}" href="{{ url_for('master.santri_list') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'santri' in request.endpoint }}" href="{{ url_for('master.santri_list') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-users text-lg"></i>
             </div>
@@ -59,7 +63,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'pengajar' in request.endpoint }}" href="{{ url_for('master.pengajar_list') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'pengajar' in request.endpoint }}" href="{{ url_for('master.pengajar_list') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-chalkboard-teacher text-lg"></i>
             </div>
@@ -67,7 +71,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'kelas' in request.endpoint }}" href="{{ url_for('master.kelas_list') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'kelas' in request.endpoint }}" href="{{ url_for('master.kelas_list') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-school text-lg"></i>
             </div>
@@ -75,7 +79,15 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'mapel' in request.endpoint }}" href="{{ url_for('master.mapel_list') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'konfigurasi' in request.endpoint }}" href="{{ url_for('master.konfigurasi') }}">
+            <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="fa fa-cogs text-lg"></i>
+            </div>
+            <span class="nav-link-text ms-1">Konfigurasi Sistem</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {{ 'active' if request.endpoint and 'mapel' in request.endpoint }}" href="{{ url_for('master.mapel_list') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-book text-lg"></i>
             </div>
@@ -83,7 +95,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'users' in request.endpoint }}" href="{{ url_for('master.user_list') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'user' in request.endpoint }}" href="{{ url_for('master.user_list') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-user-cog text-lg"></i>
             </div>
@@ -91,7 +103,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'audit' in request.endpoint }}" href="{{ url_for('audit.logs_list') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'audit' in request.endpoint }}" href="{{ url_for('audit.logs_list') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-history text-lg"></i>
             </div>
@@ -99,7 +111,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'backup' in request.endpoint }}" href="{{ url_for('master.backup_list') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'backup' in request.endpoint }}" href="{{ url_for('master.backup_list') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-database text-lg"></i>
             </div>
@@ -113,7 +125,7 @@
           <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Akademik</h6>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'nilai' in request.endpoint }}" href="{{ url_for('akademik.nilai_list') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'nilai' in request.endpoint }}" href="{{ url_for('akademik.nilai_list') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-star text-lg"></i>
             </div>
@@ -121,7 +133,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'absensi' in request.endpoint }}" href="{{ url_for('akademik.absensi_list') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'absensi' in request.endpoint }}" href="{{ url_for('akademik.absensi_list') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-calendar-check text-lg"></i>
             </div>
@@ -129,7 +141,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'tahfidz' in request.endpoint }}" href="{{ url_for('akademik.tahfidz_list') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'tahfidz' in request.endpoint }}" href="{{ url_for('akademik.tahfidz_list') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-quran text-lg"></i>
             </div>
@@ -137,7 +149,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'raport' in request.endpoint }}" href="{{ url_for('akademik.raport_list') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'raport' in request.endpoint }}" href="{{ url_for('akademik.raport_list') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-file-pdf text-lg"></i>
             </div>
@@ -148,7 +160,7 @@
           <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Keuangan</h6>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'keuangan.index' in request.endpoint }}" href="{{ url_for('keuangan.index') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and (request.endpoint == 'keuangan.index' or request.endpoint == 'keuangan.add' or request.endpoint == 'keuangan.edit') }}" href="{{ url_for('keuangan.index') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-wallet text-lg"></i>
             </div>
@@ -156,7 +168,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'keuangan.transaksi' in request.endpoint }}" href="{{ url_for('keuangan.transaksi_list') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'keuangan.transaksi' in request.endpoint }}" href="{{ url_for('keuangan.transaksi_list') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-exchange-alt text-lg"></i>
             </div>
@@ -164,7 +176,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'keuangan.tabungan' in request.endpoint }}" href="{{ url_for('keuangan.tabungan_list') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'keuangan.tabungan' in request.endpoint }}" href="{{ url_for('keuangan.tabungan_list') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-piggy-bank text-lg"></i>
             </div>
@@ -172,7 +184,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'keuangan.laporan' in request.endpoint }}" href="{{ url_for('keuangan.laporan') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'keuangan.laporan' in request.endpoint }}" href="{{ url_for('keuangan.laporan') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-print text-lg"></i>
             </div>
@@ -181,7 +193,7 @@
         </li>
         {% if current_user.role == 'admin' %}
         <li class="nav-item">
-          <a class="nav-link {{ 'active' if 'keuangan.kategori' in request.endpoint }}" href="{{ url_for('keuangan.kategori_list') }}">
+          <a class="nav-link {{ 'active' if request.endpoint and 'keuangan.kategori' in request.endpoint }}" href="{{ url_for('keuangan.kategori_list') }}">
             <div class="icon icon-shape icon-sm shadow border-radius-md bg-transparent text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fa fa-tags text-lg"></i>
             </div>
@@ -239,18 +251,21 @@
     </nav>
     <!-- End Navbar -->
     <div class="container-fluid py-4" style="min-height: calc(100vh - 110px); display: flex; flex-direction: column;">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                <span class="alert-text text-white">{{ message }}</span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
+        <!-- Alert Notification Wrapper -->
+        <div class="row">
+            <div class="col-12 position-relative" style="z-index: 10;">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm border-0 mb-3" role="alert">
+                        <span class="alert-text text-white font-weight-bold">{{ message }}</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+                {% endwith %}
             </div>
-            {% endfor %}
-        {% endif %}
-        {% endwith %}
+        </div>
 
         <div style="flex: 1;">
             {% block content %}{% endblock content %}
@@ -277,8 +292,32 @@
   <!--   Core JS Files   -->
   <script src="{{ url_for('static', filename='vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
   <script src="https://demos.creative-tim.com/soft-ui-dashboard/assets/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="{{ url_for('static', filename='js/soft-ui-dashboard.min.js', v=1.0) }}"></script>
   <script src="https://demos.creative-tim.com/soft-ui-dashboard/assets/js/plugins/smooth-scrollbar.min.js"></script>
   <script>
+    // Sidebar Scroll Persistence
+    document.addEventListener("DOMContentLoaded", function() {
+        var sidebar = document.querySelector('#sidenav-collapse-main');
+        if (sidebar) {
+            var scrollPos = localStorage.getItem('sidebarScrollPos');
+            if (scrollPos) {
+                sidebar.scrollTop = scrollPos;
+            }
+            
+            sidebar.addEventListener('scroll', function() {
+                localStorage.setItem('sidebarScrollPos', sidebar.scrollTop);
+            });
+            
+            // Also save on click of any link in sidebar
+            var links = sidebar.querySelectorAll('a.nav-link');
+            links.forEach(function(link) {
+                link.addEventListener('click', function() {
+                    localStorage.setItem('sidebarScrollPos', sidebar.scrollTop);
+                });
+            });
+        }
+    });
+
     var win = navigator.platform.indexOf('Win') > -1;
     // Only init scrollbar for main content if needed, NOT sidebar
     if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -296,9 +335,9 @@
   <!-- Disable Perfect Scrollbar for Sidebar to prevent duplicates -->
   <script>
     // Force disable perfect scrollbar on sidebar if initialized
-    var sidenav = document.querySelector('#sidenav-main');
-    if (sidenav) {
-        sidenav.classList.add('ps-disabled'); // Try to disable PS via class if supported
+    var sidenavMain = document.querySelector('#sidenav-main');
+    if (sidenavMain) {
+        sidenavMain.classList.add('ps-disabled'); // Try to disable PS via class if supported
         // Manually destroy if accessible (PS instance is usually attached to element)
         // But simpler approach is ensuring CSS handles it as we did in custom.css
     }

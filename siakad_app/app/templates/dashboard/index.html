@@ -1,23 +1,48 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row">
-    <!-- Card Santri -->
+<!-- Welcome Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-gradient-dark">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-8">
+                        <div class="d-flex flex-column h-100">
+                            <h5 class="font-weight-bolder text-white mb-0">Selamat Datang, {{ current_user.username|capitalize }}!</h5>
+                            <p class="mb-1 text-white text-sm opacity-8">Sistem Informasi Akademik Pondok Pesantren Al-Barokah</p>
+                            <p class="text-white text-sm font-weight-bold mb-0">
+                                <i class="fas fa-calendar-alt me-1"></i> Semester {{ current_semester }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-4 text-end">
+                        <i class="fas fa-mosque text-white opacity-4 fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <!-- Santri Aktif -->
     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-      <div class="card">
+      <div class="card h-100">
         <div class="card-body p-3">
           <div class="row">
             <div class="col-8">
               <div class="numbers">
-                <p class="text-sm mb-0 text-capitalize font-weight-bold">Total Santri</p>
-                <h5 class="font-weight-bolder mb-0">
+                <p class="text-sm mb-0 text-capitalize font-weight-bold text-muted">Santri Aktif</p>
+                <h5 class="font-weight-bolder mb-0 text-primary">
                   {{ total_santri }}
                 </h5>
               </div>
             </div>
             <div class="col-4 text-end">
               <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-md">
-                <i class="fas fa-graduation-cap text-lg opacity-10" aria-hidden="true"></i>
+                <i class="fas fa-users text-lg opacity-10" aria-hidden="true"></i>
               </div>
             </div>
           </div>
@@ -25,15 +50,15 @@
       </div>
     </div>
 
-    <!-- Card Pengajar -->
+    <!-- Pengajar -->
     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-      <div class="card">
+      <div class="card h-100">
         <div class="card-body p-3">
           <div class="row">
             <div class="col-8">
               <div class="numbers">
-                <p class="text-sm mb-0 text-capitalize font-weight-bold">Total Pengajar</p>
-                <h5 class="font-weight-bolder mb-0">
+                <p class="text-sm mb-0 text-capitalize font-weight-bold text-muted">Total Pengajar</p>
+                <h5 class="font-weight-bolder mb-0 text-info">
                   {{ total_pengajar }}
                 </h5>
               </div>
@@ -48,15 +73,15 @@
       </div>
     </div>
 
-    <!-- Card Kelas -->
+    <!-- Kelas -->
     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
-      <div class="card">
+      <div class="card h-100">
         <div class="card-body p-3">
           <div class="row">
             <div class="col-8">
               <div class="numbers">
-                <p class="text-sm mb-0 text-capitalize font-weight-bold">Total Kelas</p>
-                <h5 class="font-weight-bolder mb-0">
+                <p class="text-sm mb-0 text-capitalize font-weight-bold text-muted">Total Kelas</p>
+                <h5 class="font-weight-bolder mb-0 text-success">
                   {{ total_kelas }}
                 </h5>
               </div>
@@ -71,22 +96,22 @@
       </div>
     </div>
 
-    <!-- Card Mapel -->
+    <!-- Pemasukan Bulan Ini -->
     <div class="col-xl-3 col-sm-6">
-      <div class="card">
+      <div class="card h-100">
         <div class="card-body p-3">
           <div class="row">
             <div class="col-8">
               <div class="numbers">
-                <p class="text-sm mb-0 text-capitalize font-weight-bold">Mata Pelajaran</p>
-                <h5 class="font-weight-bolder mb-0">
-                  {{ total_mapel }}
+                <p class="text-sm mb-0 text-capitalize font-weight-bold text-muted">Pemasukan (Bulan Ini)</p>
+                <h5 class="font-weight-bolder mb-0 text-warning">
+                  Rp {{ "{:,.0f}".format(income_month).replace(',', '.') }}
                 </h5>
               </div>
             </div>
             <div class="col-4 text-end">
               <div class="icon icon-shape bg-gradient-warning shadow text-center border-radius-md">
-                <i class="fas fa-book text-lg opacity-10" aria-hidden="true"></i>
+                <i class="fas fa-wallet text-lg opacity-10" aria-hidden="true"></i>
               </div>
             </div>
           </div>
@@ -95,15 +120,89 @@
     </div>
 </div>
 
-<div class="row mt-4">
-    <div class="col-lg-12 mb-lg-0 mb-4">
-        <div class="card">
-            <div class="card-header pb-0">
-                <h6>Selamat Datang, {{ current_user.username }}</h6>
+<div class="row">
+    <!-- Recent Activities -->
+    <div class="col-lg-7 mb-lg-0 mb-4">
+        <div class="card h-100">
+            <div class="card-header pb-0 p-3">
+                <div class="d-flex justify-content-between">
+                    <h6 class="mb-0">Aktivitas Terakhir</h6>
+                    <a href="{{ url_for('audit.logs_list') }}" class="text-xs text-secondary font-weight-bold">Lihat Semua</a>
+                </div>
             </div>
             <div class="card-body p-3">
-                <p>Anda login sebagai <strong>{{ current_user.role }}</strong></p>
-                <p>Silakan gunakan menu di sebelah kiri untuk mengelola data akademik pesantren.</p>
+                <div class="timeline timeline-one-side">
+                    {% if recent_activities %}
+                        {% for log in recent_activities %}
+                        <div class="timeline-block mb-3">
+                            <span class="timeline-step">
+                                <i class="fas fa-history text-primary text-gradient"></i>
+                            </span>
+                            <div class="timeline-content">
+                                <h6 class="text-dark text-sm font-weight-bold mb-0">{{ log.action }} - {{ log.model_name }}</h6>
+                                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">{{ log.timestamp.strftime('%d %b %H:%M') }} oleh User #{{ log.user_id }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-sm text-center text-muted my-4">Belum ada aktivitas tercatat.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shortcuts -->
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header pb-0 p-3">
+                <h6 class="mb-0">Menu Cepat</h6>
+            </div>
+            <div class="card-body p-3">
+                <ul class="list-group">
+                    <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
+                        <div class="d-flex align-items-center">
+                            <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
+                                <i class="fas fa-file-pdf text-white opacity-10"></i>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <h6 class="mb-1 text-dark text-sm">Cetak E-Raport</h6>
+                                <span class="text-xs">Cetak raport santri per semester</span>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <a href="{{ url_for('akademik.raport_list') }}" class="btn btn-link btn-icon-only btn-rounded btn-sm text-dark icon-move-right my-auto"><i class="ni ni-bold-right" aria-hidden="true"></i></a>
+                        </div>
+                    </li>
+                    <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
+                        <div class="d-flex align-items-center">
+                            <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
+                                <i class="fas fa-money-bill-wave text-white opacity-10"></i>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <h6 class="mb-1 text-dark text-sm">Pembayaran SPP</h6>
+                                <span class="text-xs">Input transaksi pembayaran</span>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <a href="{{ url_for('keuangan.index') }}" class="btn btn-link btn-icon-only btn-rounded btn-sm text-dark icon-move-right my-auto"><i class="ni ni-bold-right" aria-hidden="true"></i></a>
+                        </div>
+                    </li>
+                    <li class="list-group-item border-0 d-flex justify-content-between ps-0 mb-2 border-radius-lg">
+                        <div class="d-flex align-items-center">
+                            <div class="icon icon-shape icon-sm me-3 bg-gradient-dark shadow text-center">
+                                <i class="fas fa-user-plus text-white opacity-10"></i>
+                            </div>
+                            <div class="d-flex flex-column">
+                                <h6 class="mb-1 text-dark text-sm">Tambah Santri</h6>
+                                <span class="text-xs">Input data santri baru</span>
+                            </div>
+                        </div>
+                        <div class="d-flex">
+                            <a href="{{ url_for('master.santri_add') }}" class="btn btn-link btn-icon-only btn-rounded btn-sm text-dark icon-move-right my-auto"><i class="ni ni-bold-right" aria-hidden="true"></i></a>
+                        </div>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
