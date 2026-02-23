@@ -43,3 +43,4 @@ web_profile/test_email.py
 !package.json
 !tsconfig.json
 setup_fail2ban.sh
+setup_clamav.sh

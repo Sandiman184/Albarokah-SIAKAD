@@ -77,6 +77,22 @@ cd /var/www/Albarokah-SIAKAD
 ./sync_server.sh
 ```
 
+## Keamanan Server
+
+### A. Antivirus (ClamAV)
+Gunakan script `setup_clamav.sh` (jangan di-push ke git) untuk instalasi otomatis.
+1.  Upload script ke server: `scp -P 8022 setup_clamav.sh root@IP:/var/www/Albarokah-SIAKAD/`
+2.  Jalankan: `./setup_clamav.sh`
+
+**Scan Manual:**
+```bash
+sudo clamscan -r -i /var/www/Albarokah-SIAKAD
+```
+*Note: Scan manual membutuhkan waktu beberapa menit untuk loading database virus.*
+
+### B. Anti Brute-Force (Fail2Ban)
+Gunakan script `setup_fail2ban.sh` untuk memblokir IP yang gagal login berulang kali.
+
 ## Struktur Project
 ```
 Albarokah/
@@ -98,22 +114,3 @@ Albarokah/
 ```
 
 ## Akun Demo (Default Seed)
-
-| Role | Username | Password |
-| :--- | :--- | :--- |
-| **SIAKAD Admin** | admin | admin123 |
-| **SIAKAD Guru** | ustadz | ustadz123 |
-| **SIAKAD Wali** | wali | wali123 |
-
-## Catatan Penting
-*   **Generate PDF**: Memerlukan library GTK+ terinstall di sistem operasi (untuk WeasyPrint).
-*   **Database**: Menggunakan PostgreSQL untuk integritas data yang lebih baik.
-*   **Upload Gambar**: Web Profile mendukung upload gambar lokal (disimpan di `web_profile/app/static/uploads`).
-
-## Troubleshooting
-
-1.  **Error PDF Generation**:
-    *   Pastikan GTK+ Runtime sudah terinstall dan ada di PATH environment variable (Windows) atau `libpango` (Linux).
-
-2.  **Database Connection**:
-    *   Pastikan service PostgreSQL berjalan dan credentials di `.env` sudah benar.
