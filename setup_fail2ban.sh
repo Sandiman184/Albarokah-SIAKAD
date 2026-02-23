@@ -90,8 +90,15 @@ fi
 
 # 5. Restart Service
 echo "[4] Restarting Fail2Ban Service..."
+# Hapus file socket lama jika ada (kadang menyebabkan error startup)
+rm -f /var/run/fail2ban/fail2ban.sock
+
 systemctl restart fail2ban
 systemctl enable fail2ban
+
+# Tunggu sebentar agar service benar-benar up
+echo "Menunggu Fail2Ban startup (5 detik)..."
+sleep 5
 
 # 6. Verifikasi
 echo "========================================="
