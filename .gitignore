@@ -44,3 +44,4 @@ web_profile/test_email.py
 !tsconfig.json
 setup_fail2ban.sh
 setup_clamav.sh
+ACCESS_CREDENTIALS.md
